@@ -1,0 +1,7 @@
+# Hidden folders
+.idea/
+.gradle/
+
+# Build folders
+out/
+build/

@@ -1,0 +1,4 @@
+= JNI wrappers for SAT solvers
+
+image:https://jitpack.io/v/Lipen/kotlin-jnisat.svg["JitPack", link="https://jitpack.io/p/Lipen/kotlin-jnisat"]
+image:https://hitsofcode.com/github/Lipen/kotlin-jnisat["Hits-of-Code", link="https://hitsofcode.com/view/github/Lipen/kotlin-jnisat"]
