@@ -18,6 +18,8 @@ JMINISAT_SRC = $(CPP_DIR)/JMiniSat.cpp
 JMINISAT_LIBNAME = libjminisat.so
 JMINISAT_LIB = $(LIB_DIR)/$(JMINISAT_LIBNAME)
 JMINISAT_RES = $(LIB_RES)/$(JMINISAT_LIBNAME)
+MINISAT_LIB_DIR = /usr/local/lib
+MINISAT_INCLUDE_DIR = /usr/local/include
 
 CLASSNAMES = $(JMINISAT_CLASSNAME)
 HEADERS = $(JMINISAT_HEADER)
@@ -47,7 +49,7 @@ libs: libjminisat
 
 libjminisat $(JMINISAT_LIB): $(JMINISAT_HEADER) $(LIB_DIR)
 	@echo "=== Building jminisat library..."
-	$(CC) -o $(JMINISAT_LIB) $(CCFLAGS) $(CPPFLAGS) $(LDFLAGS) -lminisat $(JMINISAT_SRC)
+	$(CC) -o $(JMINISAT_LIB) $(CCFLAGS) $(CPPFLAGS) -I$(MINISAT_INCLUDE_DIR) $(LDFLAGS) -L$(MINISAT_LIB_DIR) -lminisat $(JMINISAT_SRC)
 
 $(LIB_DIR):
 	@echo "=== Creating libdir..."
