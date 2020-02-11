@@ -21,9 +21,18 @@ JMINISAT_RES = $(LIB_RES)/$(JMINISAT_LIBNAME)
 MINISAT_LIB_DIR = /usr/local/lib
 MINISAT_INCLUDE_DIR = /usr/local/include
 
-CLASSNAMES = $(JMINISAT_CLASSNAME)
-HEADERS = $(JMINISAT_HEADER)
-LIBS = $(JMINISAT_LIB)
+JCADICAL_CLASSNAME = $(PACKAGE).JCadical
+JCADICAL_HEADER = $(HEADERS_DIR)/$(subst .,_,$(JCADICAL_CLASSNAME)).h
+JCADICAL_SRC = $(CPP_DIR)/JCadical.cpp
+JCADICAL_LIBNAME = libjcadical.so
+JCADICAL_LIB = $(LIB_DIR)/$(JCADICAL_LIBNAME)
+JCADICAL_RES = $(LIB_RES)/$(JCADICAL_LIBNAME)
+CADICAL_LIB_DIR = /usr/local/lib
+CADICAL_INCLUDE_DIR = /usr/local/include
+
+CLASSNAMES = $(JMINISAT_CLASSNAME) $(JCADICAL_CLASSNAME)
+HEADERS = $(JMINISAT_HEADER) $(JCADICAL_HEADER)
+LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB)
 
 JAVA_HOME ?= $(shell readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 JAVA_INCLUDE = $(JAVA_HOME)/include
@@ -33,23 +42,28 @@ CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
 
-.PHONY: default libjminisat libs headers classes res clean
+.PHONY: default libjminisat libjcadical libs headers classes res clean
 
 default:
-	@echo "Specify a target! [all libs libjminisat headers classes res clean]"
+	@echo "Specify a target! [all libs libjminisat libjcadical headers classes res clean]"
 	@echo " - libs -- Build all libraries"
 	@echo " - libjminisat -- Build jminisat library"
+	@echo " - libjcadical -- Build jcadical library"
 	@echo " - headers -- Generate JNI headers from classes via javah"
 	@echo " - classes -- Compile Java/Kotlin classes (run \`gradlew classes\`)"
 	@echo " - res -- Copy libraries to '$(LIB_RES)'"
 	@echo " - clean -- Run \`gradlew clean\`"
 
 all: classes headers libs res
-libs: libjminisat
+libs: libjminisat libjcadical
 
 libjminisat $(JMINISAT_LIB): $(JMINISAT_HEADER) $(LIB_DIR)
 	@echo "=== Building jminisat library..."
 	$(CC) -o $(JMINISAT_LIB) $(CCFLAGS) $(CPPFLAGS) -I$(MINISAT_INCLUDE_DIR) $(LDFLAGS) -L$(MINISAT_LIB_DIR) -lminisat $(JMINISAT_SRC)
+
+libjcadical $(JCADICAL_LIB): $(JCADICAL_HEADER) $(LIB_DIR)
+	@echo "=== Building jcadical library..."
+	$(CC) -o $(JCADICAL_LIB) $(CCFLAGS) $(CPPFLAGS) -I$(CADICAL_INCLUDE_DIR) $(LDFLAGS) -L$(CADICAL_LIB_DIR) -lcadical $(JCADICAL_SRC)
 
 $(LIB_DIR):
 	@echo "=== Creating libdir..."
@@ -67,6 +81,7 @@ res: $(LIBS)
 	@echo "=== Copying libraries to resources..."
 	install -d $(shell dirname $(JMINISAT_RES))
 	install -m 644 $(JMINISAT_LIB) $(JMINISAT_RES)
+	install -m 644 $(JCADICAL_LIB) $(JCADICAL_RES)
 
 clean:
 	@echo "=== Cleaning..."
