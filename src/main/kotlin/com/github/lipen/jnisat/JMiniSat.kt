@@ -101,7 +101,7 @@ class JMiniSat @JvmOverloads constructor(
 
     fun getModel(): BooleanArray {
         assert(solvable)
-        TODO()
+        TODO("minisat_get_model()")
     }
 
     override fun close() {
