@@ -117,7 +117,7 @@ class JMiniSat @JvmOverloads constructor(
     private external fun minisat_add_clause(handle: Long, lit: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int, lit3: Int): Boolean
-    private external fun minisat_add_clause(handle: Long, lits: IntArray?): Boolean
+    private external fun minisat_add_clause(handle: Long, lits: IntArray): Boolean
     private external fun minisat_solve(handle: Long, simplify: Boolean, turnoff: Boolean): Boolean
     private external fun minisat_simplify(handle: Long): Boolean
     private external fun minisat_eliminate(handle: Long, turnoff: Boolean): Boolean
