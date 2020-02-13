@@ -79,23 +79,23 @@ class JCadical : AutoCloseable {
     }
 
     fun solve(): SolveResult {
-        return SolveResult[cadical_solve(handle)]
+        return SolveResult.of(cadical_solve(handle))
     }
 
     fun solve(lit1: Int): SolveResult {
-        return SolveResult[cadical_solve(handle, lit1)]
+        return SolveResult.of(cadical_solve(handle, lit1))
     }
 
     fun solve(lit1: Int, lit2: Int): SolveResult {
-        return SolveResult[cadical_solve(handle, lit1, lit2)]
+        return SolveResult.of(cadical_solve(handle, lit1, lit2))
     }
 
     fun solve(lit1: Int, lit2: Int, lit3: Int): SolveResult {
-        return SolveResult[cadical_solve(handle, lit1, lit2, lit3)]
+        return SolveResult.of(cadical_solve(handle, lit1, lit2, lit3))
     }
 
     fun solve(vararg assumptions: Int): SolveResult {
-        return SolveResult[cadical_solve(handle, assumptions)]
+        return SolveResult.of(cadical_solve(handle, assumptions))
     }
 
     fun getValue(lit: Int): Boolean {
@@ -130,14 +130,18 @@ class JCadical : AutoCloseable {
             Loader.load("jcadical")
         }
 
-        enum class SolveResult(val code: Int) {
-            UNSOLVED(0),
-            SATISFIABLE(10),
-            UNSATISFIABLE(20);
+        enum class SolveResult {
+            UNSOLVED,
+            SATISFIABLE,
+            UNSATISFIABLE;
 
             companion object {
-                private val lookup = values().associateBy(SolveResult::code)
-                operator fun get(code: Int): SolveResult = lookup.getValue(code)
+                fun of(code: Int): SolveResult = when (code) {
+                    0 -> UNSOLVED
+                    10 -> SATISFIABLE
+                    20 -> UNSATISFIABLE
+                    else -> error("Bad solver exit code $code")
+                }
             }
         }
     }
