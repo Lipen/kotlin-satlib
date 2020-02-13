@@ -3,13 +3,10 @@ CLASSES_DIR = $(BUILD_DIR)/classes
 HEADERS_DIR = $(BUILD_DIR)/headers
 SRC_DIR = src/main
 CPP_DIR = $(SRC_DIR)/cpp
-LIB_PREFIX = $(BUILD_DIR)
-RES_PREFIX = $(SRC_DIR)/resources
-LIB = lib/linux64
-LIB_DIR = $(LIB_PREFIX)/$(LIB)
-LIB_RES = $(RES_PREFIX)/$(LIB)
-CLASSPATH = $(CLASSES_DIR)/kotlin/main
+LIB_DIR = $(BUILD_DIR)/lib
+LIB_RES = $(SRC_DIR)/resources/lib/linux64
 
+CLASSPATH = $(CLASSES_DIR)/kotlin/main
 PACKAGE = com.github.lipen.jnisat
 
 JMINISAT_CLASSNAME = $(PACKAGE).JMiniSat
@@ -18,8 +15,8 @@ JMINISAT_SRC = $(CPP_DIR)/JMiniSat.cpp
 JMINISAT_LIBNAME = libjminisat.so
 JMINISAT_LIB = $(LIB_DIR)/$(JMINISAT_LIBNAME)
 JMINISAT_RES = $(LIB_RES)/$(JMINISAT_LIBNAME)
-MINISAT_LIB_DIR = /usr/local/lib
-MINISAT_INCLUDE_DIR = /usr/local/include
+MINISAT_CPPFLAGS = -I/usr/local/include
+MINISAT_LDFLAGS = -L/usr/local/lib -lminisat
 
 JCADICAL_CLASSNAME = $(PACKAGE).JCadical
 JCADICAL_HEADER = $(HEADERS_DIR)/$(subst .,_,$(JCADICAL_CLASSNAME)).h
@@ -27,8 +24,8 @@ JCADICAL_SRC = $(CPP_DIR)/JCadical.cpp
 JCADICAL_LIBNAME = libjcadical.so
 JCADICAL_LIB = $(LIB_DIR)/$(JCADICAL_LIBNAME)
 JCADICAL_RES = $(LIB_RES)/$(JCADICAL_LIBNAME)
-CADICAL_LIB_DIR = /usr/local/lib
-CADICAL_INCLUDE_DIR = /usr/local/include
+CADICAL_CPPFLAGS = -I/usr/local/include
+CADICAL_LDFLAGS = -L/usr/local/lib -lcadical
 
 CLASSNAMES = $(JMINISAT_CLASSNAME) $(JCADICAL_CLASSNAME)
 HEADERS = $(JMINISAT_HEADER) $(JCADICAL_HEADER)
@@ -50,20 +47,30 @@ default:
 	@echo " - libjminisat -- Build jminisat library"
 	@echo " - libjcadical -- Build jcadical library"
 	@echo " - headers -- Generate JNI headers from classes via javah"
-	@echo " - classes -- Compile Java/Kotlin classes (run \`gradlew classes\`)"
+	@echo " - classes -- Compile Java/Kotlin classes (run 'gradlew classes')"
 	@echo " - res -- Copy libraries to '$(LIB_RES)'"
-	@echo " - clean -- Run \`gradlew clean\`"
+	@echo " - clean -- Run 'gradlew clean'"
 
 all: classes headers libs res
 libs: libjminisat libjcadical
 
-libjminisat $(JMINISAT_LIB): $(JMINISAT_HEADER) $(LIB_DIR)
-	@echo "=== Building jminisat library..."
-	$(CC) -o $(JMINISAT_LIB) $(CCFLAGS) $(CPPFLAGS) -I$(MINISAT_INCLUDE_DIR) $(LDFLAGS) -L$(MINISAT_LIB_DIR) -lminisat $(JMINISAT_SRC)
+libjminisat: LIB = $(JMINISAT_LIB)
+libjminisat: SRC = $(JMINISAT_SRC)
+libjminisat: CPPFLAGS += $(MINISAT_CPPFLAGS)
+libjminisat: LDFLAGS += $(MINISAT_LDFLAGS)
+libjminisat $(JMINISAT_LIB): $(JMINISAT_HEADER)
+	@echo "=== Building libjminisat library..."
+	$(CC) -o $(LIB) $(CCFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC)
 
-libjcadical $(JCADICAL_LIB): $(JCADICAL_HEADER) $(LIB_DIR)
-	@echo "=== Building jcadical library..."
-	$(CC) -o $(JCADICAL_LIB) $(CCFLAGS) $(CPPFLAGS) -I$(CADICAL_INCLUDE_DIR) $(LDFLAGS) -L$(CADICAL_LIB_DIR) -lcadical $(JCADICAL_SRC)
+libjcadical: LIB = $(JCADICAL_LIB)
+libjcadical: SRC = $(JCADICAL_SRC)
+libjcadical: CPPFLAGS += $(CADICAL_CPPFLAGS)
+libjcadical: LDFLAGS += $(CADICAL_LDFLAGS)
+libjcadical $(JCADICAL_LIB): $(JCADICAL_HEADER)
+	@echo "=== Building libjcadical library..."
+	$(CC) -o $(LIB) $(CCFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC)
+
+libjminisat libjminisat: $(LIB_DIR)
 
 $(LIB_DIR):
 	@echo "=== Creating libdir..."
