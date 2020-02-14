@@ -177,11 +177,15 @@ fun main() {
         // Answer must be: x = -1, y = 1, z = -1
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
 
-        check(solve(y) == SolveResult.SATISFIABLE)
-        check(solve(-y) == SolveResult.UNSATISFIABLE)
+        addAssumption(y)
+        check(solve() == SolveResult.SATISFIABLE)
+        addAssumption(-y)
+        check(solve() == SolveResult.UNSATISFIABLE)
 
         val t = newVariable()
-        check(solve(t) == SolveResult.SATISFIABLE)
-        check(solve(-t) == SolveResult.SATISFIABLE)
+        addAssumption(t)
+        check(solve() == SolveResult.SATISFIABLE)
+        addAssumption(-t)
+        check(solve() == SolveResult.SATISFIABLE)
     }
 }
