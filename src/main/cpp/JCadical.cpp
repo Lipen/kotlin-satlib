@@ -79,10 +79,11 @@ JNI_METHOD(jintArray, cadical_1get_1model)
     if (result == NULL) {
         return NULL;
     }
-    jint model[size];
+    jint* model = new jint[size];
     for (int i = 1; i < size; i++) {
         model[i] = solver->val(i);
     }
     env->SetIntArrayRegion(result, 0, size, model);
+    delete[] model;
     return result;
   }
