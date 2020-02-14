@@ -114,6 +114,31 @@ class JCadical : AutoCloseable {
         return SolveResult.of(cadical_solve(handle))
     }
 
+    fun solve(lit1: Int): SolveResult {
+        addAssumption(lit1)
+        return solve()
+    }
+
+    fun solve(lit1: Int, lit2: Int): SolveResult {
+        addAssumption(lit1, lit2)
+        return solve()
+    }
+
+    fun solve(lit1: Int, lit2: Int, lit3: Int): SolveResult {
+        addAssumption(lit1, lit2, lit3)
+        return solve()
+    }
+
+    fun solve(literals: IntArray): SolveResult {
+        addAssumption(literals)
+        return solve()
+    }
+
+    @JvmName("solveVararg")
+    fun solve(vararg literals: Int): SolveResult {
+        return solve(literals)
+    }
+
     fun getValue(lit: Int): Boolean {
         val value = cadical_get_value(handle, lit)
         check(value != 0) { "cadical_get_value($lit) returned 0" }
