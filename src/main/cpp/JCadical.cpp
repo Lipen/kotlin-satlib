@@ -50,7 +50,7 @@ JNI_METHOD(void, cadical_1add_1clause)
     env->ReleaseIntArrayElements(literals, array, 0);
   }
 
-JNI_METHOD(void, cadical_1add_1assumptions)
+JNI_METHOD(void, cadical_1add_1assumption)
   (JNIEnv* env, jobject, jlong p, jintArray literals) {
     jsize array_length = env->GetArrayLength(literals);
     CaDiCaL::Solver* solver = decode(p);
