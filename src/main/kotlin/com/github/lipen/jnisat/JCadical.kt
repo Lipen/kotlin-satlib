@@ -158,7 +158,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)
-    private external fun cadical_add_assumption(handle: Long, assumptions: IntArray)
+    private external fun cadical_add_assumption(handle: Long, literals: IntArray)
     private external fun cadical_solve(handle: Long): Int
     private external fun cadical_get_value(handle: Long, lit: Int): Int
     private external fun cadical_get_model(handle: Long): IntArray?

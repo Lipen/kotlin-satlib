@@ -51,14 +51,14 @@ JNI_METHOD(void, cadical_1add_1clause)
   }
 
 JNI_METHOD(void, cadical_1add_1assumptions)
-  (JNIEnv* env, jobject, jlong p, jintArray assumptions) {
-    jsize array_length = env->GetArrayLength(assumptions);
+  (JNIEnv* env, jobject, jlong p, jintArray literals) {
+    jsize array_length = env->GetArrayLength(literals);
     CaDiCaL::Solver* solver = decode(p);
-    jint* array = env->GetIntArrayElements(assumptions, 0);
+    jint* array = env->GetIntArrayElements(literals, 0);
     for (int i = 0; i < array_length; i++) {
         solver->assume(array[i]);
     }
-    env->ReleaseIntArrayElements(assumptions, array, 0);
+    env->ReleaseIntArrayElements(literals, array, 0);
   }
 
 JNI_METHOD(jint, cadical_1solve)
