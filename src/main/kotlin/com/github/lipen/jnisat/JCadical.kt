@@ -73,29 +73,45 @@ class JCadical : AutoCloseable {
         add(lit1); add(lit2); add(lit3); add(0)
     }
 
-    fun addClause(vararg literals: Int) {
+    fun addClause(literals: IntArray) {
         ++numberOfClauses
         cadical_add_clause(handle, literals)
     }
 
+    @JvmName("addClauseVararg")
+    fun addClause(vararg literals: Int) {
+        addClause(literals)
+    }
+
+    @Deprecated(
+        "Assumption must contain at least one literal!",
+        ReplaceWith("addAssumption(...)")
+    )
+    fun addAssumption(): Nothing = error("Assumption cannot be empty!")
+
+    fun addAssumption(lit1: Int) {
+        assume(lit1)
+    }
+
+    fun addAssumption(lit1: Int, lit2: Int) {
+        assume(lit1); assume(lit2)
+    }
+
+    fun addAssumption(lit1: Int, lit2: Int, lit3: Int) {
+        assume(lit1); assume(lit2); assume(lit3)
+    }
+
+    fun addAssumption(literals: IntArray) {
+        cadical_add_assumption(handle, literals)
+    }
+
+    @JvmName("addAssumptionVararg")
+    fun addAssumption(vararg literals: Int) {
+        addAssumption(literals)
+    }
+
     fun solve(): SolveResult {
         return SolveResult.of(cadical_solve(handle))
-    }
-
-    fun solve(lit1: Int): SolveResult {
-        return SolveResult.of(cadical_solve(handle, lit1))
-    }
-
-    fun solve(lit1: Int, lit2: Int): SolveResult {
-        return SolveResult.of(cadical_solve(handle, lit1, lit2))
-    }
-
-    fun solve(lit1: Int, lit2: Int, lit3: Int): SolveResult {
-        return SolveResult.of(cadical_solve(handle, lit1, lit2, lit3))
-    }
-
-    fun solve(vararg assumptions: Int): SolveResult {
-        return SolveResult.of(cadical_solve(handle, assumptions))
     }
 
     fun getValue(lit: Int): Boolean {
@@ -117,11 +133,8 @@ class JCadical : AutoCloseable {
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)
+    private external fun cadical_add_assumption(handle: Long, assumptions: IntArray)
     private external fun cadical_solve(handle: Long): Int
-    private external fun cadical_solve(handle: Long, lit1: Int): Int
-    private external fun cadical_solve(handle: Long, lit1: Int, lit2: Int): Int
-    private external fun cadical_solve(handle: Long, lit1: Int, lit2: Int, lit3: Int): Int
-    private external fun cadical_solve(handle: Long, assumptions: IntArray): Int
     private external fun cadical_get_value(handle: Long, lit: Int): Int
     private external fun cadical_get_model(handle: Long): IntArray?
 

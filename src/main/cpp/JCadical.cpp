@@ -50,36 +50,7 @@ JNI_METHOD(void, cadical_1add_1clause)
     env->ReleaseIntArrayElements(literals, array, 0);
   }
 
-JNI_METHOD(jint, cadical_1solve__J)
-  (JNIEnv*, jobject, jlong p) {
-    return decode(p)->solve();
-  }
-
-JNI_METHOD(jint, cadical_1solve__JI)
-  (JNIEnv*, jobject, jlong p, jint lit) {
-    CaDiCaL::Solver* solver = decode(p);
-    solver->assume(lit);
-    return solver->solve();
-  }
-
-JNI_METHOD(jint, cadical_1solve__JII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2) {
-    CaDiCaL::Solver* solver = decode(p);
-    solver->assume(lit1);
-    solver->assume(lit2);
-    return solver->solve();
-  }
-
-JNI_METHOD(jint, cadical_1solve__JIII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2, jint lit3) {
-    CaDiCaL::Solver* solver = decode(p);
-    solver->assume(lit1);
-    solver->assume(lit2);
-    solver->assume(lit3);
-    return solver->solve();
-  }
-
-JNI_METHOD(jint, cadical_1solve__J_3I)
+JNI_METHOD(void, cadical_1add_1assumptions)
   (JNIEnv* env, jobject, jlong p, jintArray assumptions) {
     jsize array_length = env->GetArrayLength(assumptions);
     CaDiCaL::Solver* solver = decode(p);
@@ -88,7 +59,11 @@ JNI_METHOD(jint, cadical_1solve__J_3I)
         solver->assume(array[i]);
     }
     env->ReleaseIntArrayElements(assumptions, array, 0);
-    return solver->solve();
+  }
+
+JNI_METHOD(jint, cadical_1solve)
+  (JNIEnv*, jobject, jlong p) {
+    return decode(p)->solve();
   }
 
 JNI_METHOD(jint, cadical_1get_1value)
