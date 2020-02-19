@@ -71,19 +71,19 @@ JNI_METHOD(jint, cadical_1get_1value)
     return decode(p)->val(lit);
   }
 
-JNI_METHOD(jintArray, cadical_1get_1model)
+JNI_METHOD(jbooleanArray, cadical_1get_1model)
   (JNIEnv* env, jobject, jlong p) {
     CaDiCaL::Solver* solver = decode(p);
     int size = solver->vars() + 1;
-    jintArray result = env->NewIntArray(size);
+    jbooleanArray result = env->NewBooleanArray(size);
     if (result == NULL) {
         return NULL;
     }
-    jint* model = new jint[size];
+    jboolean* model = new jboolean[size];
     for (int i = 1; i < size; i++) {
-        model[i] = solver->val(i);
+        model[i] = solver->val(i) > 0;
     }
-    env->SetIntArrayRegion(result, 0, size, model);
+    env->SetBooleanArrayRegion(result, 0, size, model);
     delete[] model;
     return result;
   }

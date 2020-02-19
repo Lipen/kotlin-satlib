@@ -149,9 +149,8 @@ class JCadical : AutoCloseable {
     }
 
     fun getModel(): BooleanArray {
-        val model = cadical_get_model(handle)
+        return cadical_get_model(handle)
             ?: throw OutOfMemoryError("cadical_get_model returned NULL")
-        return model.map { it > 0 }.toBooleanArray()
     }
 
     /* Native */
@@ -164,7 +163,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_add_assumption(handle: Long, literals: IntArray)
     private external fun cadical_solve(handle: Long): Int
     private external fun cadical_get_value(handle: Long, lit: Int): Int
-    private external fun cadical_get_model(handle: Long): IntArray?
+    private external fun cadical_get_model(handle: Long): BooleanArray?
 
     companion object {
         init {
