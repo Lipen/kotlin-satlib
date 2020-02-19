@@ -5,6 +5,8 @@ object Versions {
     const val ktlint = "8.0.0"
     const val gradle_versions = "0.21.0"
     const val jgitver = "0.8.0"
+    const val jmh_gradle_plugin = "0.5.0"
+    const val jmh = "1.23"
     const val junit = "5.5.0-M1"
     const val kluent = "1.49"
 }
