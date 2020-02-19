@@ -143,9 +143,7 @@ class JCadical : AutoCloseable {
     }
 
     fun getValue(lit: Int): Boolean {
-        val value = cadical_get_value(handle, lit)
-        check(value != 0) { "cadical_get_value($lit) returned 0" }
-        return value > 0
+        return cadical_get_value(handle, lit)
     }
 
     fun getModel(): BooleanArray {
@@ -162,7 +160,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_add_clause(handle: Long, literals: IntArray)
     private external fun cadical_add_assumption(handle: Long, literals: IntArray)
     private external fun cadical_solve(handle: Long): Int
-    private external fun cadical_get_value(handle: Long, lit: Int): Int
+    private external fun cadical_get_value(handle: Long, lit: Int): Boolean
     private external fun cadical_get_model(handle: Long): BooleanArray?
 
     companion object {

@@ -66,9 +66,9 @@ JNI_METHOD(jint, cadical_1solve)
     return decode(p)->solve();
   }
 
-JNI_METHOD(jint, cadical_1get_1value)
+JNI_METHOD(jboolean, cadical_1get_1value)
   (JNIEnv*, jobject, jlong p, jint lit) {
-    return decode(p)->val(lit);
+    return decode(p)->val(lit) > 0;
   }
 
 JNI_METHOD(jbooleanArray, cadical_1get_1model)
