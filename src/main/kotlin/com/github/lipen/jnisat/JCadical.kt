@@ -87,10 +87,11 @@ class JCadical : AutoCloseable {
     }
 
     @Deprecated(
-        "Assumption must contain at least one literal!",
+        "Assumption should contain at least one literal",
         ReplaceWith("addAssumption(...)")
     )
-    fun addAssumption(): Nothing = error("Assumption cannot be empty!")
+    fun addAssumption() {
+    }
 
     fun addAssumption(lit1: Int) {
         assume(lit1)
