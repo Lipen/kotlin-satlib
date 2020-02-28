@@ -127,3 +127,20 @@ JNI_METHOD(jbyte, minisat_1model_1value)
   (JNIEnv*, jobject, jlong handle, jint lit) {
 	return (jbyte) Minisat::toInt(decode(handle)->modelValue(convert(lit)));
 }
+
+JNI_METHOD(jbooleanArray, minisat_1get_1model)
+  (JNIEnv* env, jobject, jlong handle) {
+    Minisat::SimpSolver* solver = decode(handle);
+    int size = solver->nVars() + 1;
+    jbooleanArray result = env->NewBooleanArray(size);
+    if (result == NULL) {
+        return NULL;
+    }
+    jboolean* model = new jboolean[size];
+    for (int i = 1; i < size; i++) {
+        model[i] = solver->modelValue(convert(i)) == Minisat::l_True;
+    }
+    env->SetBooleanArrayRegion(result, 0, size, model);
+    delete[] model;
+    return result;
+}

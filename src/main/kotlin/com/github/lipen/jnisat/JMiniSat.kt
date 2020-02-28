@@ -100,8 +100,9 @@ class JMiniSat @JvmOverloads constructor(
     }
 
     fun getModel(): BooleanArray {
+        // Note: resulting array is 1-based, i.e. of size (nVars+1) with garbage(false) in index 0
         assert(solvable)
-        TODO("minisat_get_model()")
+        return minisat_get_model(handle)
     }
 
     override fun close() {
@@ -124,6 +125,7 @@ class JMiniSat @JvmOverloads constructor(
     private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
     private external fun minisat_okay(handle: Long): Boolean
     private external fun minisat_model_value(handle: Long, lit: Int): Byte
+    private external fun minisat_get_model(handle: Long): BooleanArray
 
     companion object {
         init {
@@ -163,5 +165,7 @@ fun main() {
 
         // Answer must be: x = -1, y = 1, z = -1
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
+
+        println("model = ${getModel().drop(1)}")
     }
 }
