@@ -118,14 +118,14 @@ JNI_METHOD(jboolean, minisat_1solve__JIIIZZ)
   }
 
 JNI_METHOD(jboolean, minisat_1solve__J_3IZZ)
-  (JNIEnv*, jobject, jlong handle, jintArray, jboolean do_simp, jboolean turn_off_simp) {
-    jint len = env->GetArrayLength(lits);
+  (JNIEnv* env, jobject, jlong handle, jintArray assumptions, jboolean do_simp, jboolean turn_off_simp) {
+    jint len = env->GetArrayLength(assumptions);
     Minisat::vec<Minisat::Lit> vec(len);
 
-    jint* p = (jint*) env->GetPrimitiveArrayCritical(lits, 0);
+    jint* p = (jint*) env->GetPrimitiveArrayCritical(assumptions, 0);
     for (jint i = 0; i < len; i++)
         vec[i] = convert(p[i]);
-    env->ReleasePrimitiveArrayCritical(lits, p, 0);
+    env->ReleasePrimitiveArrayCritical(assumptions, p, 0);
 
     return decode(handle)->solve(vec, (bool) do_simp, (bool) turn_off_simp);
   }
