@@ -48,13 +48,13 @@ class JMiniSat @JvmOverloads constructor(
         handle = 0
     }
 
-    fun addVariable(): Int {
+    fun newVariable(): Int {
         val lit = minisat_new_var(handle, Polarity.UNDEF.value)
         minisat_set_frozen(handle, lit, true)
         return lit
     }
 
-    fun addVariable(
+    fun newVariable(
         polarity: Polarity = Polarity.UNDEF,
         eliminate: Boolean = false,
         decision: Boolean = true
@@ -165,9 +165,9 @@ fun main() {
     fun <T : AutoCloseable, R> T.useWith(block: T.() -> R): R = use(block)
 
     JMiniSat().useWith {
-        val x = addVariable()
-        val y = addVariable()
-        val z = addVariable()
+        val x = newVariable()
+        val y = newVariable()
+        val z = newVariable()
 
         addClause(-x)
         addClause(-z)
