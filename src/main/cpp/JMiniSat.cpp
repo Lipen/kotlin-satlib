@@ -91,7 +91,7 @@ JNI_METHOD(jboolean, minisat_1add_1clause__J_3I)
 
     jint* p = (jint*) env->GetPrimitiveArrayCritical(lits, 0);
     for (jint i = 0; i < len; i++)
-      vec[i] = convert(p[i]);
+        vec[i] = convert(p[i]);
     env->ReleasePrimitiveArrayCritical(lits, p, 0);
 
     return decode(handle)->addClause_(vec);
@@ -161,13 +161,11 @@ JNI_METHOD(jbooleanArray, minisat_1get_1model)
     Minisat::SimpSolver* solver = decode(handle);
     int size = solver->nVars() + 1;
     jbooleanArray result = env->NewBooleanArray(size);
-    if (result == NULL) {
+    if (result == NULL)
         return NULL;
-    }
     jboolean* model = new jboolean[size];
-    for (int i = 1; i < size; i++) {
+    for (int i = 1; i < size; i++)
         model[i] = solver->modelValue(convert(i)) == Minisat::l_True;
-    }
     env->SetBooleanArrayRegion(result, 0, size, model);
     delete[] model;
     return result;
