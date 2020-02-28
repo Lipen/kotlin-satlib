@@ -27,6 +27,10 @@ class JMiniSat : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
 
+    val numberOfVariables: Int get() = minisat_nvars(handle)
+    val numberOfClauses: Int get() = minisat_nclauses(handle)
+    val numberOfLearntClauses: Int get() = minisat_nlearnts(handle)
+
     init {
         reset()
     }
@@ -44,20 +48,37 @@ class JMiniSat : AutoCloseable {
     }
 
     fun newVariable(): Int {
-        val lit = minisat_new_var(handle, Polarity.UNDEF.value)
-        minisat_set_frozen(handle, lit, true)
-        return lit
+        return minisat_new_var(handle)
     }
 
     fun newVariable(
         polarity: Polarity = Polarity.UNDEF,
-        eliminate: Boolean = false,
-        decision: Boolean = true
+        decision: Boolean = true,
+        eliminate: Boolean = true
     ): Int {
-        val lit = minisat_new_var(handle, polarity.value)
-        if (!eliminate) minisat_set_frozen(handle, lit, true)
-        if (!decision) minisat_set_decision_var(handle, lit, false)
+        val lit = minisat_new_var(handle, polarity.value, decision)
+        if (!eliminate) freeze(lit)
         return lit
+    }
+
+    fun setPolarity(lit: Int, polarity: Polarity) {
+        minisat_set_polarity(handle, lit, polarity.value)
+    }
+
+    fun setDecisionVar(lit: Int, b: Boolean) {
+        minisat_set_decision_var(handle, lit, b)
+    }
+
+    fun setFrozen(lit: Int, b: Boolean) {
+        minisat_set_frozen(handle, lit, b)
+    }
+
+    fun freeze(lit: Int) {
+        minisat_freeze(handle, lit)
+    }
+
+    fun thaw() {
+        minisat_thaw(handle)
     }
 
     fun addClause(lit: Int) {
@@ -129,9 +150,15 @@ class JMiniSat : AutoCloseable {
 
     private external fun minisat_ctor(): Long
     private external fun minisat_dtor(handle: Long)
-    private external fun minisat_new_var(handle: Long, polarity: Byte): Int
-    private external fun minisat_set_decision_var(handle: Long, lit: Int, value: Boolean)
-    private external fun minisat_set_frozen(handle: Long, lit: Int, value: Boolean)
+    private external fun minisat_nvars(handle: Long): Int
+    private external fun minisat_nclauses(handle: Long): Int
+    private external fun minisat_nlearnts(handle: Long): Int
+    private external fun minisat_new_var(handle: Long, polarity: Byte = LBOOL_UNDEF, decision: Boolean = true): Int
+    private external fun minisat_set_polarity(handle: Long, lit: Int, polarity: Byte)
+    private external fun minisat_set_decision_var(handle: Long, lit: Int, b: Boolean)
+    private external fun minisat_set_frozen(handle: Long, lit: Int, b: Boolean)
+    private external fun minisat_freeze(handle: Long, lit: Int)
+    private external fun minisat_thaw(handle: Long)
     private external fun minisat_add_clause(handle: Long, lit: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int, lit3: Int): Boolean

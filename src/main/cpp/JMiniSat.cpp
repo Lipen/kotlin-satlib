@@ -47,22 +47,54 @@ JNI_METHOD(void, minisat_1dtor)
     delete decode(handle);
   }
 
+JNI_METHOD(jint, minisat_1nvars)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->nVars();
+}
+
+JNI_METHOD(jint, minisat_1nclauses)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->nClauses();
+}
+
+JNI_METHOD(jint, minisat_1nlearnts)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->nLearnts();
+}
+
 JNI_METHOD(jint, minisat_1new_1var)
-  (JNIEnv*, jobject, jlong handle, jbyte polarity) {
-    int v = decode(handle)->newVar(Minisat::lbool((uint8_t) polarity));
+  (JNIEnv*, jobject, jlong handle, jbyte polarity, jboolean decision) {
+    int v = decode(handle)->newVar(Minisat::lbool((uint8_t) polarity), decision);
     return (jint)(1 + v);
 }
 
-JNI_METHOD(void, minisat_1set_1decision_1var)
-  (JNIEnv*, jobject, jlong handle, jint lit, jboolean value) {
+JNI_METHOD(void, minisat_1set_1polarity)
+  (JNIEnv*, jobject, jlong handle, jint lit, jbyte polarity) {
     int v = lit > 0 ? lit - 1 : -lit - 1;
-    decode(handle)->setDecisionVar(v, value);
+    decode(handle)->setPolarity(v, Minisat::lbool((uint8_t) polarity));
+  }
+
+JNI_METHOD(void, minisat_1set_1decision_1var)
+  (JNIEnv*, jobject, jlong handle, jint lit, jboolean b) {
+    int v = lit > 0 ? lit - 1 : -lit - 1;
+    decode(handle)->setDecisionVar(v, b);
   }
 
 JNI_METHOD(void, minisat_1set_1frozen)
-  (JNIEnv*, jobject, jlong handle, jint lit, jboolean value) {
+  (JNIEnv*, jobject, jlong handle, jint lit, jboolean b) {
     int v = lit > 0 ? lit - 1 : -lit - 1;
-    decode(handle)->setFrozen(v, value);
+    decode(handle)->setFrozen(v, b);
+  }
+
+JNI_METHOD(void, minisat_1freeze)
+  (JNIEnv*, jobject, jlong handle, jint lit) {
+    int v = lit > 0 ? lit - 1 : -lit - 1;
+    decode(handle)->freezeVar(v);
+  }
+
+JNI_METHOD(void, minisat_1thaw)
+  (JNIEnv*, jobject, jlong handle) {
+    decode(handle)->thaw();
   }
 
 static inline Minisat::Lit convert(int lit) {
