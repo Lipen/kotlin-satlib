@@ -202,9 +202,8 @@ fun main() {
 
         check(solve()) { "Unexpected UNSAT" }
 
-        // Answer must be: x = -1, y = 1, z = -1
+        // Answer must be: x = false, y = true, z = false
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-
         println("model = ${getModel().drop(1)}")
     }
 }
