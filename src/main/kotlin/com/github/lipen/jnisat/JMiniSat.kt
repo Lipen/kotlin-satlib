@@ -205,5 +205,11 @@ fun main() {
         // Answer must be: x = false, y = true, z = false
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
         println("model = ${getModel().drop(1)}")
+
+        check(!solve(x))
+        check(!solve(-y))
+        check(!solve(z))
+        check(solve(-x, y, -z))
+        println("Solving with assumptions: OK")
     }
 }
