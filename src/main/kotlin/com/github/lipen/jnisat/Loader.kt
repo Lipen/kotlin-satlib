@@ -12,10 +12,10 @@ object Loader {
             val libName = System.mapLibraryName(name)
             val resource = "/lib/$LIBDIR/$libName"
             val stream = this::class.java.getResourceAsStream(resource)
-            if (stream != null) {
+            if (stream != null) stream.use {
                 val libFile = NATIVE_LIB_TEMP_DIR.resolve(libName).apply { deleteOnExit() }
-                stream.use {
-                    it.copyTo(libFile.outputStream())
+                libFile.outputStream().use { libFileStream ->
+                    it.copyTo(libFileStream)
                 }
                 System.load(libFile.absolutePath)
             } else {
