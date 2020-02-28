@@ -122,8 +122,9 @@ JNI_METHOD(jboolean, minisat_1add_1clause__J_3I)
     Minisat::vec<Minisat::Lit> vec(len);
 
     jint* p = (jint*) env->GetPrimitiveArrayCritical(lits, 0);
-    for (jint i = 0; i < len; i++)
+    for (jint i = 0; i < len; i++) {
         vec[i] = convert(p[i]);
+    }
     env->ReleasePrimitiveArrayCritical(lits, p, 0);
 
     return decode(handle)->addClause_(vec);
@@ -155,8 +156,9 @@ JNI_METHOD(jboolean, minisat_1solve__J_3IZZ)
     Minisat::vec<Minisat::Lit> vec(len);
 
     jint* p = (jint*) env->GetPrimitiveArrayCritical(assumptions, 0);
-    for (jint i = 0; i < len; i++)
+    for (jint i = 0; i < len; i++) {
         vec[i] = convert(p[i]);
+    }
     env->ReleasePrimitiveArrayCritical(assumptions, p, 0);
 
     return decode(handle)->solve(vec, (bool) do_simp, (bool) turn_off_simp);
@@ -193,11 +195,13 @@ JNI_METHOD(jbooleanArray, minisat_1get_1model)
     Minisat::SimpSolver* solver = decode(handle);
     int size = solver->nVars() + 1;
     jbooleanArray result = env->NewBooleanArray(size);
-    if (result == NULL)
+    if (result == NULL) {
         return NULL;
+    }
     jboolean* model = new jboolean[size];
-    for (int i = 1; i < size; i++)
+    for (int i = 1; i < size; i++) {
         model[i] = solver->modelValue(convert(i)) == Minisat::l_True;
+    }
     env->SetBooleanArrayRegion(result, 0, size, model);
     delete[] model;
     return result;

@@ -2,7 +2,6 @@
 
 package com.github.lipen.jnisat
 
-import com.github.lipen.jnisat.JCadical.Companion.SolveResult
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -43,7 +42,7 @@ abstract class BenchBase {
                 else
                     addClause(-x)
             }
-            check(solve() == SolveResult.SATISFIABLE)
+            check(solve())
         }
     }
 

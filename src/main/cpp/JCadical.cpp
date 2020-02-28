@@ -11,11 +11,11 @@
     JNIEXPORT rtype JNICALL Java_com_github_lipen_jnisat_JCadical_##name
 
 static inline jlong encode(CaDiCaL::Solver* p) {
-	return (jlong) (intptr_t) p;
+  return (jlong) (intptr_t) p;
 }
 
 static inline CaDiCaL::Solver* decode(jlong h) {
-	return (CaDiCaL::Solver*) (intptr_t) h;
+  return (CaDiCaL::Solver*) (intptr_t) h;
 }
 
 JNI_METHOD(jlong, cadical_1create)
@@ -26,6 +26,26 @@ JNI_METHOD(jlong, cadical_1create)
 JNI_METHOD(void, cadical_1delete)
   (JNIEnv*, jobject, jlong p) {
     delete decode(p);
+  }
+
+JNI_METHOD(jboolean, cadical_1frozen)
+  (JNIEnv*, jobject, jlong p, jint lit) {
+    return decode(p)->frozen(lit);
+  }
+
+JNI_METHOD(void, cadical_1freeze)
+  (JNIEnv*, jobject, jlong p, jint lit) {
+    decode(p)->freeze(lit);
+  }
+
+JNI_METHOD(void, cadical_1melt)
+  (JNIEnv*, jobject, jlong p, jint lit) {
+    decode(p)->melt(lit);
+  }
+
+JNI_METHOD(jint, cadical_1fixed)
+  (JNIEnv*, jobject, jlong p, jint lit) {
+    return decode(p)->fixed(lit);
   }
 
 JNI_METHOD(void, cadical_1add)

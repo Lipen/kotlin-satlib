@@ -4,8 +4,6 @@
 
 package com.github.lipen.jnisat
 
-import com.github.lipen.jnisat.JCadical.Companion.SolveResult
-
 @Suppress("FunctionName")
 class JCadical : AutoCloseable {
     private var handle: Long = 0
@@ -32,19 +30,19 @@ class JCadical : AutoCloseable {
     fun newVariable(): Int = ++numberOfVariables
 
     fun frozen(lit: Int): Boolean {
-        TODO()
+        return cadical_frozen(handle, lit)
     }
 
     fun freeze(lit: Int) {
-        TODO()
+        cadical_freeze(handle, lit)
     }
 
     fun melt(lit: Int) {
-        TODO()
+        cadical_melt(handle, lit)
     }
 
     fun fixed(lit: Int): Int {
-        TODO()
+        return cadical_fixed(handle, lit)
     }
 
     fun add(lit: Int) {
@@ -114,32 +112,36 @@ class JCadical : AutoCloseable {
         addAssumption(literals)
     }
 
-    fun solve(): SolveResult {
-        return SolveResult.of(cadical_solve(handle))
+    fun solve(): Boolean {
+        return when (val result = cadical_solve(handle)) {
+            10 -> true
+            20 -> false
+            else -> error("cadical_solve returned $result")
+        }
     }
 
-    fun solve(lit1: Int): SolveResult {
+    fun solve(lit1: Int): Boolean {
         addAssumption(lit1)
         return solve()
     }
 
-    fun solve(lit1: Int, lit2: Int): SolveResult {
+    fun solve(lit1: Int, lit2: Int): Boolean {
         addAssumption(lit1, lit2)
         return solve()
     }
 
-    fun solve(lit1: Int, lit2: Int, lit3: Int): SolveResult {
+    fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
         addAssumption(lit1, lit2, lit3)
         return solve()
     }
 
-    fun solve(assumptions: IntArray): SolveResult {
+    fun solve(assumptions: IntArray): Boolean {
         addAssumption(assumptions)
         return solve()
     }
 
     @JvmName("solveVararg")
-    fun solve(vararg literals: Int): SolveResult {
+    fun solve(vararg literals: Int): Boolean {
         return solve(literals)
     }
 
@@ -152,10 +154,12 @@ class JCadical : AutoCloseable {
             ?: throw OutOfMemoryError("cadical_get_model returned NULL")
     }
 
-    /* Native */
-
     private external fun cadical_create(): Long
     private external fun cadical_delete(handle: Long)
+    private external fun cadical_frozen(handle: Long, lit: Int): Boolean
+    private external fun cadical_freeze(handle: Long, lit: Int)
+    private external fun cadical_melt(handle: Long, lit: Int)
+    private external fun cadical_fixed(handle: Long, lit: Int): Int
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)
@@ -167,21 +171,6 @@ class JCadical : AutoCloseable {
     companion object {
         init {
             Loader.load("jcadical")
-        }
-
-        enum class SolveResult {
-            UNSOLVED,
-            SATISFIABLE,
-            UNSATISFIABLE;
-
-            companion object {
-                fun of(code: Int): SolveResult = when (code) {
-                    0 -> UNSOLVED
-                    10 -> SATISFIABLE
-                    20 -> UNSATISFIABLE
-                    else -> error("Bad solver exit code $code")
-                }
-            }
         }
     }
 }
@@ -198,20 +187,20 @@ fun main() {
         addClause(-z)
         addClause(x, y, z)
 
-        check(solve() == SolveResult.SATISFIABLE) { "Unexpected UNSAT" }
+        check(solve()) { "Unexpected UNSAT" }
 
         // Answer must be: x = -1, y = 1, z = -1
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
 
         addAssumption(y)
-        check(solve() == SolveResult.SATISFIABLE)
+        check(solve())
         addAssumption(-y)
-        check(solve() == SolveResult.UNSATISFIABLE)
+        check(!solve())
 
         val t = newVariable()
         addAssumption(t)
-        check(solve() == SolveResult.SATISFIABLE)
+        check(solve())
         addAssumption(-t)
-        check(solve() == SolveResult.SATISFIABLE)
+        check(solve())
     }
 }
