@@ -34,7 +34,7 @@ class JMiniSat : AutoCloseable {
     fun reset() {
         if (handle != 0L) minisat_dtor(handle)
         handle = minisat_ctor()
-        if (handle == 0L) throw OutOfMemoryError()
+        if (handle == 0L) throw OutOfMemoryError("minisat_ctor returned NULL")
         solvable = true
     }
 
