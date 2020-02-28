@@ -49,17 +49,17 @@ class JMiniSat @JvmOverloads constructor(
     }
 
     fun addVariable(): Int {
-        val lit = minisat_new_var(handle, LBOOL_UNDEF)
+        val lit = minisat_new_var(handle, Polarity.UNDEF.value)
         minisat_set_frozen(handle, lit, true)
         return lit
     }
 
     fun addVariable(
-        polarity: Byte = LBOOL_UNDEF,
+        polarity: Polarity = Polarity.UNDEF,
         eliminate: Boolean = false,
         decision: Boolean = true
     ): Int {
-        val lit = minisat_new_var(handle, polarity)
+        val lit = minisat_new_var(handle, polarity.value)
         if (!eliminate) minisat_set_frozen(handle, lit, true)
         if (!decision) minisat_set_decision_var(handle, lit, false)
         return lit
@@ -141,6 +141,12 @@ class JMiniSat @JvmOverloads constructor(
 
         enum class SimplificationMethod {
             ONCE, ALWAYS, NEVER;
+        }
+
+        enum class Polarity(val value: Byte) {
+            TRUE(LBOOL_TRUE),
+            FALSE(LBOOL_FALSE),
+            UNDEF(LBOOL_UNDEF);
         }
 
         private const val LBOOL_TRUE: Byte = 0
