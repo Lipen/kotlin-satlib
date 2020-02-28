@@ -81,6 +81,10 @@ class JMiniSat @JvmOverloads constructor(
         solvable = minisat_add_clause(handle, literals)
     }
 
+    fun addClause(literals: List<Int>) {
+        solvable = minisat_add_clause(handle, literals.toIntArray())
+    }
+
     fun solve(): Boolean {
         when (simplify) {
             SimplificationMethod.ONCE -> {
