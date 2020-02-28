@@ -101,11 +101,13 @@ class JMiniSat @JvmOverloads constructor(
         return solvable
     }
 
-    fun getValue(literal: Int): Int {
+    fun getValue(lit: Int): Boolean {
         assert(solvable)
-        val a = minisat_model_value(handle, literal)
-        assert(a == LBOOL_FALSE || a == LBOOL_TRUE)
-        return if (a == LBOOL_TRUE) 1 else -1
+        return when (val value = minisat_model_value(handle, lit)) {
+            LBOOL_TRUE -> true
+            LBOOL_FALSE -> false
+            else -> error("minisat_model_value returned $value")
+        }
     }
 
     fun getModel(): BooleanArray {
