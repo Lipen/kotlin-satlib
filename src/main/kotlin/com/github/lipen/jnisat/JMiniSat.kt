@@ -23,12 +23,9 @@
 package com.github.lipen.jnisat
 
 @Suppress("FunctionName")
-class JMiniSat @JvmOverloads constructor(
-    private val simplify: SimplificationMethod = SimplificationMethod.ONCE
-) : AutoCloseable {
+class JMiniSat : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
-    private var simplified: Boolean = false
 
     init {
         reset()
@@ -39,8 +36,6 @@ class JMiniSat @JvmOverloads constructor(
         handle = minisat_ctor()
         if (handle == 0L) throw OutOfMemoryError()
         solvable = true
-        simplified = false
-        if (simplify == SimplificationMethod.NEVER) minisat_eliminate(handle, true)
     }
 
     override fun close() {
@@ -77,28 +72,43 @@ class JMiniSat @JvmOverloads constructor(
         solvable = minisat_add_clause(handle, lit1, lit2, lit3)
     }
 
-    fun addClause(vararg literals: Int) {
+    fun addClause(literals: IntArray) {
         solvable = minisat_add_clause(handle, literals)
     }
 
-    fun addClause(literals: List<Int>) {
-        solvable = minisat_add_clause(handle, literals.toIntArray())
+    @JvmName("addClauseVararg")
+    fun addClause(vararg literals: Int) {
+        addClause(literals)
     }
 
-    fun solve(): Boolean {
-        when (simplify) {
-            SimplificationMethod.ONCE -> {
-                solvable = minisat_solve(handle, simplify = !simplified, turnoff = !simplified)
-                simplified = true
-            }
-            SimplificationMethod.ALWAYS -> {
-                solvable = minisat_solve(handle, simplify = true, turnoff = false)
-            }
-            SimplificationMethod.NEVER -> {
-                solvable = minisat_solve(handle, simplify = false, turnoff = false)
-            }
-        }
+    fun solve(do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        solvable = minisat_solve(handle, do_simp, turn_off_simp)
         return solvable
+    }
+
+    fun solve(lit: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        solvable = minisat_solve(handle, lit, do_simp, turn_off_simp)
+        return solvable
+    }
+
+    fun solve(lit1: Int, lit2: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        solvable = minisat_solve(handle, lit1, lit2, do_simp, turn_off_simp)
+        return solvable
+    }
+
+    fun solve(lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        solvable = minisat_solve(handle, lit1, lit2, lit3, do_simp, turn_off_simp)
+        return solvable
+    }
+
+    fun solve(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        solvable = minisat_solve(handle, assumptions, do_simp, turn_off_simp)
+        return solvable
+    }
+
+    @JvmName("solveVararg")
+    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        return solve(assumptions, do_simp, turn_off_simp)
     }
 
     fun getValue(lit: Int): Boolean {
@@ -125,7 +135,27 @@ class JMiniSat @JvmOverloads constructor(
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int, lit3: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lits: IntArray): Boolean
-    private external fun minisat_solve(handle: Long, simplify: Boolean, turnoff: Boolean): Boolean
+
+    private external fun minisat_solve(
+        handle: Long, do_simp: Boolean, turn_off_simp: Boolean
+    ): Boolean
+
+    private external fun minisat_solve(
+        handle: Long, lit: Int, do_simp: Boolean, turn_off_simp: Boolean
+    ): Boolean
+
+    private external fun minisat_solve(
+        handle: Long, lit1: Int, lit2: Int, do_simp: Boolean, turn_off_simp: Boolean
+    ): Boolean
+
+    private external fun minisat_solve(
+        handle: Long, lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean, turn_off_simp: Boolean
+    ): Boolean
+
+    private external fun minisat_solve(
+        handle: Long, assumptions: IntArray, do_simp: Boolean, turn_off_simp: Boolean
+    ): Boolean
+
     private external fun minisat_simplify(handle: Long): Boolean
     private external fun minisat_eliminate(handle: Long, turnoff: Boolean): Boolean
     private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
@@ -143,10 +173,6 @@ class JMiniSat @JvmOverloads constructor(
             // Only then load the jminisat library.
             Loader.load("minisat")
             Loader.load("jminisat")
-        }
-
-        enum class SimplificationMethod {
-            ONCE, ALWAYS, NEVER;
         }
 
         enum class Polarity(val value: Byte) {
