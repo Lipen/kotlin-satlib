@@ -25,7 +25,7 @@ import kotlin.random.Random
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Thread)
 abstract class BenchBase {
-    lateinit var solver: JCadical
+    lateinit var solver: JMiniSat
 
     @Param("10000", "100000", "1000000", "10000000")
     var n: Int = 0
@@ -33,7 +33,7 @@ abstract class BenchBase {
     @Setup
     fun setupBase() {
         check(n > 0) { "n must be a positive number" }
-        solver = JCadical()
+        solver = JMiniSat()
         with(solver) {
             val xs = List(n) { solver.newVariable() }
             for (x in xs) {
