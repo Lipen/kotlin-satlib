@@ -133,8 +133,8 @@ class JCadical : AutoCloseable {
         return solve()
     }
 
-    fun solve(literals: IntArray): SolveResult {
-        addAssumption(literals)
+    fun solve(assumptions: IntArray): SolveResult {
+        addAssumption(assumptions)
         return solve()
     }
 
