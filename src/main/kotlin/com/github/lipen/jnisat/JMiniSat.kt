@@ -43,6 +43,11 @@ class JMiniSat @JvmOverloads constructor(
         if (simplify == SimplificationMethod.NEVER) minisat_eliminate(handle, true)
     }
 
+    override fun close() {
+        if (handle != 0L) minisat_dtor(handle)
+        handle = 0
+    }
+
     fun addVariable(): Int {
         val lit = minisat_new_var(handle, LBOOL_UNDEF)
         minisat_set_frozen(handle, lit, true)
@@ -103,11 +108,6 @@ class JMiniSat @JvmOverloads constructor(
         // Note: resulting array is 1-based, i.e. of size (nVars+1) with garbage(false) in index 0
         assert(solvable)
         return minisat_get_model(handle)
-    }
-
-    override fun close() {
-        if (handle != 0L) minisat_dtor(handle)
-        handle = 0
     }
 
     private external fun minisat_ctor(): Long
