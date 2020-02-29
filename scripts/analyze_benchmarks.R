@@ -15,53 +15,53 @@ compute_ci <- function(data, f = mean, R = 1000, conf = 0.95) {
 
 filename_results <- "../build/reports/jmh/results.json"
 raw <- read_json(filename_results)
-data_all <- raw %>% 
-    gather_array() %>% 
+data_all <- raw %>%
+    gather_array() %>%
     spread_values(
         method = jstring("benchmark"),
-        n = jstring("params", "n"), 
+        n = jstring("params", "n"),
         k = jstring("params", "k")
-    ) %>% 
+    ) %>%
     mutate(
         n = as.numeric(n),
         k = as.numeric(k)
     ) %>%
-    enter_object("primaryMetric", "rawData") %>% 
-    gather_array() %>% 
-    gather_array() %>% 
-    append_values_number("time") %>% 
-    as_tibble() %>% 
-    select(-document.id, -starts_with("array.index")) %>% 
-    mutate(method = str_remove(method, ".*\\.")) %>% 
+    enter_object("primaryMetric", "rawData") %>%
+    gather_array() %>%
+    gather_array() %>%
+    append_values_number("time") %>%
+    as_tibble() %>%
+    select(-document.id, -starts_with("array.index")) %>%
+    mutate(method = str_remove(method, ".*\\.")) %>%
     mutate(method = fct_relevel(method, "getModel", "getValue"))
-data_agg <- data_all %>% 
-    group_by(method, n, k) %>% 
+data_agg <- data_all %>%
+    group_by(method, n, k) %>%
     summarize(
         time.mean = mean(time),
         time.median = median(time),
         time.sd = sd(time),
         time.mad = mad(time),
         time.mean.ci = compute_ci(time, mean, conf = 0.99)
-    ) %>% 
+    ) %>%
     ungroup() %>%
     unnest_wider(time.mean.ci)
 data_agg
 
-data_getModel <- data_agg %>% 
-    filter(method == "getModel") %>% 
+data_getModel <- data_agg %>%
+    filter(method == "getModel") %>%
     select(-k)
-data_getValue <- data_agg %>% 
+data_getValue <- data_agg %>%
     filter(method == "getValue")
-data_merged <- data_getValue %>% 
+data_merged <- data_getValue %>%
     bind_rows(data_getModel %>% mutate(k = 1)) %>%
     bind_rows(data_getModel %>% mutate(k = n))
 
-data_merged %>% 
-    mutate(n_label = str_c("N = ", format(n, scientific = TRUE))) %>% 
+data_merged %>%
+    mutate(n_label = str_c("N = ", format(n, scientific = TRUE))) %>%
     ggplot(aes(x = k, y = time.mean, group = method)) +
     facet_wrap(vars(n_label)) +
     geom_ribbon(
-        aes(ymin = pmax(1, time.mean.ci.low), 
+        aes(ymin = pmax(1, time.mean.ci.low),
             ymax = time.mean.ci.high,
             fill = method),
         alpha = 0.5, show.legend = F
