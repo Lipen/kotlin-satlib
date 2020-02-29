@@ -68,7 +68,7 @@ data_merged %>%
     ) +
     geom_line(
         aes(color = method),
-        size = 1,
+        size = 1
     ) +
     scale_x_log10(breaks = log_breaker, labels = log_labeller) +
     scale_y_log10(breaks = log_breaker, labels = log_labeller) +
