@@ -28,8 +28,8 @@ class JMiniSat : AutoCloseable {
     private var solvable: Boolean = false
 
     val numberOfVariables: Int get() = minisat_nvars(handle)
-    val numberOfClauses: Int get() = minisat_nclauses(handle)
-    val numberOfLearntClauses: Int get() = minisat_nlearnts(handle)
+    var numberOfClauses: Int = 0
+        private set
 
     init {
         reset()
@@ -88,18 +88,22 @@ class JMiniSat : AutoCloseable {
     fun addClause(): Nothing = error("Clause cannot be empty!")
 
     fun addClause(lit: Int) {
+        ++numberOfClauses
         solvable = minisat_add_clause(handle, lit)
     }
 
     fun addClause(lit1: Int, lit2: Int) {
+        ++numberOfClauses
         solvable = minisat_add_clause(handle, lit1, lit2)
     }
 
     fun addClause(lit1: Int, lit2: Int, lit3: Int) {
+        ++numberOfClauses
         solvable = minisat_add_clause(handle, lit1, lit2, lit3)
     }
 
     fun addClause(literals: IntArray) {
+        ++numberOfClauses
         solvable = minisat_add_clause(handle, literals)
     }
 
@@ -157,8 +161,6 @@ class JMiniSat : AutoCloseable {
     private external fun minisat_ctor(): Long
     private external fun minisat_dtor(handle: Long)
     private external fun minisat_nvars(handle: Long): Int
-    private external fun minisat_nclauses(handle: Long): Int
-    private external fun minisat_nlearnts(handle: Long): Int
     private external fun minisat_new_var(handle: Long, polarity: Byte = LBOOL_UNDEF, decision: Boolean = true): Int
     private external fun minisat_set_polarity(handle: Long, lit: Int, polarity: Byte)
     private external fun minisat_set_decision_var(handle: Long, lit: Int, b: Boolean)
