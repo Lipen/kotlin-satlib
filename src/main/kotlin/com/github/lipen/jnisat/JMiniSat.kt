@@ -22,7 +22,7 @@
 
 package com.github.lipen.jnisat
 
-@Suppress("FunctionName")
+@Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JMiniSat : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false

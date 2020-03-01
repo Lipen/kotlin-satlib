@@ -4,7 +4,7 @@
 
 package com.github.lipen.jnisat
 
-@Suppress("FunctionName")
+@Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JCadical : AutoCloseable {
     private var handle: Long = 0
 
