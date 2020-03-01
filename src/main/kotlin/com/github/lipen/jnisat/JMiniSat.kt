@@ -81,6 +81,12 @@ class JMiniSat : AutoCloseable {
         minisat_thaw(handle)
     }
 
+    @Deprecated(
+        "Clause must contain at least one literal!",
+        ReplaceWith("addClause(...)")
+    )
+    fun addClause(): Nothing = error("Clause cannot be empty!")
+
     fun addClause(lit: Int) {
         solvable = minisat_add_clause(handle, lit)
     }
