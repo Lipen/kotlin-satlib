@@ -36,6 +36,14 @@ JNI_METHOD(jboolean, cadical_1set)
     return b;
   }
 
+JNI_METHOD(jboolean, cadical_1set_1long_1option)
+  (JNIEnv* env, jobject, jlong p, jstring arg) {
+    const char* s = env->GetStringUTFChars(arg, 0);
+    bool b = decode(p)->set_long_option(s);
+    env->ReleaseStringUTFChars(arg, s);
+    return b;
+  }
+
 JNI_METHOD(jboolean, cadical_1frozen)
   (JNIEnv*, jobject, jlong p, jint lit) {
     return decode(p)->frozen(lit);

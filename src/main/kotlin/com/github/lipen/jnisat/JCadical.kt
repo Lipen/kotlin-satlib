@@ -31,6 +31,10 @@ class JCadical : AutoCloseable {
         return cadical_set(handle, name, value)
     }
 
+    fun setLongOption(arg: String): Boolean {
+        return cadical_set_long_option(handle, arg)
+    }
+
     fun newVariable(): Int = ++numberOfVariables
 
     fun frozen(lit: Int): Boolean {
@@ -161,6 +165,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_create(): Long
     private external fun cadical_delete(handle: Long)
     private external fun cadical_set(handle: Long, name: String, value: Int): Boolean
+    private external fun cadical_set_long_option(handle: Long, arg: String): Boolean
     private external fun cadical_frozen(handle: Long, lit: Int): Boolean
     private external fun cadical_freeze(handle: Long, lit: Int)
     private external fun cadical_melt(handle: Long, lit: Int)
