@@ -28,6 +28,14 @@ JNI_METHOD(void, cadical_1delete)
     delete decode(p);
   }
 
+JNI_METHOD(jboolean, cadical_1set)
+  (JNIEnv* env, jobject, jlong p, jstring name, jint value) {
+    const char* s = env->GetStringUTFChars(name, 0);
+    bool b = decode(p)->set(s, value);
+    env->ReleaseStringUTFChars(name, s);
+    return b;
+  }
+
 JNI_METHOD(jboolean, cadical_1frozen)
   (JNIEnv*, jobject, jlong p, jint lit) {
     return decode(p)->frozen(lit);
