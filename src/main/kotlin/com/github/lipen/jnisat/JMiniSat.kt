@@ -39,6 +39,7 @@ class JMiniSat : AutoCloseable {
         if (handle != 0L) minisat_dtor(handle)
         handle = minisat_ctor()
         if (handle == 0L) throw OutOfMemoryError("minisat_ctor returned NULL")
+        numberOfClauses = 0
         solvable = true
     }
 
