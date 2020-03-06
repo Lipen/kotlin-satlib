@@ -208,7 +208,11 @@ class JMiniSat : AutoCloseable {
             // So, first load the dependent minisat library via System.loadLibrary, which respects
             //  'java.library.path'. The alternative is to place minisat.dll inside 'resources' folder.
             // Only then load the jminisat library.
-            Loader.load("minisat")
+            try {
+                Loader.load("minisat")
+            } catch (e: UnsatisfiedLinkError) {
+                // Ignoring this exception
+            }
             Loader.load("jminisat")
         }
 
