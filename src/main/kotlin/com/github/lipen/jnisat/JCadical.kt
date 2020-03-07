@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, Darya Grechishkina, Konstantin Chukharev, ITMO University
+ * Copyright © 2020, Darya Grechishkina, Konstantin Chukharev, ITMO University
  */
 
 package com.github.lipen.jnisat

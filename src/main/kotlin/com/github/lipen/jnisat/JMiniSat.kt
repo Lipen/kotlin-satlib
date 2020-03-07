@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2016, Miklos Maroti, University of Szeged
+ * Copyright © 2016, Miklos Maroti, University of Szeged
+ * Copyright © 2020, Konstantin Chukharev, ITMO University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
