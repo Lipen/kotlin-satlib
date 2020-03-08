@@ -203,17 +203,6 @@ class JMiniSat : AutoCloseable {
 
     companion object {
         init {
-            // Note: jminisat shared library depends on minisat shared library.
-            // On Windows, during the jminisat loading, the dependent minisat.dll is found only if
-            //  it is in the current directory (PATH, LD_LIBRARY_PATH, java.library.path, etc do not help).
-            // So, first load the dependent minisat library via System.loadLibrary, which respects
-            //  'java.library.path'. The alternative is to place minisat.dll inside 'resources' folder.
-            // Only then load the jminisat library.
-            try {
-                Loader.load("minisat")
-            } catch (e: UnsatisfiedLinkError) {
-                // Ignoring this exception
-            }
             Loader.load("jminisat")
         }
 
