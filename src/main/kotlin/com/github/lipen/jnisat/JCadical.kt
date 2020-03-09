@@ -65,7 +65,10 @@ class JCadical : AutoCloseable {
         "Clause must contain at least one literal!",
         ReplaceWith("addClause(...)")
     )
-    fun addClause(): Nothing = error("Clause cannot be empty!")
+    fun addClause() {
+        ++numberOfClauses
+        add(0)
+    }
 
     fun addClause(lit1: Int) {
         ++numberOfClauses
