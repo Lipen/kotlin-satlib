@@ -23,10 +23,13 @@
 
 package com.github.lipen.jnisat
 
-@Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
+@Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JMiniSat : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
+
+    var do_simp: Boolean = true
+    var turn_off_simp: Boolean = false
 
     val nVars: Int get() = minisat_nvars(handle)
     val nClauses: Int get() = minisat_nclauses(handle)
@@ -48,17 +51,14 @@ class JMiniSat : AutoCloseable {
         handle = 0
     }
 
-    fun newVariable(): Int {
-        return minisat_new_var(handle)
-    }
-
+    @JvmOverloads
     fun newVariable(
         polarity: Polarity = Polarity.UNDEF,
         decision: Boolean = true,
-        eliminate: Boolean = true
+        frozen: Boolean = true
     ): Int {
         val lit = minisat_new_var(handle, polarity.value, decision)
-        if (!eliminate) freeze(lit)
+        if (frozen) freeze(lit)
         return lit
     }
 
@@ -66,12 +66,12 @@ class JMiniSat : AutoCloseable {
         minisat_set_polarity(handle, lit, polarity.value)
     }
 
-    fun setDecisionVar(lit: Int, b: Boolean) {
-        minisat_set_decision_var(handle, lit, b)
+    fun setDecision(lit: Int, decision: Boolean) {
+        minisat_set_decision(handle, lit, decision)
     }
 
-    fun setFrozen(lit: Int, b: Boolean) {
-        minisat_set_frozen(handle, lit, b)
+    fun setFrozen(lit: Int, frozen: Boolean) {
+        minisat_set_frozen(handle, lit, frozen)
     }
 
     fun freeze(lit: Int) {
@@ -86,68 +86,79 @@ class JMiniSat : AutoCloseable {
         "Clause must contain at least one literal!",
         ReplaceWith("addClause(...)")
     )
-    fun addClause(): Nothing = error("Clause cannot be empty!")
+    fun addClause(): Boolean {
+        solvable = minisat_add_clause(handle)
+        return solvable
+    }
 
-    fun addClause(lit: Int) {
-        ++numberOfClauses
+    fun addClause(lit: Int): Boolean {
         solvable = minisat_add_clause(handle, lit)
+        return solvable
     }
 
-    fun addClause(lit1: Int, lit2: Int) {
-        ++numberOfClauses
+    fun addClause(lit1: Int, lit2: Int): Boolean {
         solvable = minisat_add_clause(handle, lit1, lit2)
+        return solvable
     }
 
-    fun addClause(lit1: Int, lit2: Int, lit3: Int) {
-        ++numberOfClauses
+    fun addClause(lit1: Int, lit2: Int, lit3: Int): Boolean {
         solvable = minisat_add_clause(handle, lit1, lit2, lit3)
+        return solvable
     }
 
-    fun addClause(literals: IntArray) {
-        ++numberOfClauses
+    fun addClause(vararg literals: Int): Boolean {
+        return addClause_(literals)
+    }
+
+    fun addClause_(literals: IntArray): Boolean {
         solvable = minisat_add_clause(handle, literals)
+        return solvable
     }
 
-    @JvmName("addClauseVararg")
-    fun addClause(vararg literals: Int) {
-        addClause(literals)
-    }
-
-    fun solve(do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(): Boolean {
         solvable = minisat_solve(handle, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(lit: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(lit: Int): Boolean {
         solvable = minisat_solve(handle, lit, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(lit1: Int, lit2: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(lit1: Int, lit2: Int): Boolean {
         solvable = minisat_solve(handle, lit1, lit2, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
         solvable = minisat_solve(handle, lit1, lit2, lit3, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(vararg assumptions: Int): Boolean {
+        return solve_(assumptions)
+    }
+
+    fun solve_(assumptions: IntArray): Boolean {
         solvable = minisat_solve(handle, assumptions, do_simp, turn_off_simp)
         return solvable
     }
 
-    @JvmName("solveVararg")
-    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        return solve(assumptions, do_simp, turn_off_simp)
+    fun simplify(): Boolean {
+        return minisat_simplify(handle)
+    }
+
+    @JvmOverloads
+    fun eliminate(turn_off_elim: Boolean = false): Boolean {
+        return minisat_eliminate(handle, turn_off_elim)
     }
 
     fun getValue(lit: Int): Boolean {
         assert(solvable)
-        return when (val value = minisat_model_value(handle, lit)) {
+        return when (val value = minisat_get_value(handle, lit)) {
             LBOOL_TRUE -> true
             LBOOL_FALSE -> false
+            LBOOL_UNDEF -> error("minisat_model_value returned l_Undef")
             else -> error("minisat_model_value returned $value")
         }
     }
@@ -161,15 +172,20 @@ class JMiniSat : AutoCloseable {
 
     private external fun minisat_ctor(): Long
     private external fun minisat_dtor(handle: Long)
+    private external fun minisat_okay(handle: Long): Boolean
     private external fun minisat_nvars(handle: Long): Int
-    private external fun minisat_new_var(handle: Long, polarity: Byte = LBOOL_UNDEF, decision: Boolean = true): Int
     private external fun minisat_nclauses(handle: Long): Int
     private external fun minisat_nlearnts(handle: Long): Int
+    private external fun minisat_new_var(handle: Long, polarity: Byte, decision: Boolean): Int
     private external fun minisat_set_polarity(handle: Long, lit: Int, polarity: Byte)
-    private external fun minisat_set_decision_var(handle: Long, lit: Int, b: Boolean)
-    private external fun minisat_set_frozen(handle: Long, lit: Int, b: Boolean)
+    private external fun minisat_set_decision(handle: Long, lit: Int, decision: Boolean)
+    private external fun minisat_set_frozen(handle: Long, lit: Int, frozen: Boolean)
     private external fun minisat_freeze(handle: Long, lit: Int)
     private external fun minisat_thaw(handle: Long)
+    private external fun minisat_simplify(handle: Long): Boolean
+    private external fun minisat_eliminate(handle: Long, turn_off_elim: Boolean): Boolean
+    private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
+    private external fun minisat_add_clause(handle: Long): Boolean
     private external fun minisat_add_clause(handle: Long, lit: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int, lit3: Int): Boolean
@@ -195,11 +211,7 @@ class JMiniSat : AutoCloseable {
         handle: Long, assumptions: IntArray, do_simp: Boolean, turn_off_simp: Boolean
     ): Boolean
 
-    private external fun minisat_simplify(handle: Long): Boolean
-    private external fun minisat_eliminate(handle: Long, turnoff: Boolean): Boolean
-    private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
-    private external fun minisat_okay(handle: Long): Boolean
-    private external fun minisat_model_value(handle: Long, lit: Int): Byte
+    private external fun minisat_get_value(handle: Long, lit: Int): Byte
     private external fun minisat_get_model(handle: Long): BooleanArray?
 
     companion object {
@@ -227,20 +239,22 @@ fun main() {
         val y = newVariable()
         val z = newVariable()
 
-        addClause(-x)
-        addClause(-z)
+        println("Encoding exactlyOne({x, y, z})")
+        addClause(-x, -y)
+        addClause(-x, -z)
+        addClause(-y, -z)
         addClause(x, y, z)
 
+        println("nvars = $nVars, nclauses = $nClauses, nlearnts = $nLearnts")
+        println("Solving...")
         check(solve()) { "Unexpected UNSAT" }
-
-        // Answer must be: x = false, y = true, z = false
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
         println("model = ${getModel().drop(1)}")
 
-        check(!solve(x))
-        check(!solve(-y))
-        check(!solve(z))
-        check(solve(-x, y, -z))
+        println("Solving with assumptions...")
+        check(solve(x)); println("model = ${getModel().drop(1)}"); check(getValue(x))
+        check(solve(y)); println("model = ${getModel().drop(1)}"); check(getValue(y))
+        check(solve(z)); println("model = ${getModel().drop(1)}"); check(getValue(z))
         println("Solving with assumptions: OK")
     }
 }

@@ -31,11 +31,11 @@
     JNIEXPORT rtype JNICALL Java_com_github_lipen_jnisat_JMiniSat_##name
 
 static inline jlong encode(Minisat::SimpSolver* p) {
-  return (jlong) (intptr_t) p;
+    return (jlong) (intptr_t) p;
 }
 
 static inline Minisat::SimpSolver* decode(jlong h) {
-  return (Minisat::SimpSolver*) (intptr_t) h;
+    return (Minisat::SimpSolver*) (intptr_t) h;
 }
 
 JNI_METHOD(jlong, minisat_1ctor)
@@ -75,7 +75,7 @@ JNI_METHOD(void, minisat_1set_1polarity)
     decode(handle)->setPolarity(v, Minisat::lbool((uint8_t) polarity));
   }
 
-JNI_METHOD(void, minisat_1set_1decision_1var)
+JNI_METHOD(void, minisat_1set_1decision)
   (JNIEnv*, jobject, jlong handle, jint lit, jboolean b) {
     int v = lit > 0 ? lit - 1 : -lit - 1;
     decode(handle)->setDecisionVar(v, b);
@@ -99,8 +99,13 @@ JNI_METHOD(void, minisat_1thaw)
   }
 
 static inline Minisat::Lit convert(int lit) {
-  return Minisat::toLit(lit > 0 ? (lit << 1) - 2 : ((-lit) << 1) - 1);
+    return Minisat::toLit(lit > 0 ? (lit << 1) - 2 : ((-lit) << 1) - 1);
 }
+
+JNI_METHOD(jboolean, minisat_1add_1clause__J)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->addEmptyClause();
+  }
 
 JNI_METHOD(jboolean, minisat_1add_1clause__JI)
   (JNIEnv*, jobject, jlong handle, jint lit) {
@@ -133,22 +138,22 @@ JNI_METHOD(jboolean, minisat_1add_1clause__J_3I)
 
 JNI_METHOD(jboolean, minisat_1solve__JZZ)
   (JNIEnv*, jobject, jlong handle, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve((bool) do_simp, (bool) turn_off_simp);
+    return decode(handle)->solve(do_simp, turn_off_simp);
   }
 
 JNI_METHOD(jboolean, minisat_1solve__JIZZ)
   (JNIEnv*, jobject, jlong handle, jint p, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve(convert(p), (bool) do_simp, (bool) turn_off_simp);
+    return decode(handle)->solve(convert(p), do_simp, turn_off_simp);
   }
 
 JNI_METHOD(jboolean, minisat_1solve__JIIZZ)
   (JNIEnv*, jobject, jlong handle, jint p, jint q, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve(convert(p), convert(q), (bool) do_simp, (bool) turn_off_simp);
+    return decode(handle)->solve(convert(p), convert(q), do_simp, turn_off_simp);
   }
 
 JNI_METHOD(jboolean, minisat_1solve__JIIIZZ)
   (JNIEnv*, jobject, jlong handle, jint p, jint q, jint r, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve(convert(p), convert(q), convert(r), (bool) do_simp, (bool) turn_off_simp);
+    return decode(handle)->solve(convert(p), convert(q), convert(r), do_simp, turn_off_simp);
   }
 
 JNI_METHOD(jboolean, minisat_1solve__J_3IZZ)
@@ -162,7 +167,7 @@ JNI_METHOD(jboolean, minisat_1solve__J_3IZZ)
     }
     env->ReleasePrimitiveArrayCritical(assumptions, p, 0);
 
-    return decode(handle)->solve(vec, (bool) do_simp, (bool) turn_off_simp);
+    return decode(handle)->solve(vec, do_simp, turn_off_simp);
   }
 
 JNI_METHOD(jboolean, minisat_1simplify)
@@ -171,8 +176,8 @@ JNI_METHOD(jboolean, minisat_1simplify)
   }
 
 JNI_METHOD(jboolean, minisat_1eliminate)
-  (JNIEnv*, jobject, jlong handle, jboolean turn_off_simp) {
-    return decode(handle)->eliminate((bool) turn_off_simp);
+  (JNIEnv*, jobject, jlong handle, jboolean turn_off_elim) {
+    return decode(handle)->eliminate(turn_off_elim);
   }
 
 JNI_METHOD(jboolean, minisat_1is_1eliminated)
@@ -186,7 +191,7 @@ JNI_METHOD(jboolean, minisat_1okay)
     return decode(handle)->okay();
   }
 
-JNI_METHOD(jbyte, minisat_1model_1value)
+JNI_METHOD(jbyte, minisat_1get_1value)
   (JNIEnv*, jobject, jlong handle, jint lit) {
     return (jbyte) Minisat::toInt(decode(handle)->modelValue(convert(lit)));
   }
