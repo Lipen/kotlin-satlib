@@ -11,11 +11,11 @@
     JNIEXPORT rtype JNICALL Java_com_github_lipen_jnisat_JCadical_##name
 
 static inline jlong encode(CaDiCaL::Solver* p) {
-  return (jlong) (intptr_t) p;
+    return (jlong) (intptr_t) p;
 }
 
 static inline CaDiCaL::Solver* decode(jlong h) {
-  return (CaDiCaL::Solver*) (intptr_t) h;
+    return (CaDiCaL::Solver*) (intptr_t) h;
 }
 
 JNI_METHOD(jlong, cadical_1create)
