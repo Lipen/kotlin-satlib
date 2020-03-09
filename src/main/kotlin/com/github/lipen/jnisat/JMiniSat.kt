@@ -28,9 +28,9 @@ class JMiniSat : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
 
-    val numberOfVariables: Int get() = minisat_nvars(handle)
-    var numberOfClauses: Int = 0
-        private set
+    val nVars: Int get() = minisat_nvars(handle)
+    val nClauses: Int get() = minisat_nclauses(handle)
+    val nLearnts: Int get() = minisat_nlearnts(handle)
 
     init {
         reset()
@@ -40,7 +40,6 @@ class JMiniSat : AutoCloseable {
         if (handle != 0L) minisat_dtor(handle)
         handle = minisat_ctor()
         if (handle == 0L) throw OutOfMemoryError("minisat_ctor returned NULL")
-        numberOfClauses = 0
         solvable = true
     }
 
@@ -164,6 +163,8 @@ class JMiniSat : AutoCloseable {
     private external fun minisat_dtor(handle: Long)
     private external fun minisat_nvars(handle: Long): Int
     private external fun minisat_new_var(handle: Long, polarity: Byte = LBOOL_UNDEF, decision: Boolean = true): Int
+    private external fun minisat_nclauses(handle: Long): Int
+    private external fun minisat_nlearnts(handle: Long): Int
     private external fun minisat_set_polarity(handle: Long, lit: Int, polarity: Byte)
     private external fun minisat_set_decision_var(handle: Long, lit: Int, b: Boolean)
     private external fun minisat_set_frozen(handle: Long, lit: Int, b: Boolean)
