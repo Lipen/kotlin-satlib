@@ -197,11 +197,12 @@ fun main() {
         addClause(-z)
         addClause(x, y, z)
 
+        println("Solving...")
         check(solve()) { "Unexpected UNSAT" }
-
-        // Answer must be: x = -1, y = 1, z = -1
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
+        println("model = ${getModel().drop(1)}")
 
+        println("Solving with assumptions...")
         addAssumption(y)
         check(solve())
         addAssumption(-y)
@@ -212,5 +213,6 @@ fun main() {
         check(solve())
         addAssumption(-t)
         check(solve())
+        println("Solving with assumptions: OK")
     }
 }
