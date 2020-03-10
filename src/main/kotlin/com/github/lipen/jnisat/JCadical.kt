@@ -85,14 +85,13 @@ class JCadical : AutoCloseable {
         add(lit1); add(lit2); add(lit3); add(0)
     }
 
-    fun addClause(literals: IntArray) {
-        ++numberOfClauses
-        cadical_add_clause(handle, literals)
+    fun addClause(vararg literals: Int) {
+        addClause_(literals)
     }
 
-    @JvmName("addClauseVararg")
-    fun addClause(vararg literals: Int) {
-        addClause(literals)
+    fun addClause_(literals: IntArray) {
+        ++numberOfClauses
+        cadical_add_clause(handle, literals)
     }
 
     @Deprecated(
@@ -114,13 +113,12 @@ class JCadical : AutoCloseable {
         assume(lit1); assume(lit2); assume(lit3)
     }
 
-    fun addAssumption(literals: IntArray) {
-        cadical_add_assumption(handle, literals)
+    fun addAssumption(vararg literals: Int) {
+        addAssumption_(literals)
     }
 
-    @JvmName("addAssumptionVararg")
-    fun addAssumption(vararg literals: Int) {
-        addAssumption(literals)
+    fun addAssumption_(literals: IntArray) {
+        cadical_add_assumption(handle, literals)
     }
 
     fun solve(): Boolean {
@@ -146,14 +144,13 @@ class JCadical : AutoCloseable {
         return solve()
     }
 
-    fun solve(assumptions: IntArray): Boolean {
-        addAssumption(assumptions)
-        return solve()
+    fun solve(vararg literals: Int): Boolean {
+        return solve_(literals)
     }
 
-    @JvmName("solveVararg")
-    fun solve(vararg literals: Int): Boolean {
-        return solve(literals)
+    fun solve_(assumptions: IntArray): Boolean {
+        addAssumption_(assumptions)
+        return solve()
     }
 
     fun getValue(lit: Int): Boolean {
