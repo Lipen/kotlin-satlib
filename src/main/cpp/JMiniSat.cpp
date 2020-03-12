@@ -123,15 +123,15 @@ JNI_METHOD(jboolean, minisat_1add_1clause__JIII)
   }
 
 JNI_METHOD(jboolean, minisat_1add_1clause__J_3I)
-  (JNIEnv* env, jobject, jlong handle, jintArray lits) {
-    jint len = env->GetArrayLength(lits);
+  (JNIEnv* env, jobject, jlong handle, jintArray literals) {
+    jint len = env->GetArrayLength(literals);
     Minisat::vec<Minisat::Lit> vec(len);
 
-    jint* p = (jint*) env->GetPrimitiveArrayCritical(lits, 0);
+    jint* array = (jint*) env->GetPrimitiveArrayCritical(literals, 0);
     for (jint i = 0; i < len; i++) {
-        vec[i] = convert(p[i]);
+        vec[i] = convert(array[i]);
     }
-    env->ReleasePrimitiveArrayCritical(lits, p, 0);
+    env->ReleasePrimitiveArrayCritical(literals, array, 0);
 
     return decode(handle)->addClause_(vec);
   }
