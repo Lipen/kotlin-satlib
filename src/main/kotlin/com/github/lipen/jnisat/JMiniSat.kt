@@ -28,12 +28,12 @@ class JMiniSat : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
 
+    val numberOfVariables: Int get() = minisat_nvars(handle)
+    val numberOfClauses: Int get() = minisat_nclauses(handle)
+    val numberOfLearnts: Int get() = minisat_nlearnts(handle)
+
     var do_simp: Boolean = true
     var turn_off_simp: Boolean = false
-
-    val nVars: Int get() = minisat_nvars(handle)
-    val nClauses: Int get() = minisat_nclauses(handle)
-    val nLearnts: Int get() = minisat_nlearnts(handle)
 
     init {
         reset()
@@ -245,7 +245,7 @@ fun main() {
         addClause(-y, -z)
         addClause(x, y, z)
 
-        println("nvars = $nVars, nclauses = $nClauses, nlearnts = $nLearnts")
+        println("nvars = $numberOfVariables, nclauses = $numberOfClauses, nlearnts = $numberOfLearnts")
         println("Solving...")
         check(solve()) { "Unexpected UNSAT" }
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
