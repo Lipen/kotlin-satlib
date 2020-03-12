@@ -53,6 +53,10 @@ class JCadical : AutoCloseable {
         return cadical_fixed(handle, lit)
     }
 
+    fun failed(lit: Int): Boolean {
+        return cadical_failed(handle, lit)
+    }
+
     fun add(lit: Int) {
         cadical_add(handle, lit)
     }
@@ -170,6 +174,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_freeze(handle: Long, lit: Int)
     private external fun cadical_melt(handle: Long, lit: Int)
     private external fun cadical_fixed(handle: Long, lit: Int): Int
+    private external fun cadical_failed(handle: Long, lit: Int): Boolean
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)

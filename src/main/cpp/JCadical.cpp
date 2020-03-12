@@ -64,6 +64,11 @@ JNI_METHOD(jint, cadical_1fixed)
     return decode(p)->fixed(lit);
   }
 
+JNI_METHOD(jboolean, cadical_1failed)
+  (JNIEnv*, jobject, jlong p, jint lit) {
+    return decode(p)->failed(lit);
+  }
+
 JNI_METHOD(void, cadical_1add)
   (JNIEnv*, jobject, jlong p, jint lit) {
     decode(p)->add(lit);
