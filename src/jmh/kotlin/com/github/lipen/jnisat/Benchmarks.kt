@@ -1,4 +1,4 @@
-@file:Suppress("ClassName", "MemberVisibilityCanBePrivate")
+@file:Suppress("ClassName", "MemberVisibilityCanBePrivate", "unused")
 
 package com.github.lipen.jnisat
 
