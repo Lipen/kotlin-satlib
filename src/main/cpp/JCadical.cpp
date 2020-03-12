@@ -78,6 +78,7 @@ JNI_METHOD(void, cadical_1add_1clause)
   (JNIEnv* env, jobject, jlong p, jintArray literals) {
     jsize array_length = env->GetArrayLength(literals);
     CaDiCaL::Solver* solver = decode(p);
+
     jint* array = env->GetIntArrayElements(literals, 0);
     for (int i = 0; i < array_length; i++) {
         solver->add(array[i]);
@@ -90,6 +91,7 @@ JNI_METHOD(void, cadical_1add_1assumption)
   (JNIEnv* env, jobject, jlong p, jintArray literals) {
     jsize array_length = env->GetArrayLength(literals);
     CaDiCaL::Solver* solver = decode(p);
+
     jint* array = env->GetIntArrayElements(literals, 0);
     for (int i = 0; i < array_length; i++) {
         solver->assume(array[i]);
