@@ -48,6 +48,11 @@ JNI_METHOD(void, minisat_1dtor)
     delete decode(handle);
   }
 
+JNI_METHOD(jboolean, minisat_1okay)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->okay();
+  }
+
 JNI_METHOD(jint, minisat_1nvars)
   (JNIEnv*, jobject, jlong handle) {
     return decode(handle)->nVars();
@@ -96,6 +101,22 @@ JNI_METHOD(void, minisat_1freeze)
 JNI_METHOD(void, minisat_1thaw)
   (JNIEnv*, jobject, jlong handle) {
     decode(handle)->thaw();
+  }
+
+JNI_METHOD(jboolean, minisat_1simplify)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->simplify();
+  }
+
+JNI_METHOD(jboolean, minisat_1eliminate)
+  (JNIEnv*, jobject, jlong handle, jboolean turn_off_elim) {
+    return decode(handle)->eliminate(turn_off_elim);
+  }
+
+JNI_METHOD(jboolean, minisat_1is_1eliminated)
+  (JNIEnv*, jobject, jlong handle, jint lit) {
+    int v = lit > 0 ? lit - 1 : -lit - 1;
+    return decode(handle)->isEliminated(v);
   }
 
 static inline Minisat::Lit convert(int lit) {
@@ -168,27 +189,6 @@ JNI_METHOD(jboolean, minisat_1solve__J_3IZZ)
     env->ReleasePrimitiveArrayCritical(assumptions, p, 0);
 
     return decode(handle)->solve(vec, do_simp, turn_off_simp);
-  }
-
-JNI_METHOD(jboolean, minisat_1simplify)
-  (JNIEnv*, jobject, jlong handle) {
-    return decode(handle)->simplify();
-  }
-
-JNI_METHOD(jboolean, minisat_1eliminate)
-  (JNIEnv*, jobject, jlong handle, jboolean turn_off_elim) {
-    return decode(handle)->eliminate(turn_off_elim);
-  }
-
-JNI_METHOD(jboolean, minisat_1is_1eliminated)
-  (JNIEnv*, jobject, jlong handle, jint lit) {
-    int v = lit > 0 ? lit - 1 : -lit - 1;
-    return decode(handle)->isEliminated(v);
-  }
-
-JNI_METHOD(jboolean, minisat_1okay)
-  (JNIEnv*, jobject, jlong handle) {
-    return decode(handle)->okay();
   }
 
 JNI_METHOD(jbyte, minisat_1get_1value)

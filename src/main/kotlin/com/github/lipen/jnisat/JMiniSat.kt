@@ -51,6 +51,10 @@ class JMiniSat : AutoCloseable {
         handle = 0
     }
 
+    fun okay(): Boolean {
+        return minisat_okay(handle)
+    }
+
     @JvmOverloads
     fun newVariable(
         polarity: Polarity = Polarity.UNDEF,
@@ -80,6 +84,19 @@ class JMiniSat : AutoCloseable {
 
     fun thaw() {
         minisat_thaw(handle)
+    }
+
+    fun simplify(): Boolean {
+        return minisat_simplify(handle)
+    }
+
+    @JvmOverloads
+    fun eliminate(turn_off_elim: Boolean = false): Boolean {
+        return minisat_eliminate(handle, turn_off_elim)
+    }
+
+    fun isEliminated(lit: Int): Boolean {
+        return minisat_is_eliminated(handle, lit)
     }
 
     @Deprecated(
@@ -142,15 +159,6 @@ class JMiniSat : AutoCloseable {
     fun solve_(assumptions: IntArray): Boolean {
         solvable = minisat_solve(handle, assumptions, do_simp, turn_off_simp)
         return solvable
-    }
-
-    fun simplify(): Boolean {
-        return minisat_simplify(handle)
-    }
-
-    @JvmOverloads
-    fun eliminate(turn_off_elim: Boolean = false): Boolean {
-        return minisat_eliminate(handle, turn_off_elim)
     }
 
     fun getValue(lit: Int): Boolean {
