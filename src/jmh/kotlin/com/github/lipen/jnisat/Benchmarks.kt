@@ -37,10 +37,11 @@ abstract class BenchBase {
         with(solver) {
             val xs = List(n) { solver.newVariable() }
             for (x in xs) {
-                if (Random.nextBoolean())
+                if (Random.nextBoolean()) {
                     addClause(x)
-                else
+                } else {
                     addClause(-x)
+                }
             }
             check(solve())
         }
