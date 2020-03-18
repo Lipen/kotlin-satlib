@@ -5,7 +5,7 @@ group = "com.github.lipen"
 
 plugins {
     kotlin("jvm") version Versions.kotlin
-    id("org.jlleitschuh.gradle.ktlint") version Versions.ktlint
+    id("org.jmailen.kotlinter") version Versions.kotlinter
     id("com.github.ben-manes.versions") version Versions.gradle_versions
     id("fr.brouillard.oss.gradle.jgitver") version Versions.jgitver
     id("me.champeau.gradle.jmh") version Versions.jmh_gradle_plugin
@@ -31,8 +31,9 @@ jmh {
     resultFormat = "JSON"
 }
 
-ktlint {
-    ignoreFailures.set(true)
+kotlinter {
+    ignoreFailures = true
+    experimentalRules = true
 }
 
 jgitver {
