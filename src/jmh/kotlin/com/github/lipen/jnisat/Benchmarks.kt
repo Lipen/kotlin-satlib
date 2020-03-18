@@ -2,6 +2,8 @@
 
 package com.github.lipen.jnisat
 
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -15,8 +17,6 @@ import org.openjdk.jmh.annotations.State
 import org.openjdk.jmh.annotations.TearDown
 import org.openjdk.jmh.annotations.Warmup
 import org.openjdk.jmh.infra.Blackhole
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 @BenchmarkMode(Mode.SingleShotTime)
 @Warmup(iterations = 20)
