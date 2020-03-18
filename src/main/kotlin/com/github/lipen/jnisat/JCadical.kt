@@ -14,10 +14,15 @@ class JCadical : AutoCloseable {
         private set
 
     init {
+        reset()
+    }
+
+    fun reset() {
+        if (handle != 0L) cadical_delete(handle)
         handle = cadical_create()
-        if (handle == 0L) {
-            throw OutOfMemoryError()
-        }
+        if (handle == 0L) throw OutOfMemoryError()
+        numberOfVariables = 0
+        numberOfClauses = 0
     }
 
     override fun close() {
