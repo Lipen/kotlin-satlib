@@ -192,23 +192,40 @@ class JMiniSat : AutoCloseable {
     private external fun minisat_add_clause(handle: Long, literals: IntArray): Boolean
 
     private external fun minisat_solve(
-        handle: Long, do_simp: Boolean, turn_off_simp: Boolean
+        handle: Long,
+        do_simp: Boolean,
+        turn_off_simp: Boolean
     ): Boolean
 
     private external fun minisat_solve(
-        handle: Long, lit: Int, do_simp: Boolean, turn_off_simp: Boolean
+        handle: Long,
+        lit: Int,
+        do_simp: Boolean,
+        turn_off_simp: Boolean
     ): Boolean
 
     private external fun minisat_solve(
-        handle: Long, lit1: Int, lit2: Int, do_simp: Boolean, turn_off_simp: Boolean
+        handle: Long,
+        lit1: Int,
+        lit2: Int,
+        do_simp: Boolean,
+        turn_off_simp: Boolean
     ): Boolean
 
     private external fun minisat_solve(
-        handle: Long, lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean, turn_off_simp: Boolean
+        handle: Long,
+        lit1: Int,
+        lit2: Int,
+        lit3: Int,
+        do_simp: Boolean,
+        turn_off_simp: Boolean
     ): Boolean
 
     private external fun minisat_solve(
-        handle: Long, assumptions: IntArray, do_simp: Boolean, turn_off_simp: Boolean
+        handle: Long,
+        assumptions: IntArray,
+        do_simp: Boolean,
+        turn_off_simp: Boolean
     ): Boolean
 
     private external fun minisat_get_value(handle: Long, lit: Int): Byte
