@@ -62,6 +62,18 @@ class JCadical : AutoCloseable {
         return cadical_failed(handle, lit)
     }
 
+    fun optimize(value: Int) {
+        cadical_optimize(handle, value)
+    }
+
+    fun simplify() {
+        cadical_simplify(handle)
+    }
+
+    fun terminate() {
+        cadical_terminate(handle)
+    }
+
     fun add(lit: Int) {
         cadical_add(handle, lit)
     }
@@ -180,6 +192,9 @@ class JCadical : AutoCloseable {
     private external fun cadical_melt(handle: Long, lit: Int)
     private external fun cadical_fixed(handle: Long, lit: Int): Int
     private external fun cadical_failed(handle: Long, lit: Int): Boolean
+    private external fun cadical_optimize(handle: Long, value: Int)
+    private external fun cadical_simplify(handle: Long)
+    private external fun cadical_terminate(handle: Long)
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)
