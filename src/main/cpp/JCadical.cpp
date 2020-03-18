@@ -69,6 +69,21 @@ JNI_METHOD(jboolean, cadical_1failed)
     return decode(p)->failed(lit);
   }
 
+JNI_METHOD(void, cadical_1optimize)
+  (JNIEnv*, jobject, jlong p, jint value) {
+    decode(p)->optimize(value);
+  }
+
+JNI_METHOD(void, cadical_1simplify)
+  (JNIEnv*, jobject, jlong p) {
+    decode(p)->simplify();
+  }
+
+JNI_METHOD(void, cadical_1terminate)
+  (JNIEnv*, jobject, jlong p) {
+    decode(p)->terminate();
+  }
+
 JNI_METHOD(void, cadical_1add)
   (JNIEnv*, jobject, jlong p, jint lit) {
     decode(p)->add(lit);
