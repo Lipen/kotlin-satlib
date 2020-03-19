@@ -22,13 +22,12 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Download Cryptominisat
-        uses: wei/wget@v1
-        with:
-          args: -O cryptominisat5 https://github.com/msoos/cryptominisat/releases/download/5.6.8/cryptominisat5-linux-amd64-gauss
+        run: |
+          wget -O cryptominisat5 https://github.com/msoos/cryptominisat/releases/download/5.6.8/cryptominisat5-linux-amd64-gauss
+          chmod +x cryptominisat5
+          echo "::add-path::./cryptominisat5"
 
       - name: Build
         uses: eskatos/gradle-command-action@v1
-        env:
-          SOLVER_PATH: ./cryptominisat5
         with:
           arguments: build
