@@ -2,6 +2,7 @@ package com.github.lipen.satlib.solver
 
 import com.github.lipen.jnisat.JMiniSat
 import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.core.RawAssignment1
 import com.github.lipen.satlib.utils.toList_
@@ -21,7 +22,7 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun newVariable(): Int {
+    override fun newVariable(): Lit {
         return backend.newVariable()
     }
 
@@ -30,19 +31,19 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.addClause()
     }
 
-    override fun addClause(lit: Int) {
+    override fun addClause(lit: Lit) {
         backend.addClause(lit)
     }
 
-    override fun addClause(lit1: Int, lit2: Int) {
+    override fun addClause(lit1: Lit, lit2: Lit) {
         backend.addClause(lit1, lit2)
     }
 
-    override fun addClause(lit1: Int, lit2: Int, lit3: Int) {
+    override fun addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
         backend.addClause(lit1, lit2, lit3)
     }
 
-    override fun addClause_(literals: IntArray) {
+    override fun addClause_(literals: LitArray) {
         backend.addClause_(literals)
     }
 
@@ -54,19 +55,19 @@ class MiniSatSolver @JvmOverloads constructor(
         return backend.solve()
     }
 
-    override fun solve(lit: Int): Boolean {
+    override fun solve(lit: Lit): Boolean {
         return backend.solve(lit)
     }
 
-    override fun solve(lit1: Int, lit2: Int): Boolean {
+    override fun solve(lit1: Lit, lit2: Lit): Boolean {
         return backend.solve(lit1, lit2)
     }
 
-    override fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
+    override fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
         return backend.solve(lit1, lit2, lit3)
     }
 
-    override fun solve_(assumptions: IntArray): Boolean {
+    override fun solve_(assumptions: LitArray): Boolean {
         return backend.solve_(assumptions)
     }
 
@@ -74,7 +75,7 @@ class MiniSatSolver @JvmOverloads constructor(
         return solve_(assumptions.toList_().toIntArray())
     }
 
-    override fun getValue(lit: Int): Boolean {
+    override fun getValue(lit: Lit): Boolean {
         return backend.getValue(lit)
     }
 

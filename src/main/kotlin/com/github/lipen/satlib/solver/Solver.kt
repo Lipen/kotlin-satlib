@@ -6,6 +6,7 @@ import com.github.lipen.satlib.core.DomainVarArray
 import com.github.lipen.satlib.core.IntVar
 import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.core.encodeOneHot
 
@@ -28,7 +29,7 @@ interface Solver : AutoCloseable {
     fun addClause(lit1: Lit, lit2: Lit)
     fun addClause(lit1: Lit, lit2: Lit, lit3: Lit)
     fun addClause(vararg literals: Lit): Unit = addClause_(literals)
-    fun addClause_(literals: IntArray)
+    fun addClause_(literals: LitArray)
     fun addClause(literals: Iterable<Lit>)
 
     fun solve(): Boolean
@@ -36,7 +37,7 @@ interface Solver : AutoCloseable {
     fun solve(lit1: Lit, lit2: Lit): Boolean
     fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean
     fun solve(vararg assumptions: Lit): Boolean = solve_(assumptions)
-    fun solve_(assumptions: IntArray): Boolean
+    fun solve_(assumptions: LitArray): Boolean
     fun solve(assumptions: Iterable<Lit>): Boolean
 
     fun getValue(lit: Lit): Boolean

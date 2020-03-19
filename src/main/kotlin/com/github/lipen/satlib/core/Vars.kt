@@ -4,6 +4,7 @@ import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray
 
 typealias Lit = Int
+typealias LitArray = IntArray
 
 infix fun Lit.sign(b: Boolean): Lit = if (b) this else -this
 
