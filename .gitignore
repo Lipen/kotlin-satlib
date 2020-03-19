@@ -1,0 +1,13 @@
+# Hidden folders
+.idea/
+.gradle/
+
+# Build folders
+out/
+build/
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.pdf
