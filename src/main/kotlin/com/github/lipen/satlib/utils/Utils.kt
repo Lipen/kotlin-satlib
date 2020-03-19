@@ -1,5 +1,8 @@
 package com.github.lipen.satlib.utils
 
+import okio.BufferedSink
+import okio.BufferedSource
+
 @Suppress("FunctionName")
 internal fun <T> Iterable<T>.toList_(): List<T> = when (this) {
     is List<T> -> this
@@ -14,3 +17,15 @@ internal fun <T> Iterable<T>.pairs(): Sequence<Pair<T, T>> = sequence {
         }
     }
 }
+
+internal fun BufferedSource.lineSequence(): Sequence<String> =
+    sequence<String> { while (true) yield(readUtf8Line() ?: break) }.constrainOnce()
+
+internal fun BufferedSink.write(s: String): BufferedSink = writeUtf8(s)
+
+internal fun BufferedSink.writeln(s: String): BufferedSink = write(s).writeByte(10) // 10 is '\n'
+
+fun <T : AutoCloseable?, R> T.useWith(block: T.() -> R): R = use(block)
+
+val <T> T.exhaustive: T
+    get() = this

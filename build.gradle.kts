@@ -19,6 +19,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation(Libs.okio)
     implementation(Libs.multiarray)
     implementation(Libs.kotlin_jnisat)
 
