@@ -20,6 +20,8 @@ interface Solver : AutoCloseable {
 
     fun newVariable(): Lit
 
+    fun comment(comment: String)
+
     @Deprecated(
         "Clause must contain at least one literal!",
         ReplaceWith("addClause(...)")

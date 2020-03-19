@@ -26,6 +26,8 @@ class MiniSatSolver @JvmOverloads constructor(
         return backend.newVariable()
     }
 
+    override fun comment(comment: String) {}
+
     override fun addClause() {
         @Suppress("deprecation")
         backend.addClause()
