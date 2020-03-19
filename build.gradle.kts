@@ -37,6 +37,7 @@ jmh {
 kotlinter {
     ignoreFailures = true
     experimentalRules = true
+    disabledRules = arrayOf("import-ordering")
 }
 
 jgitver {
