@@ -9,7 +9,6 @@ plugins {
     id("org.jmailen.kotlinter") version Versions.kotlinter
     id("com.github.ben-manes.versions") version Versions.gradle_versions
     id("fr.brouillard.oss.gradle.jgitver") version Versions.jgitver
-    id("me.champeau.gradle.jmh") version Versions.jmh_gradle_plugin
     `maven-publish`
 }
 
@@ -27,13 +26,6 @@ dependencies {
     testImplementation(Libs.junit_jupiter_api)
     testRuntimeOnly(Libs.junit_jupiter_engine)
     testImplementation(Libs.kluent)
-}
-
-jmh {
-    jmhVersion = Versions.jmh
-    humanOutputFile = project.file("${project.buildDir}/reports/jmh/human.txt")
-    resultsFile = project.file("${project.buildDir}/reports/jmh/results.json")
-    resultFormat = "JSON"
 }
 
 kotlinter {
