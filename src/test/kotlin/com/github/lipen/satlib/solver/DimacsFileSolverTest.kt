@@ -9,7 +9,7 @@ import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class DimacsFileSolverTest {
-    private val solverCmd = "cryptominisat5 %s"
+    private val solverCmd = "${System.getProperty("SOLVER_PATH", "cryptominisat5")} %s"
     private val solver: Solver = DimacsFileSolver(solverCmd, createTempFile())
 
     @Test
