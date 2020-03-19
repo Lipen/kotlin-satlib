@@ -8,7 +8,7 @@ import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
-import com.github.lipen.satlib.core.encodeOneHot
+import com.github.lipen.satlib.op.encodeOneHot
 
 @Suppress("FunctionName")
 interface Solver : AutoCloseable {
