@@ -28,6 +28,7 @@ class CadicalSolver @JvmOverloads constructor(
 
     override fun comment(comment: String) {}
 
+    @Suppress("OverridingDeprecatedMember")
     override fun addClause() {
         @Suppress("deprecation")
         backend.addClause()
