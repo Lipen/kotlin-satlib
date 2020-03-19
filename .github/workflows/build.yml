@@ -23,9 +23,11 @@ jobs:
 
       - name: Download Cryptominisat
         run: |
-          wget -O cryptominisat5 https://github.com/msoos/cryptominisat/releases/download/5.6.8/cryptominisat5-linux-amd64-gauss
-          chmod +x cryptominisat5
-          echo "::add-path::./cryptominisat5"
+          echo "Current dir: ${PWD}"
+          mkdir -p bin
+          wget -O bin/cryptominisat5 https://github.com/msoos/cryptominisat/releases/download/5.6.8/cryptominisat5-linux-amd64-gauss
+          chmod +x bin/cryptominisat5
+          echo "::add-path::${GITHUB_WORKSPACE}/bin/cryptominisat5"
 
       - name: Build
         uses: eskatos/gradle-command-action@v1
