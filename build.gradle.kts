@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -61,14 +62,13 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<Test> {
-    @Suppress("UnstableApiUsage")
     useJUnitPlatform()
-    testLogging.events(
-        // TestLogEvent.PASSED,
-        TestLogEvent.FAILED,
-        TestLogEvent.SKIPPED,
-        TestLogEvent.STANDARD_ERROR
-    )
+    testLogging {
+        showExceptions = true
+        showStandardStreams = true
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+    }
 }
 
 tasks.wrapper {
