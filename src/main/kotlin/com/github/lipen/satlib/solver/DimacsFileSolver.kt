@@ -15,6 +15,7 @@ import okio.sink
 import okio.source
 import java.io.File
 
+@Suppress("MemberVisibilityCanBePrivate")
 class DimacsFileSolver(
     val command: String,
     val file: File
