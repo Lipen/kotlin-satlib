@@ -92,23 +92,23 @@ class DimacsFileSolver(
     }
 
     override fun solve(lit: Lit): Boolean {
-        error(ASSUMPTIONS_NOT_SUPPORTED)
+        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
     override fun solve(lit1: Lit, lit2: Lit): Boolean {
-        error(ASSUMPTIONS_NOT_SUPPORTED)
+        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
     override fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        error(ASSUMPTIONS_NOT_SUPPORTED)
+        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
     override fun solve_(assumptions: LitArray): Boolean {
-        error(ASSUMPTIONS_NOT_SUPPORTED)
+        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
     override fun solve(assumptions: Iterable<Lit>): Boolean {
-        error(ASSUMPTIONS_NOT_SUPPORTED)
+        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
     override fun getValue(lit: Lit): Boolean {
