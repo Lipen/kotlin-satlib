@@ -48,26 +48,32 @@ class DimacsFileSolver(
 
     @Suppress("OverridingDeprecatedMember")
     override fun addClause() {
+        ++numberOfClauses
         buffer.writeln("0")
     }
 
     override fun addClause(lit: Lit) {
+        ++numberOfClauses
         buffer.writeln("$lit 0")
     }
 
     override fun addClause(lit1: Lit, lit2: Lit) {
+        ++numberOfClauses
         buffer.writeln("$lit1 $lit2 0")
     }
 
     override fun addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
+        ++numberOfClauses
         buffer.writeln("$lit1 $lit2 $lit3 0")
     }
 
     override fun addClause_(literals: LitArray) {
+        ++numberOfClauses
         addClause(literals.asIterable())
     }
 
     override fun addClause(literals: Iterable<Lit>) {
+        ++numberOfClauses
         for (x in literals)
             buffer.write(x.toString()).write(" ")
         buffer.writeln("0")
