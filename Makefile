@@ -38,6 +38,9 @@ LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB)
 JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
 
+DOCKER_IMAGE_NAME ?= kotlin-jnisat-builder
+DOCKER_PROJECT_DIR ?= /kotlin-jnisat
+
 CC ?= g++
 CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
@@ -46,8 +49,9 @@ LDFLAGS = -shared -s
 .PHONY: default libjminisat libjcadical libs headers classes res clean vars
 
 default:
-	@echo "Specify a target! [all libs libjminisat libjcadical headers classes res clean vars]"
+	@echo "Specify a target! [all libs libs-docker libjminisat libjcadical headers classes res clean vars]"
 	@echo " - libs -- Build all libraries"
+	@echo " - libs-docker -- Build all libraries using Docker"
 	@echo " - libjminisat -- Build jminisat library"
 	@echo " - libjcadical -- Build jcadical library"
 	@echo " - headers -- Generate JNI headers from classes via javah"
@@ -58,6 +62,13 @@ default:
 
 all: headers libs
 libs: libjminisat libjcadical
+
+libs-docker: $(HEADERS)
+	@echo "=== Building libs in Docker..."
+	docker build -t $(DOCKER_IMAGE_NAME) --build-arg DIR=$(DOCKER_PROJECT_DIR) .
+	$(eval id=$(shell docker create $(DOCKER_IMAGE_NAME)))
+	docker cp $(id):$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR)
+	docker rm -v $(id)
 
 libjminisat: LIB = $(JMINISAT_LIB)
 libjminisat: SRC = $(JMINISAT_SRC)

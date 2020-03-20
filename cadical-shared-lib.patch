@@ -1,0 +1,14 @@
+diff --git a/makefile.in b/makefile.in
+index aa0f505..3a88b87 100644
+--- a/makefile.in
++++ b/makefile.in
+@@ -51,6 +51,9 @@ mobical: mobical.o libcadical.a makefile
+ libcadical.a: $(OBJ) makefile
+ 	ar rc $@ $(OBJ)
+ 
++libcadical.so: $(OBJ) makefile
++	$(COMPILE) -o $@ -shared -s $(OBJ)
++
+ #--------------------------------------------------------------------------#
+ 
+ # Note that 'build.hpp' is generated and resides in the build directory.

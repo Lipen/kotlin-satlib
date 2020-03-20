@@ -1,0 +1,5 @@
+# Note: do not ignore build/ folder,
+# because compiled classes are being used during the build process inside Docker
+gradle/
+.gradle
+out/
