@@ -5,11 +5,12 @@ object Versions {
     const val kotlinter = "2.3.2"
     const val gradle_versions = "0.28.0"
     const val jgitver = "0.9.1"
+    const val gradle_download = "4.0.4"
     const val junit = "5.6.0"
     const val kluent = "1.60"
     const val okio = "2.4.3"
     const val multiarray = "0.6.1"
-    const val kotlin_jnisat = "0.8.0"
+    const val kotlin_jnisat = "0.8.1"
 }
 
 object Libs {

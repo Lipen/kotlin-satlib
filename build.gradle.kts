@@ -1,3 +1,4 @@
+import de.undercouch.gradle.tasks.download.Download
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -9,6 +10,7 @@ plugins {
     id("org.jmailen.kotlinter") version Versions.kotlinter
     id("com.github.ben-manes.versions") version Versions.gradle_versions
     id("fr.brouillard.oss.gradle.jgitver") version Versions.jgitver
+    id("de.undercouch.download") version Versions.gradle_download
     `maven-publish`
 }
 
@@ -61,6 +63,18 @@ tasks.withType<Test> {
         events = setOf(TestLogEvent.PASSED, TestLogEvent.FAILED)
         exceptionFormat = TestExceptionFormat.FULL
     }
+}
+
+tasks.register<Download>("downloadSharedLibs") {
+    val urlTemplate = "https://github.com/Lipen/kotlin-jnisat/releases/download/${Versions.kotlin_jnisat}/%s"
+    src(
+        listOf(
+            urlTemplate.format("libjminisat.so"),
+            urlTemplate.format("libjcadical.so")
+        )
+    )
+    dest(File("src/main/resources/lib/linux64"))
+    overwrite(true)
 }
 
 tasks.wrapper {
