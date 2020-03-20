@@ -65,10 +65,15 @@ libs: libjminisat libjcadical
 
 libs-docker: $(HEADERS)
 	@echo "=== Building libs in Docker..."
-	docker build -t $(DOCKER_IMAGE_NAME) --build-arg DIR=$(DOCKER_PROJECT_DIR) .
-	$(eval id=$(shell docker create $(DOCKER_IMAGE_NAME)))
-	docker cp $(id):$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR)
-	docker rm -v $(id)
+	docker build --tag $(DOCKER_IMAGE_NAME) --build-arg PROJECT_DIR=$(DOCKER_PROJECT_DIR) .
+	{ \
+		set -e ;\
+		docker inspect $(DOCKER_IMAGE_NAME) &>/dev/null || \
+			echo "Docker image '$(DOCKER_IMAGE_NAME)' does not exist!" ;\
+		id=$$(docker create $(DOCKER_IMAGE_NAME)) ;\
+		docker cp $${id}:$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR) ;\
+		docker rm --volumes $${id} ;\
+	}
 
 libjminisat: LIB = $(JMINISAT_LIB)
 libjminisat: SRC = $(JMINISAT_SRC)
