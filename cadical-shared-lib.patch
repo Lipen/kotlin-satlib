@@ -1,3 +1,25 @@
+diff --git a/configure b/configure
+index f1ffa1f..bdfe9dc 100755
+--- a/configure
++++ b/configure
+@@ -410,6 +410,8 @@ cat <<EOF > "$makefile"
+ CADICALBUILD=$build
+ all:
+ 	\$(MAKE) -C "\$(CADICALBUILD)"
++lsh:
++	\$(MAKE) -C "\$(CADICALBUILD)" libcadical.so
+ clean:
+ 	@if [ -d "\$(CADICALBUILD)" ]; \\
+ 	then \\
+@@ -430,7 +432,7 @@ mobical:
+ 	\$(MAKE) -j1 -C "\$(CADICALBUILD)" mobical
+ update:
+ 	\$(MAKE) -j1 -C "\$(CADICALBUILD)" update
+-.PHONY: all cadical clean mobical test update
++.PHONY: all cadical clean mobical test update lsh
+ EOF
+ 
+ msg "generated '../makefile' as proxy to ..."
 diff --git a/makefile.in b/makefile.in
 index aa0f505..3a88b87 100644
 --- a/makefile.in

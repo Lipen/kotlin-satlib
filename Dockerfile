@@ -32,7 +32,7 @@ RUN git clone https://github.com/arminbiere/cadical .
 COPY cadical-shared-lib.patch .
 RUN git apply cadical-shared-lib.patch
 RUN ./configure -j8 -fPIC CXXFLAGS="-s"
-RUN make -C build libcadical.so
+RUN make lsh
 RUN install -d /usr/local/include/cadical
 RUN install -m 644 src/cadical.hpp /usr/local/include/cadical
 RUN install -d /usr/local/lib
