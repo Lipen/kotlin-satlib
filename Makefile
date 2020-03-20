@@ -38,7 +38,7 @@ LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB)
 JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
 
-CC = g++
+CC ?= g++
 CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
