@@ -39,10 +39,10 @@ CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
 
-.PHONY: default libjminisat libjcadical libs headers classes res clean
+.PHONY: default libjminisat libjcadical libs headers classes res clean vars
 
 default:
-	@echo "Specify a target! [all libs libjminisat libjcadical headers classes res clean]"
+	@echo "Specify a target! [all libs libjminisat libjcadical headers classes res clean vars]"
 	@echo " - libs -- Build all libraries"
 	@echo " - libjminisat -- Build jminisat library"
 	@echo " - libjcadical -- Build jcadical library"
@@ -50,6 +50,7 @@ default:
 	@echo " - classes -- Compile Java/Kotlin classes (run 'gradlew classes')"
 	@echo " - res -- Copy libraries to '$(LIB_RES)'"
 	@echo " - clean -- Run 'gradlew clean'"
+	@echo " - vars -- Show Makefile variables"
 
 all: classes headers libs res
 libs: libjminisat libjcadical
@@ -82,14 +83,17 @@ headers $(HEADERS): $(CLASSES_DIR)
 
 classes $(CLASSES_DIR):
 	@echo "=== Compiling classes..."
-	./gradlew -q classes
+	./gradlew classes
 
 res: $(LIBS)
 	@echo "=== Copying libraries to resources..."
-	install -d $(shell dirname $(JMINISAT_RES))
+	install -d $(dir $(JMINISAT_RES))
 	install -m 644 $(JMINISAT_LIB) $(JMINISAT_RES)
 	install -m 644 $(JCADICAL_LIB) $(JCADICAL_RES)
 
 clean:
 	@echo "=== Cleaning..."
 	./gradlew clean
+
+vars:
+	$(foreach v, $(sort $(.VARIABLES)), $(if $(filter file,$(origin $(v))), $(info $(v)=$($(v)))))
