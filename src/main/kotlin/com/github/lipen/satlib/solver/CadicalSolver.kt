@@ -6,6 +6,7 @@ import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.core.RawAssignment1
 import com.github.lipen.satlib.utils.toList_
+import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver @JvmOverloads constructor(
@@ -84,5 +85,18 @@ class CadicalSolver @JvmOverloads constructor(
 
     override fun getModel(): RawAssignment {
         return RawAssignment1(backend.getModel())
+    }
+}
+
+fun main() {
+    CadicalSolver().useWith {
+        val x = newVariable()
+        val y = newVariable()
+
+        addClause(x)
+        addClause(-y)
+
+        check(solve())
+        println("model = ${getModel()}")
     }
 }
