@@ -35,7 +35,7 @@ CLASSNAMES = $(JMINISAT_CLASSNAME) $(JCADICAL_CLASSNAME)
 HEADERS = $(JMINISAT_HEADER) $(JCADICAL_HEADER)
 LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB)
 
-JAVA_HOME ?= $(shell readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
 
 CC = g++
