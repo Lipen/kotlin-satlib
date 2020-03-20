@@ -23,10 +23,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Compile classes
-        run: |
-          ./gradlew classes
-
       - name: Build shared libraries using Docker
         run: |
           make headers libs-docker res
