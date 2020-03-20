@@ -60,7 +60,7 @@ default:
 	@echo " - clean -- Run 'gradlew clean'"
 	@echo " - vars -- Show Makefile variables"
 
-all: headers libs
+all: headers libs res
 libs: libjminisat libjcadical
 
 libs-docker: $(HEADERS)
