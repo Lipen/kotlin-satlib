@@ -11,3 +11,6 @@ build/
 *.jpg
 *.jpeg
 *.pdf
+
+# Libs
+src/main/resources/lib/
