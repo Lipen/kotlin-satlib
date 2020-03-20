@@ -16,7 +16,6 @@ RUN apt-get update &&\
         build-essential \
         gcc \
         git \
-        wget \
         zlib1g-dev \
     &&\
     rm -rf /var/lib/apt/lists/*
