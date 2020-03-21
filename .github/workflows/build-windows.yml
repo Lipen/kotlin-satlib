@@ -1,0 +1,56 @@
+name: Build (Windows)
+
+on: push
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      # Note: jdk8 is necessary to use javah
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - name: Set up build cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Install Make
+        run: choco install make
+
+      - name: Build MiniSat DLL
+        run: |
+          git clone https://github.com/niklasso/minisat minisat-src
+          git apply --directory minisat-src minisat-dll.patch
+          make -C minisat-src dll
+          cp minisat-src/build/dynamic/lib/minisat.dll .
+
+      - name: Build jminisat.dll
+        run: |
+          gradlew.bat classes
+          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
+          md build/lib
+          g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I%JAVA_HOME%/include -I%JAVA_HOME%/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
+          md src/main/resources/lib/win64
+          cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
+
+      - name: Build package using Gradle wrapper
+        run: gradlew.bat build -x test
+
+      - name: Upload to GH Releases
+        uses: softprops/action-gh-release@v0.1.5
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            build/lib/jminisat.dll
