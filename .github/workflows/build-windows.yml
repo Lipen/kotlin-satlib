@@ -34,14 +34,12 @@ jobs:
           make -C minisat-src dll
           cp minisat-src/build/dynamic/lib/minisat.dll .
 
-      - name: Build jminisat.dll
-        run: |
-          gradlew.bat classes
-          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
-          md build/lib
-          g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I%JAVA_HOME%/include -I%JAVA_HOME%/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
-          md src/main/resources/lib/win64
-          cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
+      - run: gradlew.bat classes
+      - run: javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
+      - run: md build/lib
+      - run: g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I%JAVA_HOME%/include -I%JAVA_HOME%/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
+      - run: md src/main/resources/lib/win64
+      - run: cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
 
       - name: Build package using Gradle wrapper
         run: gradlew.bat build -x test
