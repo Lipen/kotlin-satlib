@@ -105,7 +105,7 @@ classes $(CLASSES_DIR):
 
 res: $(LIBS)
 	@echo "=== Copying libraries to resources..."
-	install -d $(dir $(JMINISAT_RES))
+	install -d $(LIB_RES)
 	install -m 644 $(JMINISAT_LIB) $(JMINISAT_RES)
 	install -m 644 $(JCADICAL_LIB) $(JCADICAL_RES)
 
