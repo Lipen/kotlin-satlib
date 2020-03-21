@@ -16,25 +16,25 @@ jobs:
         with:
           java-version: 8
 
-      - name: Set up build cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+#      - name: Set up build cache
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+#          restore-keys: |
+#            ${{ runner.os }}-gradle-
 
-      - name: Install Make
-        run: choco install make
+#      - name: Install Make
+#        run: choco install make
+#
+#      - name: Build MiniSat DLL
+#        run: |
+#          git clone https://github.com/niklasso/minisat minisat-src
+#          git apply --directory minisat-src minisat-dll.patch
+#          make -C minisat-src dll
+#          cp minisat-src/build/dynamic/lib/minisat.dll .
 
-      - name: Build MiniSat DLL
-        run: |
-          git clone https://github.com/niklasso/minisat minisat-src
-          git apply --directory minisat-src minisat-dll.patch
-          make -C minisat-src dll
-          cp minisat-src/build/dynamic/lib/minisat.dll .
-
-      - run: gradlew.bat classes
+      - run: gradlew.bat -s classes
       - run: javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
       - run: md build/lib
       - run: g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I%JAVA_HOME%/include -I%JAVA_HOME%/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
@@ -42,7 +42,7 @@ jobs:
       - run: cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
 
       - name: Build package using Gradle wrapper
-        run: gradlew.bat build -x test
+        run: gradlew.bat -s build -x test
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v0.1.5
