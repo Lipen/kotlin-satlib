@@ -16,13 +16,13 @@ jobs:
         with:
           java-version: 8
 
-#      - name: Set up build cache
-#        uses: actions/cache@v1
-#        with:
-#          path: ~/.gradle/caches
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
+      - name: Set up build cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
 #      - name: Install Make
 #        run: choco install make
@@ -37,18 +37,22 @@ jobs:
       - run: gradle classes --stacktrace
       - run: javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
       - run: md build/lib
+      - run: echo %JAVA_HOME%
+      - run: dir %JAVA_HOME%
+      - run: dir %JAVA_HOME%/include
+      - run: dir %JAVA_HOME%/include/win32
       - run: g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I%JAVA_HOME%/include -I%JAVA_HOME%/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
       - run: md src/main/resources/lib/win64
       - run: cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
 
-      - name: Build package using Gradle wrapper
-        run: gradlew.bat -s build -x test
-
-      - name: Upload to GH Releases
-        uses: softprops/action-gh-release@v0.1.5
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: |
-            build/lib/jminisat.dll
+#      - name: Build package using Gradle wrapper
+#        run: gradlew.bat -s build -x test
+#
+#      - name: Upload to GH Releases
+#        uses: softprops/action-gh-release@v0.1.5
+#        if: startsWith(github.ref, 'refs/tags/')
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          files: |
+#            build/lib/jminisat.dll
