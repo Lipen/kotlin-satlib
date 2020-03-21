@@ -29,8 +29,7 @@ jobs:
           make headers libs-docker res
 
       - name: Build package using Gradle wrapper
-        run: |
-          ./gradlew build
+        run: ./gradlew build
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v0.1.5
