@@ -1,6 +1,7 @@
 = JNI wrappers for SAT solvers
 
-image:https://github.com/Lipen/kotlin-jnisat/workflows/Build/badge.svg?branch=master["Build",link="https://github.com/Lipen/kotlin-jnisat/actions"]
+image:https://github.com/Lipen/kotlin-jnisat/workflows/Build/badge.svg["Build",link="https://github.com/Lipen/kotlin-jnisat/actions"]
+image:https://github.com/Lipen/kotlin-jnisat/workflows/Build%20(Windows)/badge.svg["Build (Windows)",link="https://github.com/Lipen/kotlin-jnisat/actions"]
 image:https://jitpack.io/v/Lipen/kotlin-jnisat.svg["JitPack",link="https://jitpack.io/p/Lipen/kotlin-jnisat"]
 image:https://hitsofcode.com/github/Lipen/kotlin-jnisat["Hits-of-Code",link="https://hitsofcode.com/view/github/Lipen/kotlin-jnisat"]
 
