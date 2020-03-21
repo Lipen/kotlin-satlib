@@ -26,14 +26,17 @@ jobs:
 #          make -C minisat-src dll
 #          cp minisat-src/build/dynamic/lib/minisat.dll .
 
-      - name: Compile classes
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: classes
-
-      - run: javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
-      - run: md build/lib
       - run: echo $Env:JAVA_HOME
+      - run: dir $Env:JAVA_HOME
+      - run: dir $Env:JAVA_HOME/include
+
+#      - name: Compile classes
+#        uses: eskatos/gradle-command-action@v1
+#        with:
+#          arguments: classes
+#
+#      - run: javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
+      - run: md build/lib
       - run: g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I$Env:JAVA_HOME/include -I$Env:JAVA_HOME/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
       - run: md src/main/resources/lib/win64
       - run: cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
