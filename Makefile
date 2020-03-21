@@ -79,7 +79,7 @@ libjminisat: LIB = $(JMINISAT_LIB)
 libjminisat: SRC = $(JMINISAT_SRC)
 libjminisat: CPPFLAGS += $(MINISAT_CPPFLAGS)
 libjminisat: LDFLAGS += $(MINISAT_LDFLAGS)
-libjminisat $(JMINISAT_LIB):
+libjminisat $(JMINISAT_LIB): $(LIB_DIR)
 	@echo "=== Building libjminisat library..."
 	$(CC) -o $(LIB) $(CCFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC)
 
@@ -87,11 +87,9 @@ libjcadical: LIB = $(JCADICAL_LIB)
 libjcadical: SRC = $(JCADICAL_SRC)
 libjcadical: CPPFLAGS += $(CADICAL_CPPFLAGS)
 libjcadical: LDFLAGS += $(CADICAL_LDFLAGS)
-libjcadical $(JCADICAL_LIB):
+libjcadical $(JCADICAL_LIB): $(LIB_DIR)
 	@echo "=== Building libjcadical library..."
 	$(CC) -o $(LIB) $(CCFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC)
-
-libjminisat libjminisat: $(LIB_DIR)
 
 $(LIB_DIR):
 	@echo "=== Creating libdir..."
