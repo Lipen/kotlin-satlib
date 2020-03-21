@@ -103,7 +103,7 @@ classes $(CLASSES_DIR):
 	@echo "=== Compiling classes..."
 	./gradlew classes
 
-res: $(LIBS)
+res:
 	@echo "=== Copying libraries to resources..."
 	install -d $(LIB_RES)
 	install -m 644 $(JMINISAT_LIB) $(JMINISAT_RES)
