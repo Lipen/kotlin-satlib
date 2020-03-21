@@ -34,7 +34,7 @@ jobs:
 #          make -C minisat-src dll
 #          cp minisat-src/build/dynamic/lib/minisat.dll .
 
-      - run: gradlew.bat -s classes
+      - run: gradle classes --stacktrace
       - run: javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
       - run: md build/lib
       - run: g++ -Wall -O3 -shared -fpic -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I%JAVA_HOME%/include -I%JAVA_HOME%/include/win32 -Ibuild/headers -Iminisat-src -L. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
