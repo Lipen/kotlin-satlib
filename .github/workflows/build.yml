@@ -30,8 +30,8 @@ jobs:
 
       - name: Install solver libs
         run: |
-          install -m 644 /usr/lib build/lib/libminisat.so
-          install -m 644 /usr/lib build/lib/libcadical.so
+          install -m 644 build/lib/libminisat.so /usr/lib
+          install -m 644 build/lib/libcadical.so /usr/lib
 
       - name: Build package using Gradle wrapper
         run: ./gradlew build
