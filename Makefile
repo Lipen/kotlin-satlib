@@ -40,6 +40,9 @@ JAVA_INCLUDE = $(JAVA_HOME)/include
 
 DOCKER_IMAGE_NAME ?= kotlin-jnisat-builder
 DOCKER_PROJECT_DIR ?= /kotlin-jnisat
+DOCKER_LIB_DIR = $(DOCKER_PROJECT_LIB)/$(LIB_DIR)
+DOCKER_MINISAT_DIR ?= /minisat
+DOCKER_CADICAL_DIR ?= /cadical
 
 CC ?= g++
 CCFLAGS = -Wall -O3 -fPIC -fpermissive
@@ -63,15 +66,21 @@ default:
 all: headers libs res
 libs: libjminisat libjcadical
 
-libs-docker: $(HEADERS)
+libs-docker: $(HEADERS) $(LIB_DIR)
 	@echo "=== Building libs in Docker..."
-	docker build --tag $(DOCKER_IMAGE_NAME) --build-arg PROJECT_DIR=$(DOCKER_PROJECT_DIR) .
+	docker build --tag $(DOCKER_IMAGE_NAME) \
+		--build-arg PROJECT_DIR=$(DOCKER_PROJECT_DIR) \
+		--build-arg MINISAT_DIR=$(DOCKER_MINISAT_DIR) \
+		--build-arg CADICAL_DIR=$(DOCKER_CADICAL_DIR) \
+		.
 	{ \
 		set -e ;\
 		docker inspect $(DOCKER_IMAGE_NAME) >/dev/null 2>&1 || \
 			echo "Docker image '$(DOCKER_IMAGE_NAME)' does not exist!" ;\
 		id=$$(docker create $(DOCKER_IMAGE_NAME)) ;\
-		docker cp $${id}:$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR) ;\
+		docker cp $${id}:$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR)/ ;\
+		docker cp -L $${id}:/usr/local/lib/libminisat.so $(LIB_DIR)/ ;\
+		docker cp -L $${id}:/usr/local/lib/libcadical.so $(LIB_DIR)/ ;\
 		docker rm --volumes $${id} ;\
 	}
 
