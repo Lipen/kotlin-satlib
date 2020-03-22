@@ -60,14 +60,14 @@ Another way is to unpack the static lib (`ar -x libcadical.a`, note: do it in an
 Again, more specific build instructions can be found in link:Dockerfile[].
 - Shared (dynamic) libraries must be placed somewhere, where they can be found by Java at runtime.
 On Linux, use `/usr/local/lib` (if it is in `LD_LIBRARY_PATH`) or `/usr/lib`.
-On Windows, the only working solution is to place DLLs in the current folder (from where you run dependent app) -- other locations do not work.
+On Windows, the only working solution is to place DLLs in the current folder (from where you run the dependent app) -- other locations do not work.
 
 2. Shared (dynamic) library for JNI wrapper (_e.g._, libjminisat.so).
 This repo is exactly about getting one of those.
 
 - The simplest way of getting it is by downloading it from https://github.com/Lipen/kotlin-jnisat/releases[GitHub Releases] page.
 There are at least two places where JNI wrapper library may be placed -- (1) in a folder specified by the `java.library.path` property at runtime (_e.g._, `java -Djava.library.path=/abs/path/to/shared/lib -jar <...>`), or (2) inside the `lib/<platform><arch>` subdirectory of the resources folder (_e.g._, `src/main/resources/lib/linux64/libjminisat.so`).
-- Another way -- build libraries yourself using provided link:Makefile[].
+- Another way is to build the libraries yourself using the provided link:Makefile[].
 Configure it manually to match the locations of installed MiniSat and Cadical sources (`<solver>_INCLUDE_DIR`) and libraries (`<solver>_LIB_DIR`).
 By default, it is `/usr/local/include` and `/usr/local/lib`.
 When done, simply execute `make headers libs` -- this will generate JNI headers for compiled classes using `javah` and assemble shared libraries in `LIB_DIR=build/lib` folder.
