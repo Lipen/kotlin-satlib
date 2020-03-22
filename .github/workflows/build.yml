@@ -28,6 +28,11 @@ jobs:
         run: |
           make headers libs-docker res
 
+      - name: Install solver libs
+        run: |
+          install -m 644 /usr/lib build/lib/libminisat.so
+          install -m 644 /usr/lib build/lib/libcadical.so
+
       - name: Build package using Gradle wrapper
         run: ./gradlew build
 
