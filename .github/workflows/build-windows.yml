@@ -39,7 +39,7 @@ jobs:
           ./gradlew classes --stacktrace
           javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
           md build/lib -ea 0
-          g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I C:\hostedtoolcache\windows\jdk\8.0.242\x64\include -I C:\hostedtoolcache\windows\jdk\8.0.242\x64\include\win32 -I build/headers -I minisat-src -L . -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
+          g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I $Env:JAVA_HOME/include -I $Env:JAVA_HOME/include/win32 -I build/headers -I minisat-src -L . -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
           md src/main/resources/lib/win64 -ea 0
           cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
 
