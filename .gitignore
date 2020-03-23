@@ -13,4 +13,5 @@ build/
 *.pdf
 
 # Libs
-src/main/resources/lib/
+*.so
+*.dll
