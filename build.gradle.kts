@@ -1,4 +1,4 @@
-import de.undercouch.gradle.tasks.download.Download
+import de.undercouch.gradle.tasks.download.DownloadAction
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -65,16 +65,63 @@ tasks.withType<Test> {
     }
 }
 
-tasks.register<Download>("downloadSharedLibs") {
+fun Task.download(action: DownloadAction.() -> Unit) =
+    download.configure(delegateClosureOf(action))
+
+tasks.register("downloadLibs") {
+    val osArch: String = run {
+        val osName = System.getProperty("os.name")
+        val os = when {
+            osName.startsWith("Linux") -> "linux"
+            osName.startsWith("Windows") -> "win"
+            osName.startsWith("Mac OS X") || osName.startsWith("Darwin") -> "osx"
+            else -> return@run "unknown"
+        }
+        val arch = when (System.getProperty("os.arch")) {
+            "x86", "i386" -> "32"
+            "x86_64", "amd64" -> "64"
+            else -> return@run "unknown"
+        }
+        "$os$arch"
+    }
+
     val urlTemplate = "https://github.com/Lipen/kotlin-jnisat/releases/download/${Versions.kotlin_jnisat}/%s"
-    src(
-        listOf(
-            urlTemplate.format("libjminisat.so"),
-            urlTemplate.format("libjcadical.so")
-        )
-    )
-    dest(File("src/main/resources/lib/linux64"))
-    overwrite(true)
+    val libDir = projectDir.resolve("src/main/resources/lib/$osArch")
+        .also { it.mkdirs() }
+        .also { check(it.exists()) { "'$it' does not exist" } }
+
+    when (osArch) {
+        "linux64" -> {
+            for (name in listOf("libjminisat.so", "libjcadical.so")) {
+                download {
+                    src(urlTemplate.format(name))
+                    dest(libDir)
+                }
+            }
+            val solverLibDir = projectDir.resolve("libs")
+                .also { it.mkdirs() }
+                .also { check(it.exists()) { "'$it' does not exist" } }
+            for (name in listOf("libminisat.so", "libcadical.so")) {
+                download {
+                    src(urlTemplate.format(name))
+                    dest(solverLibDir)
+                }
+            }
+        }
+        "win64" -> {
+            download {
+                src(urlTemplate.format("jminisat.dll"))
+                dest(libDir)
+            }
+            download {
+                src(urlTemplate.format("minisat.dll"))
+                dest(projectDir)
+            }
+        }
+        else -> {
+            error("$osArch is unsupported")
+        }
+    }
 }
 
 tasks.wrapper {
