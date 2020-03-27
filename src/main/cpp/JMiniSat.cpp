@@ -119,9 +119,9 @@ JNI_METHOD(jboolean, minisat_1is_1eliminated)
     return decode(handle)->isEliminated(v);
   }
 
-JNI_METHOD(jboolean, minisat_1interrupt)
+JNI_METHOD(void, minisat_1interrupt)
   (JNIEnv*, jobject, jlong handle) {
-    return decode(handle)->interrupt();
+    decode(handle)->interrupt();
   }
 
 static inline Minisat::Lit convert(int lit) {
