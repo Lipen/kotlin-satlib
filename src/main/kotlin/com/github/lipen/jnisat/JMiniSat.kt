@@ -197,7 +197,7 @@ class JMiniSat : AutoCloseable {
     private external fun minisat_simplify(handle: Long): Boolean
     private external fun minisat_eliminate(handle: Long, turn_off_elim: Boolean): Boolean
     private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
-    private external fun minisat_interrupt(handle: Long): Boolean
+    private external fun minisat_interrupt(handle: Long)
     private external fun minisat_add_clause(handle: Long): Boolean
     private external fun minisat_add_clause(handle: Long, lit: Int): Boolean
     private external fun minisat_add_clause(handle: Long, lit1: Int, lit2: Int): Boolean
