@@ -34,9 +34,6 @@ class JMiniSat : AutoCloseable {
     val numberOfClauses: Int get() = minisat_nclauses(handle)
     val numberOfLearnts: Int get() = minisat_nlearnts(handle)
 
-    var do_simp: Boolean = true
-    var turn_off_simp: Boolean = false
-
     init {
         reset()
     }
@@ -146,31 +143,37 @@ class JMiniSat : AutoCloseable {
         return solvable
     }
 
-    fun solve(): Boolean {
+    @JvmOverloads
+    fun solve(do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = minisat_solve(handle, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(lit: Int): Boolean {
+    @JvmOverloads
+    fun solve(lit: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = minisat_solve(handle, lit, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(lit1: Int, lit2: Int): Boolean {
+    @JvmOverloads
+    fun solve(lit1: Int, lit2: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = minisat_solve(handle, lit1, lit2, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
+    @JvmOverloads
+    fun solve(lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = minisat_solve(handle, lit1, lit2, lit3, do_simp, turn_off_simp)
         return solvable
     }
 
-    fun solve(vararg assumptions: Int): Boolean {
-        return solve_(assumptions)
+    @JvmOverloads
+    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        return solve_(assumptions, do_simp, turn_off_simp)
     }
 
-    fun solve_(assumptions: IntArray): Boolean {
+    @JvmOverloads
+    fun solve_(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = minisat_solve(handle, assumptions, do_simp, turn_off_simp)
         return solvable
     }
