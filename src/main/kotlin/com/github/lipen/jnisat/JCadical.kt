@@ -4,6 +4,8 @@
 
 package com.github.lipen.jnisat
 
+import java.io.File
+
 @Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JCadical : AutoCloseable {
     private var handle: Long = 0
@@ -72,6 +74,14 @@ class JCadical : AutoCloseable {
 
     fun terminate() {
         cadical_terminate(handle)
+    }
+
+    fun writeDimacs(path: String) {
+        cadical_write_dimacs(handle, path)
+    }
+
+    fun writeDimacs(file: File) {
+        writeDimacs(file.path)
     }
 
     fun add(lit: Int) {
@@ -195,6 +205,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_optimize(handle: Long, value: Int)
     private external fun cadical_simplify(handle: Long)
     private external fun cadical_terminate(handle: Long)
+    private external fun cadical_write_dimacs(handle: Long, path: String)
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)

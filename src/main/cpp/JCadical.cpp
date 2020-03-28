@@ -84,6 +84,13 @@ JNI_METHOD(void, cadical_1terminate)
     decode(p)->terminate();
   }
 
+JNI_METHOD(void, cadical_1to_1dimacs)
+  (JNIEnv* env, jobject, jlong p, jstring arg) {
+    const char* path = env->GetStringUTFChars(arg, 0);
+    decode(p)->write_dimacs(path);
+    env->ReleaseStringUTFChars(arg, path);
+  }
+
 JNI_METHOD(void, cadical_1add)
   (JNIEnv*, jobject, jlong p, jint lit) {
     decode(p)->add(lit);
