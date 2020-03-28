@@ -125,10 +125,10 @@ JNI_METHOD(void, minisat_1interrupt)
   }
 
 JNI_METHOD(void, minisat_1to_1dimacs)
-  (JNIEnv* env, jobject, jlong handle, jstring path) {
-    const char* file = env->GetStringUTFChars(path, 0);
+  (JNIEnv* env, jobject, jlong handle, jstring arg) {
+    const char* file = env->GetStringUTFChars(arg, 0);
     decode(handle)->toDimacs(file);
-    env->ReleaseStringUTFChars(path, file);
+    env->ReleaseStringUTFChars(arg, file);
   }
 
 static inline Minisat::Lit convert(int lit) {
