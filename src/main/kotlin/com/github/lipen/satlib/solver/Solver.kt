@@ -68,10 +68,7 @@ fun Solver.solve(assumptions: Iterable<Lit>): Boolean {
 fun <T> Solver.newDomainVar(
     domain: Iterable<T>,
     init: (T) -> Lit = { newVariable() }
-): DomainVar<T> = DomainVar(
-    domain,
-    init
-).also { encodeOneHot(it) }
+): DomainVar<T> = DomainVar(domain, init).also { encodeOneHot(it) }
 
 fun Solver.newIntVar(
     domain: Iterable<Int>,
