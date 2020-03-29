@@ -32,7 +32,9 @@ jobs:
           echo "::add-path::$(realpath bin)"
 
       - name: Download kotlin-jnisat shared libs
-        run: ./gradlew downloadLibs
+        run: |
+          ./gradlew downloadLibs
+          sudo ldconfig libs
 
       - name: Run tests
-        run: ./gradlew test -Djava.library.path=libs
+        run: ./gradlew test
