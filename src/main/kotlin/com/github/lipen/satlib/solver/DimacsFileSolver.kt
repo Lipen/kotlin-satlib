@@ -80,6 +80,8 @@ class DimacsFileSolver(
     }
 
     override fun solve(): Boolean {
+        buffer.writeln("c solve")
+
         file.sink().buffer().use {
             it.writeln("p cnf $numberOfVariables $numberOfClauses")
             buffer.copyTo(it.buffer)
