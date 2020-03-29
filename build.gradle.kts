@@ -68,58 +68,60 @@ tasks.withType<Test> {
 fun Task.download(action: DownloadAction.() -> Unit) =
     download.configure(delegateClosureOf(action))
 
-tasks.register("downloadLibs") {
-    val osArch: String = run {
-        val osName = System.getProperty("os.name")
-        val os = when {
-            osName.startsWith("Linux") -> "linux"
-            osName.startsWith("Windows") -> "win"
-            osName.startsWith("Mac OS X") || osName.startsWith("Darwin") -> "osx"
-            else -> return@run "unknown"
-        }
-        val arch = when (System.getProperty("os.arch")) {
-            "x86", "i386" -> "32"
-            "x86_64", "amd64" -> "64"
-            else -> return@run "unknown"
-        }
-        "$os$arch"
+val osArch: String = run {
+    val osName = System.getProperty("os.name")
+    val os = when {
+        osName.startsWith("Linux") -> "linux"
+        osName.startsWith("Windows") -> "win"
+        osName.startsWith("Mac OS X") || osName.startsWith("Darwin") -> "osx"
+        else -> return@run "unknown"
     }
+    val arch = when (System.getProperty("os.arch")) {
+        "x86", "i386" -> "32"
+        "x86_64", "amd64" -> "64"
+        else -> return@run "unknown"
+    }
+    "$os$arch"
+}
 
-    val urlTemplate = "https://github.com/Lipen/kotlin-jnisat/releases/download/${Versions.kotlin_jnisat}/%s"
-    val libDir = projectDir.resolve("src/main/resources/lib/$osArch")
-        .also { it.mkdirs() }
-        .also { check(it.exists()) { "'$it' does not exist" } }
+tasks.register("downloadLibs") {
+    doLast {
+        val urlTemplate = "https://github.com/Lipen/kotlin-jnisat/releases/download/${Versions.kotlin_jnisat}/%s"
+        val libDir = projectDir.resolve("src/main/resources/lib/$osArch")
+            .also { it.mkdirs() }
+            .also { check(it.exists()) { "'$it' does not exist" } }
 
-    when (osArch) {
-        "linux64" -> {
-            for (name in listOf("libjminisat.so", "libjcadical.so")) {
+        when (osArch) {
+            "linux64" -> {
+                for (name in listOf("libjminisat.so", "libjcadical.so")) {
+                    download {
+                        src(urlTemplate.format(name))
+                        dest(libDir)
+                    }
+                }
+                val solverLibDir = projectDir.resolve("libs")
+                    .also { it.mkdirs() }
+                    .also { check(it.exists()) { "'$it' does not exist" } }
+                for (name in listOf("libminisat.so", "libcadical.so")) {
+                    download {
+                        src(urlTemplate.format(name))
+                        dest(solverLibDir)
+                    }
+                }
+            }
+            "win64" -> {
                 download {
-                    src(urlTemplate.format(name))
+                    src(urlTemplate.format("jminisat.dll"))
                     dest(libDir)
                 }
-            }
-            val solverLibDir = projectDir.resolve("libs")
-                .also { it.mkdirs() }
-                .also { check(it.exists()) { "'$it' does not exist" } }
-            for (name in listOf("libminisat.so", "libcadical.so")) {
                 download {
-                    src(urlTemplate.format(name))
-                    dest(solverLibDir)
+                    src(urlTemplate.format("minisat.dll"))
+                    dest(projectDir)
                 }
             }
-        }
-        "win64" -> {
-            download {
-                src(urlTemplate.format("jminisat.dll"))
-                dest(libDir)
+            else -> {
+                error("$osArch is unsupported")
             }
-            download {
-                src(urlTemplate.format("minisat.dll"))
-                dest(projectDir)
-            }
-        }
-        else -> {
-            error("$osArch is unsupported")
         }
     }
 }
