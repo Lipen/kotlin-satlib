@@ -22,7 +22,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build package
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test --scan
 
       - name: Download Cryptominisat
         run: |
