@@ -43,7 +43,8 @@ class DimacsFileSolver(
     }
 
     override fun comment(comment: String) {
-        buffer.write("c ").writeln(comment)
+        for (line in comment.lineSequence())
+            buffer.write("c ").writeln(line)
     }
 
     @Suppress("OverridingDeprecatedMember")
