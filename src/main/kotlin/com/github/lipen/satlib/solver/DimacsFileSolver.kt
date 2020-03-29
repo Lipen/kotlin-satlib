@@ -68,7 +68,6 @@ class DimacsFileSolver(
     }
 
     override fun addClause_(literals: LitArray) {
-        ++numberOfClauses
         addClause(literals.asIterable())
     }
 
