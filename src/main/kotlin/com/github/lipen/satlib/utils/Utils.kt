@@ -25,7 +25,7 @@ internal fun BufferedSink.write(s: String): BufferedSink = writeUtf8(s)
 
 internal fun BufferedSink.writeln(s: String): BufferedSink = write(s).writeByte(10) // 10 is '\n'
 
-fun <T : AutoCloseable?, R> T.useWith(block: T.() -> R): R = use(block)
+internal inline fun <T : AutoCloseable?, R> T.useWith(block: T.() -> R): R = use(block)
 
 val <T> T.exhaustive: T
     get() = this
