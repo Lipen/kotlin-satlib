@@ -12,6 +12,7 @@ object Versions {
     const val multiarray = "0.6.1"
     const val kotlin_jnisat = "0.11.0"
     const val klock = "1.8.6"
+    const val coroutines = "1.3.5"
 }
 
 object Libs {
@@ -22,4 +23,5 @@ object Libs {
     const val multiarray = "com.github.lipen:MultiArray:${Versions.multiarray}"
     const val kotlin_jnisat = "com.github.lipen:kotlin-jnisat:${Versions.kotlin_jnisat}"
     const val klock = "com.soywiz.korlibs.klock:klock-jvm:${Versions.klock}"
+    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
 }

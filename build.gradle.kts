@@ -24,6 +24,7 @@ dependencies {
     implementation(Libs.okio)
     implementation(Libs.multiarray)
     implementation(Libs.kotlin_jnisat)
+    implementation(Libs.coroutines)
 
     testImplementation(Libs.junit_jupiter_api)
     testRuntimeOnly(Libs.junit_jupiter_engine)
