@@ -11,6 +11,7 @@ object Versions {
     const val okio = "2.5.0"
     const val multiarray = "0.6.1"
     const val kotlin_jnisat = "0.11.0"
+    const val klock = "1.8.6"
 }
 
 object Libs {
@@ -20,4 +21,5 @@ object Libs {
     const val okio = "com.squareup.okio:okio:${Versions.okio}"
     const val multiarray = "com.github.lipen:MultiArray:${Versions.multiarray}"
     const val kotlin_jnisat = "com.github.lipen:kotlin-jnisat:${Versions.kotlin_jnisat}"
+    const val klock = "com.soywiz.korlibs.klock:klock-jvm:${Versions.klock}"
 }

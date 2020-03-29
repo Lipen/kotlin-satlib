@@ -28,6 +28,7 @@ dependencies {
     testImplementation(Libs.junit_jupiter_api)
     testRuntimeOnly(Libs.junit_jupiter_engine)
     testImplementation(Libs.kluent)
+    testImplementation(Libs.klock)
 }
 
 kotlinter {
