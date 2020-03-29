@@ -28,7 +28,8 @@ jobs:
           chmod +x bin/cryptominisat5
           echo "::add-path::$(realpath bin)"
 
+      - name: Download kotlin-jnisat shared libs
+        run: ./gradlew downloadLibs
+
       - name: Build
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: build
+        run: ./gradlew build
