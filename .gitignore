@@ -12,6 +12,10 @@ build/
 *.jpeg
 *.pdf
 
+# Data
+*.csv
+*.zip
+
 # Libs
 *.so
 *.dll
