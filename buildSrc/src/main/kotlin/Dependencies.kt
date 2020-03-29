@@ -18,6 +18,6 @@ object Libs {
     const val junit_jupiter_engine = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"
     const val kluent = "org.amshove.kluent:kluent:${Versions.kluent}"
     const val okio = "com.squareup.okio:okio:${Versions.okio}"
-    const val multiarray = "com.github.Lipen:MultiArray:${Versions.multiarray}"
-    const val kotlin_jnisat = "com.github.Lipen:kotlin-jnisat:${Versions.kotlin_jnisat}"
+    const val multiarray = "com.github.lipen:MultiArray:${Versions.multiarray}"
+    const val kotlin_jnisat = "com.github.lipen:kotlin-jnisat:${Versions.kotlin_jnisat}"
 }
