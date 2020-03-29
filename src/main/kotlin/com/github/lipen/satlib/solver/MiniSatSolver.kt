@@ -162,6 +162,8 @@ fun main() {
 
         addClause(x)
         addClause(-y)
+        println("nvars = $numberOfVariables")
+        println("ncons = $numberOfClauses")
 
         check(solve())
         println("model = ${getModel()}")
