@@ -5,7 +5,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.core.RawAssignment1
-import com.github.lipen.satlib.utils.toList_
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -51,8 +50,8 @@ class CadicalSolver @JvmOverloads constructor(
         backend.addClause_(literals)
     }
 
-    override fun addClause(literals: Iterable<Int>) {
-        addClause_(literals.toList_().toIntArray())
+    override fun addClause(literals: List<Int>) {
+        addClause_(literals.toIntArray())
     }
 
     override fun solve(): Boolean {
@@ -75,8 +74,12 @@ class CadicalSolver @JvmOverloads constructor(
         return backend.solve_(assumptions)
     }
 
-    override fun solve(assumptions: Iterable<Lit>): Boolean {
-        return solve_(assumptions.toList_().toIntArray())
+    override fun solve(assumptions: List<Lit>): Boolean {
+        return solve_(assumptions.toIntArray())
+    }
+
+    override fun interrupt() {
+        backend.terminate()
     }
 
     override fun getValue(lit: Lit): Boolean {

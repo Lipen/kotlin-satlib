@@ -10,7 +10,7 @@ object Versions {
     const val kluent = "1.60"
     const val okio = "2.5.0"
     const val multiarray = "0.6.1"
-    const val kotlin_jnisat = "0.8.3"
+    const val kotlin_jnisat = "0.11.0"
 }
 
 object Libs {

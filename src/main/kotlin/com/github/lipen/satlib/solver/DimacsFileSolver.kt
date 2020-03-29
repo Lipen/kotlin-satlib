@@ -69,10 +69,10 @@ class DimacsFileSolver(
     }
 
     override fun addClause_(literals: LitArray) {
-        addClause(literals.asIterable())
+        addClause(literals.toList())
     }
 
-    override fun addClause(literals: Iterable<Lit>) {
+    override fun addClause(literals: List<Lit>) {
         ++numberOfClauses
         for (x in literals)
             buffer.write(x.toString()).write(" ")
@@ -109,8 +109,12 @@ class DimacsFileSolver(
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun solve(assumptions: Iterable<Lit>): Boolean {
+    override fun solve(assumptions: List<Lit>): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
+    }
+
+    override fun interrupt() {
+        throw UnsupportedOperationException(INTERRUPTION_NOT_SUPPORTED)
     }
 
     override fun getValue(lit: Lit): Boolean {
@@ -124,6 +128,8 @@ class DimacsFileSolver(
     companion object {
         private val ASSUMPTIONS_NOT_SUPPORTED: String =
             "${DimacsFileSolver::class.java.simpleName} does not support solving with assumptions"
+        private val INTERRUPTION_NOT_SUPPORTED: String =
+            "${DimacsFileSolver::class.java.simpleName} does not support interruption"
     }
 }
 
@@ -132,6 +138,7 @@ private fun parseDimacsOutput(source: BufferedSource): RawAssignment? {
         ?: error("No answer from solver")
     return when {
         "UNSAT" in answer -> null
+        "INDETERMINATE" in answer -> null
         "SAT" in answer ->
             source
                 .lineSequence()
