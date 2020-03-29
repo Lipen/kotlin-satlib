@@ -21,6 +21,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Build package
+        run: ./gradlew build -x test
+
       - name: Download Cryptominisat
         run: |
           mkdir -p bin
@@ -31,5 +34,5 @@ jobs:
       - name: Download kotlin-jnisat shared libs
         run: ./gradlew downloadLibs
 
-      - name: Build
-        run: ./gradlew build
+      - name: Run tests
+        run: ./gradlew test -Djava.library.path=libs
