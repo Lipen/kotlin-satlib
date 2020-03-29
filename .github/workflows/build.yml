@@ -21,6 +21,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Build package
+        run: ./gradlew clean build -x test --stacktrace --scan
+
       - name: Download Cryptominisat
         run: |
           mkdir -p bin
@@ -33,5 +36,5 @@ jobs:
           ./gradlew downloadLibs
           sudo ldconfig $(realpath libs)
 
-      - name: Build package
-        run: ./gradlew clean build --stacktrace --scan
+      - name: Run tests
+        run: ./gradlew test --stacktrace
