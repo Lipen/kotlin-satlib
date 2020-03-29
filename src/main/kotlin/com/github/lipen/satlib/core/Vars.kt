@@ -17,7 +17,7 @@ class DomainVar<T>(
     constructor(domain: Iterable<T>, init: (T) -> Lit) :
         this(domain.associateWith { init(it) })
 
-    // TODO: return falseLiteral is value is not in storage
+    // TODO: return falseLiteral if value is not in storage
     infix fun eq(value: T): Lit = storage.getValue(value)
     infix fun neq(value: T): Lit = -eq(value)
 }
