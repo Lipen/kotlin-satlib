@@ -34,7 +34,7 @@ jobs:
       - name: Download kotlin-jnisat shared libs
         run: |
           ./gradlew downloadLibs
-          sudo ldconfig libs
+          sudo ldconfig $(realpath libs)
 
       - name: Run tests
         run: ./gradlew test
