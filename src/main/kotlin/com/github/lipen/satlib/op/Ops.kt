@@ -6,6 +6,7 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.utils.pairs
+import com.github.lipen.satlib.utils.toList_
 
 // Note: iterate over Iterable not more than once!
 // Use `val pool = iterable.toList()` if necessary.
@@ -23,7 +24,7 @@ fun Solver.atMostOne(literals: Iterable<Lit>) {
 
 /** `ExactlyOne`([literals]) */
 fun Solver.exactlyOne(literals: Iterable<Lit>) {
-    val pool = literals.toList()
+    val pool = literals.toList_()
     atLeastOne(pool)
     atMostOne(pool)
 }
