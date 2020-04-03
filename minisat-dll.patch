@@ -7,13 +7,13 @@ index ceb9d77..9d39eea 100644
  MINISAT_SLIB = lib$(MINISAT).a#  Name of MiniSat static library.
  MINISAT_DLIB = lib$(MINISAT).so# Name of MiniSat shared library.
 +MINISAT_DLL  = $(MINISAT).dll# Name of MiniSat DLL.
- 
+
  # Shared Library Version
  SOMAJOR=2
 @@ -88,6 +89,8 @@ ld:	$(BUILD_DIR)/debug/lib/$(MINISAT_SLIB)
  lp:	$(BUILD_DIR)/profile/lib/$(MINISAT_SLIB)
  lsh:	$(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE)
- 
+
 +dll: $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLL)
 +
  ## Build-type Compile-flags:
@@ -22,7 +22,7 @@ index ceb9d77..9d39eea 100644
 @@ -122,6 +125,8 @@ $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE)\
   $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR)\
   $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB):	$(foreach o,$(OBJS),$(BUILD_DIR)/dynamic/$(o))
- 
+
 +$(BUILD_DIR)/dynamic/lib/$(MINISAT_DLL): $(foreach o,$(OBJS),$(BUILD_DIR)/release/$(o))
 +
  ## Compile rules (these should be unified, buit I have not yet found a way which works in GNU Make)
@@ -31,7 +31,7 @@ index ceb9d77..9d39eea 100644
 @@ -166,6 +171,12 @@ $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE)\
  	$(VERB) ln -sf $(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE) $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR)
  	$(VERB) ln -sf $(MINISAT_DLIB).$(SOMAJOR) $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB)
- 
+
 +## DLL rule
 +$(BUILD_DIR)/dynamic/lib/$(MINISAT_DLL):
 +	$(ECHO) Linking DLL: $@
@@ -40,7 +40,7 @@ index ceb9d77..9d39eea 100644
 +
  install:	install-headers install-lib install-bin
  install-debug:	install-headers install-lib-debug
- 
+
 diff --git a/minisat/utils/Options.h b/minisat/utils/Options.h
 index 4e71a18..7d2e83a 100644
 --- a/minisat/utils/Options.h
@@ -51,14 +51,14 @@ index 4e71a18..7d2e83a 100644
          else
 -            fprintf(stderr, "%4"PRIi64, range.begin);
 +            fprintf(stderr, "%4" PRIi64, range.begin);
- 
+
          fprintf(stderr, " .. ");
          if (range.end == INT64_MAX)
              fprintf(stderr, "imax");
          else
 -            fprintf(stderr, "%4"PRIi64, range.end);
 +            fprintf(stderr, "%4" PRIi64, range.end);
- 
+
 -        fprintf(stderr, "] (default: %"PRIi64")\n", value);
 +        fprintf(stderr, "] (default: %" PRIi64 ")\n", value);
          if (verbose){
@@ -69,11 +69,9 @@ index 21aa4ff..f89b08a 100644
 --- a/minisat/utils/System.cc
 +++ b/minisat/utils/System.cc
 @@ -91,7 +91,7 @@ double Minisat::memUsedPeak() { return memUsed(); }
- 
+
  #else
  double Minisat::memUsed()     { return 0; }
 -double Minisat::memUsedPeak() { return 0; }
 +double Minisat::memUsedPeak(bool strictlyPeak) { return 0; }
  #endif
- 
- 
