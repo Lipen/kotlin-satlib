@@ -6,21 +6,16 @@ import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.core.RawAssignment0
 import com.github.lipen.satlib.utils.lineSequence
 import com.github.lipen.satlib.utils.useWith
-import com.github.lipen.satlib.utils.write
-import com.github.lipen.satlib.utils.writeln
-import okio.Buffer
 import okio.BufferedSource
 import okio.buffer
-import okio.sink
 import okio.source
 import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate")
-class DimacsFileSolver(
+class DimacsFileSolver @JvmOverloads constructor(
     val command: String,
-    val file: File
-) : Solver {
-    private val buffer = Buffer()
+    val file: File = createTempFile()
+) : AbstractSolver() {
     private var _model: RawAssignment? = null
 
     override var numberOfVariables: Int = 0
@@ -28,88 +23,69 @@ class DimacsFileSolver(
     override var numberOfClauses: Int = 0
         private set
 
-    override fun reset() {
-        buffer.clear()
+    override fun _reset() {
         numberOfVariables = 0
         numberOfClauses = 0
     }
 
-    override fun close() {
-        buffer.close()
-    }
+    override fun _close() {}
 
     override fun newVariable(): Lit {
         return ++numberOfVariables
     }
 
-    override fun comment(comment: String) {
-        for (line in comment.lineSequence())
-            buffer.write("c ").writeln(line)
-    }
+    override fun _comment(comment: String) {}
 
     @Suppress("OverridingDeprecatedMember")
-    override fun addClause() {
+    override fun _addClause() {
         ++numberOfClauses
-        buffer.writeln("0")
     }
 
-    override fun addClause(lit: Lit) {
+    override fun _addClause(lit: Lit) {
         ++numberOfClauses
-        buffer.writeln("$lit 0")
     }
 
-    override fun addClause(lit1: Lit, lit2: Lit) {
+    override fun _addClause(lit1: Lit, lit2: Lit) {
         ++numberOfClauses
-        buffer.writeln("$lit1 $lit2 0")
     }
 
-    override fun addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
+    override fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
         ++numberOfClauses
-        buffer.writeln("$lit1 $lit2 $lit3 0")
     }
 
-    override fun addClause_(literals: LitArray) {
-        addClause(literals.toList())
+    override fun _addClause_(literals: LitArray) {
+        addClause_(literals.toList())
     }
 
-    override fun addClause(literals: List<Lit>) {
+    override fun _addClause_(literals: List<Lit>) {
         ++numberOfClauses
-        for (x in literals)
-            buffer.write(x.toString()).write(" ")
-        buffer.writeln("0")
     }
 
-    override fun solve(): Boolean {
-        buffer.writeln("c solve")
-
-        file.sink().buffer().use {
-            it.writeln("p cnf $numberOfVariables $numberOfClauses")
-            buffer.copyTo(it.buffer)
-        }
-
+    override fun _solve(): Boolean {
+        dumpDimacs(file)
         val process = Runtime.getRuntime().exec(command.format(file))
         val processOutput = process.inputStream.source().buffer()
         _model = parseDimacsOutput(processOutput)
         return _model != null
     }
 
-    override fun solve(lit: Lit): Boolean {
+    override fun _solve(lit: Lit): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun solve(lit1: Lit, lit2: Lit): Boolean {
+    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
+    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun solve_(assumptions: LitArray): Boolean {
+    override fun _solve_(assumptions: LitArray): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun solve(assumptions: List<Lit>): Boolean {
+    override fun _solve_(assumptions: List<Lit>): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 

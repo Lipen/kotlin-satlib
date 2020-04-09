@@ -10,15 +10,15 @@ import com.github.lipen.satlib.utils.useWith
 @Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver @JvmOverloads constructor(
     val backend: JCadical = JCadical()
-) : Solver {
+) : AbstractSolver() {
     override val numberOfVariables: Int get() = backend.numberOfVariables
     override val numberOfClauses: Int get() = backend.numberOfClauses
 
-    override fun reset() {
+    override fun _reset() {
         backend.reset()
     }
 
-    override fun close() {
+    override fun _close() {
         backend.close()
     }
 
@@ -26,55 +26,55 @@ class CadicalSolver @JvmOverloads constructor(
         return backend.newVariable()
     }
 
-    override fun comment(comment: String) {}
+    override fun _comment(comment: String) {}
 
     @Suppress("OverridingDeprecatedMember")
-    override fun addClause() {
+    override fun _addClause() {
         @Suppress("deprecation")
         backend.addClause()
     }
 
-    override fun addClause(lit: Lit) {
+    override fun _addClause(lit: Lit) {
         backend.addClause(lit)
     }
 
-    override fun addClause(lit1: Lit, lit2: Lit) {
+    override fun _addClause(lit1: Lit, lit2: Lit) {
         backend.addClause(lit1, lit2)
     }
 
-    override fun addClause(lit1: Int, lit2: Int, lit3: Int) {
+    override fun _addClause(lit1: Int, lit2: Int, lit3: Int) {
         backend.addClause(lit1, lit2, lit3)
     }
 
-    override fun addClause_(literals: IntArray) {
+    override fun _addClause_(literals: IntArray) {
         backend.addClause_(literals)
     }
 
-    override fun addClause(literals: List<Int>) {
+    override fun _addClause_(literals: List<Int>) {
         addClause_(literals.toIntArray())
     }
 
-    override fun solve(): Boolean {
+    override fun _solve(): Boolean {
         return backend.solve()
     }
 
-    override fun solve(lit: Lit): Boolean {
+    override fun _solve(lit: Lit): Boolean {
         return backend.solve(lit)
     }
 
-    override fun solve(lit1: Lit, lit2: Lit): Boolean {
+    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
         return backend.solve(lit1, lit2)
     }
 
-    override fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
+    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
         return backend.solve(lit1, lit2, lit3)
     }
 
-    override fun solve_(assumptions: LitArray): Boolean {
+    override fun _solve_(assumptions: LitArray): Boolean {
         return backend.solve_(assumptions)
     }
 
-    override fun solve(assumptions: List<Lit>): Boolean {
+    override fun _solve_(assumptions: List<Lit>): Boolean {
         return solve_(assumptions.toIntArray())
     }
 
