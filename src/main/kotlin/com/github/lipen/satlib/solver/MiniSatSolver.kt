@@ -13,6 +13,7 @@ class MiniSatSolver @JvmOverloads constructor(
     val backend: JMiniSat = JMiniSat()
 ) : AbstractSolver() {
     private var simplified = false
+
     override val numberOfVariables: Int get() = backend.numberOfVariables
     override val numberOfClauses: Int get() = backend.numberOfClauses
 
