@@ -12,8 +12,8 @@ import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 abstract class AbstractSolver : Solver {
-    private val assumptions: MutableList<Lit> = mutableListOf()
     private val buffer: Buffer = Buffer()
+    private val assumptions: MutableList<Lit> = mutableListOf()
 
     final override fun reset() {
         assumptions.clear()
