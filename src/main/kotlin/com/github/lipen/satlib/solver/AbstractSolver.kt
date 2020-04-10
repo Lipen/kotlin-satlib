@@ -90,10 +90,7 @@ abstract class AbstractSolver : Solver {
     final override fun solve(vararg assumptions: Lit): Boolean = solve_(assumptions)
 
     final override fun solve_(assumptions: LitArray): Boolean {
-        buffer.write("c solve")
-        for (lit in assumptions)
-            buffer.write(" $lit")
-        buffer.writeln("")
+        buffer.writeln("c solve ${assumptions.joinToString(" ")}")
         return _solve_(assumptions)
     }
 
