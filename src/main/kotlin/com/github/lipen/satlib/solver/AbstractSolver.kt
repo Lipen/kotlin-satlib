@@ -16,6 +16,7 @@ abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
 
     final override fun reset() {
+        assumptions.clear()
         buffer.clear()
         _reset()
     }
