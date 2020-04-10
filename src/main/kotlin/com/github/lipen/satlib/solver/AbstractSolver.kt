@@ -12,7 +12,7 @@ import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 abstract class AbstractSolver : Solver {
-    override val buffer: Buffer = Buffer()
+    private val buffer: Buffer = Buffer()
 
     final override fun reset() {
         buffer.clear()

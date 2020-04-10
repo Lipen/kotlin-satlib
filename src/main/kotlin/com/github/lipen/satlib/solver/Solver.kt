@@ -10,11 +10,9 @@ import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.op.encodeOneHot
 import com.github.lipen.satlib.utils.toList_
-import okio.Buffer
 
 @Suppress("FunctionName")
 interface Solver : AutoCloseable {
-    val buffer: Buffer
     val numberOfVariables: Int
     val numberOfClauses: Int
 
