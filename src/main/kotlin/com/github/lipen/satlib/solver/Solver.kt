@@ -35,6 +35,14 @@ interface Solver : AutoCloseable {
     fun addClause_(literals: LitArray)
     fun addClause_(literals: List<Lit>)
 
+    fun assume(vararg literals: Lit): Unit = assume_(literals)
+    fun assume_(literals: LitArray)
+    fun assume_(literals: List<Lit>)
+    fun clearAssumptions()
+
+    // Note:
+    //  - The `solve()` method must use the assumptions passed via the `assume` method.
+    //  - Other `solve(...)` methods must use *only* passed assumptions.
     fun solve(): Boolean
     fun solve(lit: Lit): Boolean
     fun solve(lit1: Lit, lit2: Lit): Boolean

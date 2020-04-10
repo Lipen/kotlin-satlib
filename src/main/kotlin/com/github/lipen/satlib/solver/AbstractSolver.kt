@@ -12,6 +12,7 @@ import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 abstract class AbstractSolver : Solver {
+    private val assumptions: MutableList<Lit> = mutableListOf()
     private val buffer: Buffer = Buffer()
 
     final override fun reset() {
@@ -67,9 +68,27 @@ abstract class AbstractSolver : Solver {
         _addClause_(literals)
     }
 
+    final override fun assume(vararg literals: Lit): Unit = assume_(literals)
+
+    final override fun assume_(literals: LitArray) {
+        assumptions.addAll(literals.asIterable())
+    }
+
+    final override fun assume_(literals: List<Lit>) {
+        assumptions.addAll(literals)
+    }
+
+    final override fun clearAssumptions() {
+        assumptions.clear()
+    }
+
     final override fun solve(): Boolean {
-        buffer.writeln("c solve")
-        return _solve()
+        return if (assumptions.isEmpty()) {
+            buffer.writeln("c solve")
+            _solve()
+        } else {
+            solve_(assumptions)
+        }
     }
 
     final override fun solve(lit: Lit): Boolean {
