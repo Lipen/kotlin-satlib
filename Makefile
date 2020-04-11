@@ -40,11 +40,11 @@ JCRYPTOMINISAT_RES = $(LIB_RES)/$(JCRYPTOMINISAT_LIBNAME)
 CRYPTOMINISAT_INCLUDE_DIR ?= /usr/local/include
 CRYPTOMINISAT_LIB_DIR ?= /usr/local/lib
 CRYPTOMINISAT_CPPFLAGS = -I$(CRYPTOMINISAT_INCLUDE_DIR)
-CRYPTOMINISAT_LDFLAGS = -L$(CRYPTOMINISAT_LIB_DIR) -lcryptominisat5
+CRYPTOMINISAT_LDFLAGS = -Wl,-rpath,$(CRYPTOMINISAT_LIB_DIR)-L$(CRYPTOMINISAT_LIB_DIR) -lcryptominisat5
 
 CLASSNAMES = $(JMINISAT_CLASSNAME) $(JCADICAL_CLASSNAME) $(JCRYPTOMINISAT_CLASSNAME)
 HEADERS = $(JMINISAT_HEADER) $(JCADICAL_HEADER) $(JCRYPTOMINISAT_HEADER)
-LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB)  $(JCRYPTOMINISAT_LIB)
+LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB) $(JCRYPTOMINISAT_LIB)
 
 JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
@@ -95,7 +95,7 @@ libs-docker: $(HEADERS) $(LIB_DIR)
 		docker cp $${id}:$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR)/ ;\
 		docker cp -L $${id}:/usr/local/lib/libminisat.so $(LIB_DIR)/ ;\
 		docker cp -L $${id}:/usr/local/lib/libcadical.so $(LIB_DIR)/ ;\
-		docker cp -L $${id}:/usr/local/lib/libcryptomnisat5.so $(LIB_DIR)/ ;\
+		docker cp -L $${id}:/usr/local/lib/libcryptominisat5.so $(LIB_DIR)/ ;\
 		docker rm --volumes $${id} ;\
 	}
 
@@ -121,7 +121,7 @@ libjcryptominisat: CPPFLAGS += $(CRYPTOMINISAT_CPPFLAGS)
 libjcryptominisat: LDFLAGS += $(CRYPTOMINISAT_LDFLAGS)
 libjcryptominisat $(JCRYPTOMINISAT_LIB): $(LIB_DIR)
 	@echo "=== Building libjcryptominisat library..."
-	$(CC) -o $(LIB) $(CCFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC)
+	$(CC) -o $(LIB) $(CCFLAGS) $(CPPFLAGS) $(SRC) $(LDFLAGS)
 
 $(LIB_DIR):
 	@echo "=== Creating libdir..."
