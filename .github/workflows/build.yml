@@ -35,6 +35,7 @@ jobs:
         run: |
           sudo install -m 644 build/lib/libminisat.so /usr/lib
           sudo install -m 644 build/lib/libcadical.so /usr/lib
+          sudo install -m 644 build/lib/libcryptominisat5.so /usr/lib
 
       - name: Build package using Gradle wrapper
         run: ./gradlew build
