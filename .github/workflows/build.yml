@@ -38,7 +38,7 @@ jobs:
           sudo install -m 644 build/lib/libcryptominisat5.so /usr/lib
 
       - name: Build package using Gradle wrapper
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace --scan
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v0.1.5
