@@ -10,6 +10,8 @@ import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.op.encodeOneHot
 import com.github.lipen.satlib.utils.toList_
+import okio.BufferedSink
+import java.io.File
 
 @Suppress("FunctionName")
 interface Solver : AutoCloseable {
@@ -55,6 +57,9 @@ interface Solver : AutoCloseable {
 
     fun getValue(lit: Lit): Boolean
     fun getModel(): RawAssignment
+
+    fun dumpDimacs(sink: BufferedSink)
+    fun dumpDimacs(file: File)
 }
 
 fun Solver.addClause(literals: Iterable<Lit>) {

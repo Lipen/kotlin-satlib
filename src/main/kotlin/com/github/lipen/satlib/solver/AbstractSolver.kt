@@ -122,12 +122,12 @@ abstract class AbstractSolver : Solver {
         return _solve(assumptions)
     }
 
-    fun dumpDimacs(sink: BufferedSink) {
+    final override fun dumpDimacs(sink: BufferedSink) {
         sink.writeln("p cnf $numberOfVariables $numberOfClauses")
         buffer.copyTo(sink.buffer)
     }
 
-    fun dumpDimacs(file: File) {
+    final override fun dumpDimacs(file: File) {
         file.sink().buffer().use {
             dumpDimacs(it)
         }
