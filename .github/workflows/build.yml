@@ -49,5 +49,7 @@ jobs:
           files: |
             build/lib/libjminisat.so
             build/lib/libjcadical.so
+            build/lib/libjcryptominisat5.so
             build/lib/libminisat.so
             build/lib/libcadical.so
+            build/lib/libjcryptominisat.so
