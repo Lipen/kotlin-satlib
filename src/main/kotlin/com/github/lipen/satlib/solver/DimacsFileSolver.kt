@@ -53,11 +53,11 @@ class DimacsFileSolver @JvmOverloads constructor(
         ++numberOfClauses
     }
 
-    override fun _addClause_(literals: LitArray) {
+    override fun _addClause(literals: LitArray) {
         addClause_(literals.toList())
     }
 
-    override fun _addClause_(literals: List<Lit>) {
+    override fun _addClause(literals: List<Lit>) {
         ++numberOfClauses
     }
 
@@ -81,11 +81,11 @@ class DimacsFileSolver @JvmOverloads constructor(
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun _solve_(assumptions: LitArray): Boolean {
+    override fun _solve(assumptions: LitArray): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 
-    override fun _solve_(assumptions: List<Lit>): Boolean {
+    override fun _solve(assumptions: List<Lit>): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 

@@ -59,14 +59,14 @@ abstract class AbstractSolver : Solver {
         for (lit in literals)
             buffer.write(lit.toString()).write(" ")
         buffer.writeln("0")
-        _addClause_(literals)
+        _addClause(literals)
     }
 
     final override fun addClause_(literals: List<Lit>) {
         for (lit in literals)
             buffer.write(lit.toString()).write(" ")
         buffer.writeln("0")
-        _addClause_(literals)
+        _addClause(literals)
     }
 
     final override fun assume(vararg literals: Lit): Unit = assume_(literals)
@@ -111,7 +111,7 @@ abstract class AbstractSolver : Solver {
 
     final override fun solve_(assumptions: LitArray): Boolean {
         buffer.writeln("c solve ${assumptions.joinToString(" ")}")
-        return _solve_(assumptions)
+        return _solve(assumptions)
     }
 
     final override fun solve_(assumptions: List<Lit>): Boolean {
@@ -119,7 +119,7 @@ abstract class AbstractSolver : Solver {
         for (lit in assumptions)
             buffer.write(" $lit")
         buffer.writeln("")
-        return _solve_(assumptions)
+        return _solve(assumptions)
     }
 
     fun dumpDimacs(sink: BufferedSink) {
@@ -141,13 +141,13 @@ abstract class AbstractSolver : Solver {
     protected abstract fun _addClause(lit: Lit)
     protected abstract fun _addClause(lit1: Lit, lit2: Lit)
     protected abstract fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit)
-    protected abstract fun _addClause_(literals: LitArray)
-    protected abstract fun _addClause_(literals: List<Lit>)
+    protected abstract fun _addClause(literals: LitArray)
+    protected abstract fun _addClause(literals: List<Lit>)
 
     protected abstract fun _solve(): Boolean
     protected abstract fun _solve(lit: Lit): Boolean
     protected abstract fun _solve(lit1: Lit, lit2: Lit): Boolean
     protected abstract fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean
-    protected abstract fun _solve_(assumptions: LitArray): Boolean
-    protected abstract fun _solve_(assumptions: List<Lit>): Boolean
+    protected abstract fun _solve(assumptions: LitArray): Boolean
+    protected abstract fun _solve(assumptions: List<Lit>): Boolean
 }

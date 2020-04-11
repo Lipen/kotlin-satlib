@@ -46,11 +46,11 @@ class CadicalSolver @JvmOverloads constructor(
         backend.addClause(lit1, lit2, lit3)
     }
 
-    override fun _addClause_(literals: IntArray) {
+    override fun _addClause(literals: IntArray) {
         backend.addClause_(literals)
     }
 
-    override fun _addClause_(literals: List<Int>) {
+    override fun _addClause(literals: List<Int>) {
         addClause_(literals.toIntArray())
     }
 
@@ -70,11 +70,11 @@ class CadicalSolver @JvmOverloads constructor(
         return backend.solve(lit1, lit2, lit3)
     }
 
-    override fun _solve_(assumptions: LitArray): Boolean {
+    override fun _solve(assumptions: LitArray): Boolean {
         return backend.solve_(assumptions)
     }
 
-    override fun _solve_(assumptions: List<Lit>): Boolean {
+    override fun _solve(assumptions: List<Lit>): Boolean {
         return solve_(assumptions.toIntArray())
     }
 

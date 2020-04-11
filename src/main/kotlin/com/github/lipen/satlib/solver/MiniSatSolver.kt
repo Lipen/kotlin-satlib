@@ -61,11 +61,11 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.addClause(lit1, lit2, lit3)
     }
 
-    override fun _addClause_(literals: LitArray) {
+    override fun _addClause(literals: LitArray) {
         backend.addClause_(literals)
     }
 
-    override fun _addClause_(literals: List<Lit>) {
+    override fun _addClause(literals: List<Lit>) {
         addClause_(literals.toIntArray())
     }
 
@@ -101,13 +101,13 @@ class MiniSatSolver @JvmOverloads constructor(
         }
     }
 
-    override fun _solve_(assumptions: LitArray): Boolean {
+    override fun _solve(assumptions: LitArray): Boolean {
         return runMatchingSimpStrategy { do_simp, turn_off_simp ->
             backend.solve_(assumptions, do_simp, turn_off_simp)
         }
     }
 
-    override fun _solve_(assumptions: List<Lit>): Boolean {
+    override fun _solve(assumptions: List<Lit>): Boolean {
         return solve_(assumptions.toIntArray())
     }
 
