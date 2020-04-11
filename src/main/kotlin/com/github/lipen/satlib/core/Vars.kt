@@ -14,12 +14,14 @@ class DomainVar<T>(
     val domain: Set<T> = storage.keys
     val literals: Collection<Lit> = storage.values
 
-    constructor(domain: Iterable<T>, init: (T) -> Lit) :
-        this(domain.associateWith { init(it) })
-
     // TODO: return falseLiteral if value is not in storage
     infix fun eq(value: T): Lit = storage.getValue(value)
     infix fun neq(value: T): Lit = -eq(value)
+
+    companion object {
+        inline fun <T> new(domain: Iterable<T>, init: (T) -> Lit): DomainVar<T> =
+            DomainVar(domain.associateWith { init(it) })
+    }
 }
 
 typealias IntVar = DomainVar<Int>
