@@ -33,6 +33,7 @@ WORKDIR ${MINISAT_DIR}
 RUN git clone https://github.com/niklasso/minisat .
 RUN make lsh MINISAT_REL='-O3 -DNDEBUG -fpermissive'
 RUN make install
+RUN strip --strip-unneeded /usr/local/lib/libminisat.so
 
 ## Build Cadical
 WORKDIR ${CADICAL_DIR}
@@ -45,6 +46,7 @@ RUN install -d /usr/local/include/cadical
 RUN install -m 644 src/cadical.hpp /usr/local/include/cadical
 RUN install -d /usr/local/lib
 RUN install -m 644 build/libcadical.so /usr/local/lib
+RUN strip --strip-unneeded /usr/local/lib/libcadical.so
 
 ## Build CryptoMiniSat
 WORKDIR ${CMS_DIR}
@@ -53,7 +55,7 @@ RUN mkdir build
 WORKDIR build
 RUN cmake ..
 RUN make -j8
-RUN make install
+RUN make install/strip
 
 ## Build libs
 WORKDIR ${PROJECT_DIR}
