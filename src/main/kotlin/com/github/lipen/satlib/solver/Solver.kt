@@ -111,4 +111,4 @@ fun Solver.newIntVarArray(
 fun Solver.newBoolVarArray(
     vararg shape: Int,
     init: (IntArray) -> Lit = { newVariable() }
-): BoolVarArray = BoolVarArray.create(shape, init)
+): BoolVarArray = BoolVarArray.create_(shape, init)

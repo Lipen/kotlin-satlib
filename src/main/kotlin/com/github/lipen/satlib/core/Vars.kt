@@ -36,17 +36,15 @@ class BoolVarArray private constructor(
     companion object Factory {
         @JvmStatic
         fun create(
-            shape: IntArray,
-            init: (IntArray) -> Lit
-        ): BoolVarArray =
-            BoolVarArray(IntMultiArray.create(shape, init))
-
-        @JvmStatic
-        @JvmName("createVararg")
-        fun create(
             vararg shape: Int,
             init: (IntArray) -> Lit
-        ): BoolVarArray =
-            create(shape, init)
+        ): BoolVarArray = create_(shape, init)
+
+        @JvmStatic
+        @Suppress("FunctionName")
+        fun create_(
+            shape: IntArray,
+            init: (IntArray) -> Lit
+        ): BoolVarArray = BoolVarArray(IntMultiArray.create(shape, init))
     }
 }
