@@ -86,7 +86,7 @@ libs-docker: $(HEADERS) $(LIB_DIR)
 		--build-arg MINISAT_DIR=$(DOCKER_MINISAT_DIR) \
 		--build-arg CADICAL_DIR=$(DOCKER_CADICAL_DIR) \
 		--build-arg CRYPTOMINISAT_DIR=$(DOCKER_CRYPTOMINISAT_DIR) \
-
+	.
 	{ \
 		set -e ;\
 		docker inspect $(DOCKER_IMAGE_NAME) >/dev/null 2>&1 || \
