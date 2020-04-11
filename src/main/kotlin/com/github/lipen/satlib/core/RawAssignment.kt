@@ -6,6 +6,7 @@ import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.multiarray.map
 import com.github.lipen.multiarray.mapToBoolean
 import com.github.lipen.multiarray.mapToInt
+import kotlin.math.absoluteValue
 
 interface RawAssignment {
     operator fun get(v: Lit): Boolean // 1-based, as Lit
@@ -15,7 +16,7 @@ class RawAssignment0(private val data: BooleanArray) : RawAssignment {
     override operator fun get(v: Lit): Boolean = when (v) {
         // Solver.trueLiteral -> true
         // Solver.falseLiteral -> false
-        else -> data[v - 1]
+        else -> data[v.absoluteValue - 1] xor (v < 0)
     }
 
     override fun toString(): String {
@@ -27,7 +28,7 @@ class RawAssignment1(private val data: BooleanArray) : RawAssignment {
     override operator fun get(v: Lit): Boolean = when (v) {
         // Solver.trueLiteral -> true
         // Solver.falseLiteral -> false
-        else -> data[v]
+        else -> data[v.absoluteValue] xor (v < 0)
     }
 
     override fun toString(): String {
