@@ -89,7 +89,7 @@ libs-docker: $(HEADERS) $(LIB_DIR)
 	.
 	{ \
 		set -e ;\
-		docker inspect $(DOCKER_IMAGE_NAME) >/dev/null 2>&1 || \
+		docker inspect $(DOCKER_IMAGE_NAME) 2>&1 >/dev/null || \
 			echo "Docker image '$(DOCKER_IMAGE_NAME)' does not exist!" ;\
 		id=$$(docker create $(DOCKER_IMAGE_NAME)) ;\
 		docker cp $${id}:$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR)/ ;\
