@@ -10,7 +10,7 @@
 #include "com_github_lipen_jnisat_JCryptominisat.h"
 
 #define JNI_METHOD(rtype, name) \
-    JNIEXPORT rtype JNICALL Java_com_github_lipen_jnisat_JCadical_##name
+    JNIEXPORT rtype JNICALL Java_com_github_lipen_jnisat_JCryptominisat_##name
 
 static inline jlong encode(CMSat::SATSolver* p) {
 	return static_cast<jlong>(reinterpret_cast<intptr_t>(p));
@@ -81,115 +81,115 @@ static std::vector<CMSat::Lit> to_literals_vector(jint lit1, jint lit2, jint lit
     return clause;
 }
 
-JNI_METHOD(jlong, 1create)
-  (JNIEnv * env, jclass this_class) {
+JNI_METHOD(jlong, cryptominisat_1create)
+  (JNIEnv *, jobject) {
     return encode(new CMSat::SATSolver);
   }
 
-JNI_METHOD(void, 1delete)
-  (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(void, cryptominisat_1delete)
+  (JNIEnv * env, jobject this_object, jlong p) {
     delete decode(p);
   }
 
-JNI_METHOD(void, 1terminate)
+JNI_METHOD(void, cryptominisat_1terminate)
   (JNIEnv * env, jlong p) {
     decode(p)->interrupt_asap();
   }
 
-JNI_METHOD(void, 1new_1variable)
-  (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(void, cryptominisat_1new_1variable)
+  (JNIEnv * env, jobject this_object, jlong p) {
     decode(p)->new_var();
   }
 
-JNI_METHOD(void, 1add_1clause__JI)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit) {
+JNI_METHOD(void, cryptominisat_1add_1clause__JI)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit) {
     auto lits = to_literals_vector(lit);
     decode(p)->add_clause(lits);
   }
 
-JNI_METHOD(void, 1add_1clause__JII)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit1, jint lit2) {
+JNI_METHOD(void, cryptominisat_1add_1clause__JII)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit1, jint lit2) {
     auto lits = to_literals_vector(lit1, lit2);
     decode(p)->add_clause(lits);
   }
 
-JNI_METHOD(void, 1add_1clause__JIII)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit1, jint lit2, jint lit3) {
+JNI_METHOD(void, cryptominisat_1add_1clause__JIII)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit1, jint lit2, jint lit3) {
     auto lits = to_literals_vector(lit1, lit2, lit3);
     decode(p)->add_clause(lits);
   }
 
-JNI_METHOD(void, 1add_1clause__J_3I)
-  (JNIEnv * env, jclass this_class, jlong p, jintArray literals) {
+JNI_METHOD(void, cryptominisat_1add_1clause__J_3I)
+  (JNIEnv * env, jobject this_object, jlong p, jintArray literals) {
     decode(p)->add_clause(to_literals_vector(env, literals));
   }
 
-JNI_METHOD(jint, 1solve__J)
-  (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(jint, cryptominisat_1solve__J)
+  (JNIEnv * env, jobject this_object, jlong p) {
     return correctReturnValue(decode(p)->solve());
   }
 
-JNI_METHOD(jint, 1solve__JI)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit) {
+JNI_METHOD(jint, cryptominisat_1solve__JI)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit) {
     auto lits = to_literals_vector(lit);
     return correctReturnValue(decode(p)->solve(&lits));
   }
 
-JNI_METHOD(jint, 1solve__JII)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit1, jint lit2) {
+JNI_METHOD(jint, cryptominisat_1solve__JII)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit1, jint lit2) {
     auto lits = to_literals_vector(lit1, lit2);
     return correctReturnValue(decode(p)->solve(&lits));
   }
 
-JNI_METHOD(jint, 1solve__JIII)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit1, jint lit2, jint lit3) {
+JNI_METHOD(jint, cryptominisat_1solve__JIII)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit1, jint lit2, jint lit3) {
     auto lits = to_literals_vector(lit1, lit2, lit3);
     return correctReturnValue(decode(p)->solve(&lits));
   }
 
-JNI_METHOD(jint, 1solve__J_3I)
-  (JNIEnv * env, jclass this_class, jlong p, jintArray assumptions) {
+JNI_METHOD(jint, cryptominisat_1solve__J_3I)
+  (JNIEnv * env, jobject this_object, jlong p, jintArray assumptions) {
     auto lits = to_literals_vector(env, assumptions);
     return correctReturnValue(decode(p)->solve(&lits));
   }
 
 
-JNI_METHOD(jint, 1simplify__J)
-  (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(jint, cryptominisat_1simplify__J)
+  (JNIEnv * env, jobject this_object, jlong p) {
     return correctReturnValue(decode(p)->simplify());
   }
 
-JNI_METHOD(jint, 1simplify__JI)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit) {
+JNI_METHOD(jint, cryptominisat_1simplify__JI)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit) {
     auto lits = to_literals_vector(lit);
     return correctReturnValue(decode(p)->simplify(&lits));
   }
 
-JNI_METHOD(jint, 1simplify__JII)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit1, jint lit2) {
+JNI_METHOD(jint, cryptominisat_1simplify__JII)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit1, jint lit2) {
     auto lits = to_literals_vector(lit1, lit2);
     return correctReturnValue(decode(p)->simplify(&lits));
   }
 
-JNI_METHOD(jint, 1simplify__JIII)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit1, jint lit2, jint lit3) {
+JNI_METHOD(jint, cryptominisat_1simplify__JIII)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit1, jint lit2, jint lit3) {
     auto lits = to_literals_vector(lit1, lit2, lit3);
     return correctReturnValue(decode(p)->simplify(&lits));
   }
 
-JNI_METHOD(jint, 1simplify__J_3I)
-  (JNIEnv * env, jclass this_class, jlong p, jintArray assumptions) {
+JNI_METHOD(jint, cryptominisat_1simplify__J_3I)
+  (JNIEnv * env, jobject this_object, jlong p, jintArray assumptions) {
     auto lits = to_literals_vector(env, assumptions);
     return correctReturnValue(decode(p)->simplify(&lits));
   }
 
-JNI_METHOD(jint, 1get_1value)
-  (JNIEnv * env, jclass this_class, jlong p, jint lit){
+JNI_METHOD(jboolean, cryptominisat_1get_1value)
+  (JNIEnv * env, jobject this_object, jlong p, jint lit){
     return to_jboolean(decode(p)->get_model()[lit - 1]) ? lit : -lit;
   }
 
-JNI_METHOD(jbooleanArray, 1get_1model)
-  (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(jbooleanArray, cryptominisat_1get_1model)
+  (JNIEnv * env, jobject this_object, jlong p) {
     jbooleanArray result;
     std::vector<CMSat::lbool> model = decode(p)->get_model();
     int size = model.size() + 1;
@@ -206,32 +206,32 @@ JNI_METHOD(jbooleanArray, 1get_1model)
     return result;
   }
 
-JNI_METHOD(void, 1set_1num_1threads)
- (JNIEnv * env, jclass this_class, jlong p, jint n) {
+JNI_METHOD(void, cryptominisat_1set_1num_1threads)
+ (JNIEnv * env, jobject this_object, jlong p, jint n) {
   decode(p)->set_num_threads(n);
 }
 
-JNI_METHOD(void, 1set_1max_1time)
- (JNIEnv * env, jclass this_class, jlong p, jdouble time) {
+JNI_METHOD(void, cryptominisat_1set_1max_1time)
+ (JNIEnv * env, jobject this_object, jlong p, jdouble time) {
   decode(p)->set_max_time(time);
 }
 
-JNI_METHOD(void, 1set_1timeout_1all_1calls)
- (JNIEnv * env, jclass this_class, jlong p, jdouble time) {
+JNI_METHOD(void, cryptominisat_1set_1timeout_1all_1calls)
+ (JNIEnv * env, jobject this_object, jlong p, jdouble time) {
   decode(p)->set_timeout_all_calls(time);
 }
 
-JNI_METHOD(void, 1set_1default_1polarity)
- (JNIEnv * env, jclass this_class, jlong p, jboolean polarity) {
+JNI_METHOD(void, cryptominisat_1set_1default_1polarity)
+ (JNIEnv * env, jobject this_object, jlong p, jboolean polarity) {
   decode(p)->set_default_polarity(polarity);
 }
 
-JNI_METHOD(void, 1no_1simplify)
- (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(void, cryptominisat_1no_1simplify)
+ (JNIEnv * env, jobject this_object, jlong p) {
   decode(p)->set_no_simplify();
 }
 
-JNI_METHOD(void, 1no_1simplify_1at_1startup)
- (JNIEnv * env, jclass this_class, jlong p) {
+JNI_METHOD(void, cryptominisat_1no_1simplify_1at_1startup)
+ (JNIEnv * env, jobject this_object, jlong p) {
   decode(p)->set_no_simplify_at_startup();
 }
