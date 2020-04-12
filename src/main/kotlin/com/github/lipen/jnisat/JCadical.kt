@@ -240,16 +240,12 @@ fun main() {
         println("model = ${getModel().drop(1)}")
 
         println("Solving with assumptions...")
-        addAssumption(y)
-        check(solve())
-        addAssumption(-y)
-        check(!solve())
+        check(solve(y))
+        check(solve(-y))
 
         val t = newVariable()
-        addAssumption(t)
-        check(solve())
-        addAssumption(-t)
-        check(solve())
+        check(solve(t))
+        check(solve(-t))
         println("Solving with assumptions: OK")
     }
 }
