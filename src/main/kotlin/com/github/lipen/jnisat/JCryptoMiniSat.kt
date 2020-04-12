@@ -129,6 +129,10 @@ class JCryptoMiniSat : AutoCloseable {
     }
 
     fun solve(vararg literals: Int): Boolean {
+        return solve_(literals)
+    }
+
+    fun solve_(literals: IntArray): Boolean {
         return convertSolveResult(cms_solve(handle, literals))
     }
 
