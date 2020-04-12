@@ -4,6 +4,7 @@
 package com.github.lipen.jnisat
 
 import java.io.File
+import kotlin.math.absoluteValue
 
 @Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JCryptoMiniSat : AutoCloseable {
@@ -137,15 +138,21 @@ class JCryptoMiniSat : AutoCloseable {
     }
 
     fun getValue(lit: Int): Boolean {
-        return cms_get_value(handle, lit)
+        require(lit != 0) { "Literal must be non-zero" }
+        return when (val value = cms_get_value(handle, lit.absoluteValue)) {
+            LBOOL_TRUE -> true
+            LBOOL_FALSE -> false
+            LBOOL_UNDEF -> error("cms_get_value returned l_Undef")
+            else -> error("cms_get_value returned $value")
+        } xor (lit < 0)
     }
 
+    /** Note: resulting array is 1-based. */
     fun getModel(): BooleanArray {
         return cms_get_model(handle)
             ?: throw OutOfMemoryError("cms_get_model returned NULL")
     }
 
-    // options
     fun setThreadNumber(n: Int) {
         cms_set_num_threads(handle, n)
     }
@@ -189,7 +196,7 @@ class JCryptoMiniSat : AutoCloseable {
     private external fun cms_simplify(handle: Long, lit1: Int, lit2: Int): Int
     private external fun cms_simplify(handle: Long, lit1: Int, lit2: Int, lit3: Int): Int
     private external fun cms_simplify(handle: Long, literals: IntArray): Int
-    private external fun cms_get_value(handle: Long, lit: Int): Boolean
+    private external fun cms_get_value(handle: Long, lit: Int): Byte
     private external fun cms_get_model(handle: Long): BooleanArray?
     private external fun cms_set_num_threads(handle: Long, n: Int)
     private external fun cms_set_max_time(handle: Long, time: Double)
@@ -202,6 +209,10 @@ class JCryptoMiniSat : AutoCloseable {
         init {
             Loader.load("jcms")
         }
+
+        private const val LBOOL_TRUE: Byte = 0
+        private const val LBOOL_FALSE: Byte = 1
+        private const val LBOOL_UNDEF: Byte = 2
     }
 }
 
@@ -220,7 +231,7 @@ fun main() {
         println("Solving...")
         check(solve()) { "Unexpected UNSAT" }
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-        println("model = ${getModel().drop(1)}")
+        println("model = ${getModel()}")
 
         println("Solving with assumptions...")
         check(solve(y))

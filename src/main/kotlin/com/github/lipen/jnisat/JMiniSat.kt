@@ -183,13 +183,13 @@ class JMiniSat : AutoCloseable {
         return when (val value = minisat_get_value(handle, lit)) {
             LBOOL_TRUE -> true
             LBOOL_FALSE -> false
-            LBOOL_UNDEF -> error("minisat_model_value returned l_Undef")
-            else -> error("minisat_model_value returned $value")
+            LBOOL_UNDEF -> error("minisat_get_value returned l_Undef")
+            else -> error("minisat_get_value returned $value")
         }
     }
 
+    /** Note: resulting array is 1-based. */
     fun getModel(): BooleanArray {
-        // Note: resulting array is 1-based, i.e. of size (nVars+1) with garbage(false) in index 0
         assert(solvable)
         return minisat_get_model(handle)
             ?: throw OutOfMemoryError("minisat_get_model returned NULL")

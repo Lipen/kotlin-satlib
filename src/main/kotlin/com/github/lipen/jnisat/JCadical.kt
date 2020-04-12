@@ -189,6 +189,7 @@ class JCadical : AutoCloseable {
         return cadical_get_value(handle, lit)
     }
 
+    /** Note: resulting array is 1-based. */
     fun getModel(): BooleanArray {
         return cadical_get_model(handle)
             ?: throw OutOfMemoryError("cadical_get_model returned NULL")

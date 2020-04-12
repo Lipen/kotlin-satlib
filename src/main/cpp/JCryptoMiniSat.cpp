@@ -36,10 +36,6 @@ static inline CMSat::Lit toLit(int lit) {
     return CMSat::Lit(std::abs(lit) - 1, lit < 0);
 }
 
-static inline jboolean to_jboolean(CMSat::lbool value) {
-    return value == CMSat::l_True;
-}
-
 static std::vector<CMSat::Lit> to_literals_vector(JNIEnv* env, jintArray literals) {
     jsize array_length = env->GetArrayLength(literals);
     jint* array = env->GetIntArrayElements(literals, 0);
@@ -177,23 +173,23 @@ JNI_METHOD(jint, cms_1simplify__J_3I)
     return correctReturnValue(decode(p)->simplify(&lits));
   }
 
-JNI_METHOD(jboolean, cms_1get_1value)
-  (JNIEnv*, jobject, jlong p, jint lit){
-    return to_jboolean(decode(p)->get_model()[lit - 1]) ? lit : -lit;
+JNI_METHOD(jbyte, cms_1get_1value)
+  (JNIEnv*, jobject, jlong p, jint v) {
+    // `v` is a variable, must be > 0
+    return (jbyte) CMSat::toInt(decode(p)->get_model()[v - 1]);
   }
 
 JNI_METHOD(jbooleanArray, cms_1get_1model)
   (JNIEnv* env, jobject, jlong p) {
-    jbooleanArray result;
     std::vector<CMSat::lbool> model = decode(p)->get_model();
     int size = model.size() + 1;
-    result = env->NewBooleanArray(size);
+    jbooleanArray result = env->NewBooleanArray(size);
     if (result == NULL) {
         return NULL;
     }
     jboolean* literals = new jboolean[size];
     for (int i = 1; i < size; i++) {
-        literals[i] = to_jboolean(model[i - 1]);
+        literals[i] = model[i - 1] == CMSat::l_True;
     }
     env->SetBooleanArrayRegion(result, 0, size, literals);
     delete[] literals;
