@@ -95,7 +95,7 @@ tasks.register("downloadLibs") {
 
         when (osArch) {
             "linux64" -> {
-                for (name in listOf("libjminisat.so", "libjcadical.so")) {
+                for (name in listOf("libjminisat.so", "libjcadical.so", "libjcms.so")) {
                     download {
                         src(urlTemplate.format(name))
                         dest(libDir)
@@ -104,7 +104,7 @@ tasks.register("downloadLibs") {
                 val solverLibDir = projectDir.resolve("libs")
                     .also { it.mkdirs() }
                     .also { check(it.exists()) { "'$it' does not exist" } }
-                for (name in listOf("libminisat.so", "libcadical.so")) {
+                for (name in listOf("libminisat.so", "libcadical.so", "libcryptominisat5.so")) {
                     download {
                         src(urlTemplate.format(name))
                         dest(solverLibDir)
