@@ -55,23 +55,23 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
     }
 
     override fun _solve(): Boolean {
-        return backend.solve() == 10
+        return backend.solve()
     }
 
     override fun _solve(lit: Lit): Boolean {
-        return backend.solve(lit) == 10
+        return backend.solve(lit)
     }
 
     override fun _solve(lit1: Lit, lit2: Lit): Boolean {
-        return backend.solve(lit1, lit2) == 10
+        return backend.solve(lit1, lit2)
     }
 
     override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        return backend.solve(lit1, lit2, lit3) == 10
+        return backend.solve(lit1, lit2, lit3)
     }
 
     override fun _solve(assumptions: LitArray): Boolean {
-        return backend.solve(*assumptions) == 10
+        return backend.solve_(assumptions)
     }
 
     override fun _solve(assumptions: List<Lit>): Boolean {
