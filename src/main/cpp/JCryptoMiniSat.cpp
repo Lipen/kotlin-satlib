@@ -148,7 +148,6 @@ JNI_METHOD(jint, cms_1solve__J_3I)
     return correctReturnValue(decode(p)->solve(&lits));
   }
 
-
 JNI_METHOD(jint, cms_1simplify__J)
   (JNIEnv*, jobject, jlong p) {
     return correctReturnValue(decode(p)->simplify());
