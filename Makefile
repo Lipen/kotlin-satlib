@@ -50,54 +50,33 @@ JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
 
 DOCKER_IMAGE_NAME ?= kotlin-jnisat-builder
-DOCKER_PROJECT_DIR ?= /kotlin-jnisat
-DOCKER_LIB_DIR = $(DOCKER_PROJECT_LIB)/$(LIB_DIR)
 DOCKER_MINISAT_DIR ?= /minisat
 DOCKER_CADICAL_DIR ?= /cadical
 DOCKER_CMS_DIR ?= /cms
+SOLVER_LIB_DIR ?= $(LIB_DIR)
 
 CC ?= g++
 CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
 
-.PHONY: default libjminisat libjcadical libjcms libs headers classes res clean vars
+.PHONY: default libjminisat libjcadical libjcms libs headers classes res solver-libs-docker clean vars
 
 default:
-	@echo "Specify a target! [all libs libs-docker libjminisat libjcadical libjcms headers classes res clean vars]"
+	@echo "Specify a target! [all libs libjminisat libjcadical libjcms headers classes res solver-libs-docker clean vars]"
 	@echo " - libs -- Build all libraries"
-	@echo " - libs-docker -- Build all libraries using Docker"
 	@echo " - libjminisat -- Build jminisat library"
 	@echo " - libjcadical -- Build jcadical library"
 	@echo " - libjcms -- Build jcms library"
 	@echo " - headers -- Generate JNI headers from classes via javah"
 	@echo " - classes -- Compile Java/Kotlin classes (run 'gradlew classes')"
 	@echo " - res -- Copy libraries to '$(LIB_RES)'"
+	@echo " - solver-libs-docker -- Build solver libraries using Docker"
 	@echo " - clean -- Run 'gradlew clean'"
 	@echo " - vars -- Show Makefile variables"
 
 all: headers libs res
 libs: libjminisat libjcadical libjcms
-
-libs-docker: $(HEADERS) $(LIB_DIR)
-	@echo "=== Building libs in Docker..."
-	docker build --tag $(DOCKER_IMAGE_NAME) \
-		--build-arg PROJECT_DIR=$(DOCKER_PROJECT_DIR) \
-		--build-arg MINISAT_DIR=$(DOCKER_MINISAT_DIR) \
-		--build-arg CADICAL_DIR=$(DOCKER_CADICAL_DIR) \
-		--build-arg CMS_DIR=$(DOCKER_CMS_DIR) \
-	.
-	{ \
-		set -e ;\
-		docker inspect $(DOCKER_IMAGE_NAME) 2>&1 >/dev/null || \
-			echo "Docker image '$(DOCKER_IMAGE_NAME)' does not exist!" ;\
-		id=$$(docker create $(DOCKER_IMAGE_NAME)) ;\
-		docker cp $${id}:$(DOCKER_PROJECT_DIR)/$(LIB_DIR)/. $(LIB_DIR)/ ;\
-		docker cp -L $${id}:/usr/local/lib/libminisat.so $(LIB_DIR)/ ;\
-		docker cp -L $${id}:/usr/local/lib/libcadical.so $(LIB_DIR)/ ;\
-		docker cp -L $${id}:/usr/local/lib/libcryptominisat5.so $(LIB_DIR)/ ;\
-		docker rm --volumes $${id} ;\
-	}
 
 libjminisat: LIB = $(JMINISAT_LIB)
 libjminisat: SRC = $(JMINISAT_SRC)
@@ -141,6 +120,25 @@ res:
 	install -m 644 $(JMINISAT_LIB) $(JMINISAT_RES)
 	install -m 644 $(JCADICAL_LIB) $(JCADICAL_RES)
 	install -m 644 $(JCMS_LIB) $(JCMS_RES)
+
+solver-libs-docker: $(SOLVER_LIB_DIR)
+	@echo "=== Building solver libs in Docker..."
+	docker build --tag $(DOCKER_IMAGE_NAME) \
+		--build-arg MINISAT_DIR=$(DOCKER_MINISAT_DIR) \
+		--build-arg CADICAL_DIR=$(DOCKER_CADICAL_DIR) \
+		--build-arg CMS_DIR=$(DOCKER_CMS_DIR) \
+	.
+	{ \
+		set -e ;\
+		docker inspect $(DOCKER_IMAGE_NAME) 2>&1 >/dev/null || \
+			echo "Docker image '$(DOCKER_IMAGE_NAME)' does not exist!" ;\
+		id=$$(docker create $(DOCKER_IMAGE_NAME)) ;\
+		mkdir -p $(SOLVER_LIB_DIR) ;\
+		docker cp -L $${id}:/usr/local/lib/libminisat.so $(SOLVER_LIB_DIR)/ ;\
+		docker cp -L $${id}:/usr/local/lib/libcadical.so $(SOLVER_LIB_DIR)/ ;\
+		docker cp -L $${id}:/usr/local/lib/libcryptominisat5.so $(SOLVER_LIB_DIR)/ ;\
+		docker rm --volumes $${id} ;\
+	}
 
 clean:
 	@echo "=== Cleaning..."
