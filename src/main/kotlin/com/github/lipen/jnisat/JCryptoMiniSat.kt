@@ -38,6 +38,7 @@ class JCryptoMiniSat : AutoCloseable {
         return ++numberOfVariables
     }
 
+    // Note: returns one of {0,10,20}
     fun simplify(): Int {
         return cms_simplify(handle)
     }
@@ -102,24 +103,33 @@ class JCryptoMiniSat : AutoCloseable {
         cms_add_clause(handle, literals)
     }
 
-    fun solve(): Int {
-        return cms_solve(handle)
+    private fun convertSolveResult(value: Int): Boolean {
+        return when (value) {
+            0 -> false // UNSOLVED
+            10 -> true // SATISFIABLE
+            20 -> false // UNSATISFIABLE
+            else -> error("cms_solve returned '$value'")
+        }
     }
 
-    fun solve(lit1: Int): Int {
-        return cms_solve(handle, lit1)
+    fun solve(): Boolean {
+        return convertSolveResult(cms_solve(handle))
     }
 
-    fun solve(lit1: Int, lit2: Int): Int {
-        return cms_solve(handle, lit1, lit2)
+    fun solve(lit1: Int): Boolean {
+        return convertSolveResult(cms_solve(handle, lit1))
     }
 
-    fun solve(lit1: Int, lit2: Int, lit3: Int): Int {
-        return cms_solve(handle, lit1, lit2, lit3)
+    fun solve(lit1: Int, lit2: Int): Boolean {
+        return convertSolveResult(cms_solve(handle, lit1, lit2))
     }
 
-    fun solve(vararg literals: Int): Int {
-        return cms_solve(handle, literals)
+    fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
+        return convertSolveResult(cms_solve(handle, lit1, lit2, lit3))
+    }
+
+    fun solve(vararg literals: Int): Boolean {
+        return convertSolveResult(cms_solve(handle, literals))
     }
 
     fun getValue(lit: Int): Boolean {
@@ -204,17 +214,17 @@ fun main() {
         addClause(x, y, z)
 
         println("Solving...")
-        check(solve() == 10) { "Unexpected UNSAT" }
+        check(solve()) { "Unexpected UNSAT" }
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
         println("model = ${getModel().drop(1)}")
 
         println("Solving with assumptions...")
-        check(solve(y) == 10)
-        check(solve(-y) == 20)
+        check(solve(y))
+        check(solve(-y))
 
         val t = newVariable()
-        check(solve(t) == 10)
-        check(solve(-t) == 10)
+        check(solve(t))
+        check(solve(-t))
         println("Solving with assumptions: OK")
     }
 }
