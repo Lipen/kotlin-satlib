@@ -27,16 +27,12 @@ jobs:
       - name: Compile classes
         run: ./gradlew classes --stacktrace
 
-      - name: Build solver shared libraries using Docker
+      - name: Build libs using Docker
         run: |
-          make solver-libs-docker
+          make headers libs-docker res
           sudo install -m 644 build/lib/libminisat.so /usr/lib
           sudo install -m 644 build/lib/libcadical.so /usr/lib
           sudo install -m 644 build/lib/libcryptominisat5.so /usr/lib
-
-      - name: Build JNI-wrapper shared libraries
-        run: |
-          make headers libs res
 
       - name: Build package using Gradle wrapper
         run: ./gradlew build --stacktrace --scan

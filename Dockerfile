@@ -1,13 +1,16 @@
+ARG PROJECT_DIR=/kotlin-jnisat
 ARG MINISAT_DIR=/minisat
 ARG CADICAL_DIR=/cadical
 ARG CMS_DIR=/cms
 
 FROM openjdk:8 as builder
+ARG PROJECT_DIR
 ARG MINISAT_DIR
 ARG CADICAL_DIR
 ARG CMS_DIR
 
-ENV MINISAT_DIR=${MINISAT_DIR} \
+ENV PROJECT_DIR=${PROJECT_DIR} \
+    MINISAT_DIR=${MINISAT_DIR} \
     CADICAL_DIR=${CADICAL_DIR} \
     CMS_DIR=${CMS_DIR}
 
@@ -52,3 +55,9 @@ WORKDIR build
 RUN cmake ..
 RUN make -j8
 RUN make install/strip
+
+## Build libs
+WORKDIR ${PROJECT_DIR}
+COPY . .
+# Note: 'make headers' must be executed outside
+RUN make libs
