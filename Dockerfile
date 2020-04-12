@@ -30,8 +30,7 @@ RUN apt-get update &&\
 WORKDIR ${MINISAT_DIR}
 RUN git clone --depth=1 https://github.com/niklasso/minisat .
 RUN make lsh MINISAT_REL='-O3 -DNDEBUG -fpermissive'
-RUN install -d /usr/local/lib
-RUN install -m 644 build/dynamic/lib/libminisat.so /usr/local/lib
+RUN make install
 RUN strip --strip-unneeded /usr/local/lib/libminisat.so
 
 ## Build Cadical
