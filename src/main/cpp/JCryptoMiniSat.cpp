@@ -87,7 +87,7 @@ JNI_METHOD(void, cms_1delete)
   }
 
 JNI_METHOD(void, cms_1interrupt)
-  (JNIEnv*, jlong p) {
+  (JNIEnv * env, jobject, jlong p) {
     decode(p)->interrupt_asap();
   }
 
