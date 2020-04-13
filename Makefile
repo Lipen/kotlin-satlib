@@ -15,8 +15,8 @@ JMINISAT_SRC = $(CPP_DIR)/JMiniSat.cpp
 JMINISAT_LIBNAME = libjminisat.so
 JMINISAT_LIB = $(LIB_DIR)/$(JMINISAT_LIBNAME)
 JMINISAT_RES = $(LIB_RES)/$(JMINISAT_LIBNAME)
-MINISAT_INCLUDE_DIR ?= /usr/local/include
-MINISAT_LIB_DIR ?= /usr/local/lib
+MINISAT_INCLUDE_DIR = /usr/local/include
+MINISAT_LIB_DIR = /usr/local/lib
 MINISAT_CPPFLAGS = -I$(MINISAT_INCLUDE_DIR)
 MINISAT_LDFLAGS = -L$(MINISAT_LIB_DIR) -lminisat
 
@@ -26,8 +26,8 @@ JCADICAL_SRC = $(CPP_DIR)/JCadical.cpp
 JCADICAL_LIBNAME = libjcadical.so
 JCADICAL_LIB = $(LIB_DIR)/$(JCADICAL_LIBNAME)
 JCADICAL_RES = $(LIB_RES)/$(JCADICAL_LIBNAME)
-CADICAL_INCLUDE_DIR ?= /usr/local/include
-CADICAL_LIB_DIR ?= /usr/local/lib
+CADICAL_INCLUDE_DIR = /usr/local/include
+CADICAL_LIB_DIR = /usr/local/lib
 CADICAL_CPPFLAGS = -I$(CADICAL_INCLUDE_DIR)
 CADICAL_LDFLAGS = -L$(CADICAL_LIB_DIR) -lcadical
 
@@ -37,8 +37,8 @@ JCMS_SRC = $(CPP_DIR)/JCryptoMiniSat.cpp
 JCMS_LIBNAME = libjcms.so
 JCMS_LIB = $(LIB_DIR)/$(JCMS_LIBNAME)
 JCMS_RES = $(LIB_RES)/$(JCMS_LIBNAME)
-CMS_INCLUDE_DIR ?= /usr/local/include
-CMS_LIB_DIR ?= /usr/local/lib
+CMS_INCLUDE_DIR = /usr/local/include
+CMS_LIB_DIR = /usr/local/lib
 CMS_CPPFLAGS = -I$(CMS_INCLUDE_DIR)
 CMS_LDFLAGS = -L$(CMS_LIB_DIR) -lcryptominisat5
 
@@ -49,13 +49,13 @@ LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB) $(JCMS_LIB)
 JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
 
-DOCKER_IMAGE_NAME ?= kotlin-jnisat-builder
-DOCKER_PROJECT_DIR ?= /kotlin-jnisat
-DOCKER_MINISAT_DIR ?= /minisat
-DOCKER_CADICAL_DIR ?= /cadical
-DOCKER_CMS_DIR ?= /cms
+DOCKER_IMAGE_NAME = kotlin-jnisat-builder
+DOCKER_PROJECT_DIR = /kotlin-jnisat
+DOCKER_MINISAT_DIR = /minisat
+DOCKER_CADICAL_DIR = /cadical
+DOCKER_CMS_DIR = /cms
 
-CC ?= g++
+CC = g++
 CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
