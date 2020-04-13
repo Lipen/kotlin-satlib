@@ -59,4 +59,4 @@ RUN make install/strip
 WORKDIR ${PROJECT_DIR}
 COPY . .
 # Note: 'make headers' must be executed outside
-RUN make libs
+RUN make libs LIB_DIR=build/lib
