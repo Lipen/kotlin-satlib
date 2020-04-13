@@ -176,7 +176,7 @@ JNI_METHOD(jint, cms_1simplify__J_3I)
 JNI_METHOD(jbyte, cms_1get_1value)
   (JNIEnv*, jobject, jlong p, jint v) {
     // `v` is a variable, must be > 0
-    return (jbyte) CMSat::toInt(decode(p)->get_model()[v - 1]);
+    return (jbyte) decode(p)->get_model()[v - 1].getValue();
   }
 
 JNI_METHOD(jbooleanArray, cms_1get_1model)
