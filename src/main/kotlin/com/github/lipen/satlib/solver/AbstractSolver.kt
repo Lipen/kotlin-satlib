@@ -115,10 +115,7 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun solve_(assumptions: List<Lit>): Boolean {
-        buffer.write("c solve")
-        for (lit in assumptions)
-            buffer.write(" $lit")
-        buffer.writeln("")
+        buffer.writeln("c solve ${assumptions.joinToString(" ")}")
         return _solve(assumptions)
     }
 
