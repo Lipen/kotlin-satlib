@@ -12,8 +12,8 @@ class MiniSatSolverTest {
 
     @Test
     fun `simple SAT`(): Unit = with(solver) {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)
@@ -25,8 +25,8 @@ class MiniSatSolverTest {
 
     @Test
     fun `simple UNSAT`(): Unit = with(solver) {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)
@@ -37,7 +37,7 @@ class MiniSatSolverTest {
 
     @Test
     fun `assumptions are supported`(): Unit = with(solver) {
-        val x = newVariable()
+        val x = newLiteral()
 
         addClause(x)
 
@@ -48,7 +48,7 @@ class MiniSatSolverTest {
 
     @Test
     fun `empty clause leads to UNSAT`(): Unit = with(solver) {
-        val x = newVariable()
+        val x = newLiteral()
 
         addClause(x)
         @Suppress("deprecation")
@@ -60,8 +60,8 @@ class MiniSatSolverTest {
     @Test
     fun `solving after reset`() {
         with(solver) {
-            val x = newVariable()
-            val y = newVariable()
+            val x = newLiteral()
+            val y = newLiteral()
             addClause(x, y)
             numberOfVariables `should be equal to` 2
             numberOfClauses `should be equal to` 1
@@ -70,8 +70,8 @@ class MiniSatSolverTest {
         }
         solver.reset()
         with(solver) {
-            val x = newVariable()
-            val y = newVariable()
+            val x = newLiteral()
+            val y = newLiteral()
             addClause(x, y)
             numberOfVariables `should be equal to` 2
             numberOfClauses `should be equal to` 1

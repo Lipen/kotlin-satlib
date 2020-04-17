@@ -14,8 +14,8 @@ class DimacsFileSolverTest {
 
     @Test
     fun `simple SAT`(): Unit = with(solver) {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)
@@ -27,8 +27,8 @@ class DimacsFileSolverTest {
 
     @Test
     fun `simple UNSAT`(): Unit = with(solver) {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)
@@ -39,7 +39,7 @@ class DimacsFileSolverTest {
 
     @Test
     fun `assumptions are not supported`(): Unit = with(solver) {
-        val x = newVariable()
+        val x = newLiteral()
 
         addClause(x)
 
@@ -49,7 +49,7 @@ class DimacsFileSolverTest {
 
     @Test
     fun `empty clause leads to UNSAT`(): Unit = with(solver) {
-        val x = newVariable()
+        val x = newLiteral()
 
         addClause(x)
         @Suppress("deprecation")
@@ -61,7 +61,7 @@ class DimacsFileSolverTest {
     @Test
     fun `solving after reset`() {
         with(solver) {
-            val x = newVariable()
+            val x = newLiteral()
             addClause(x)
             numberOfVariables `should be equal to` 1
             numberOfClauses `should be equal to` 1
@@ -70,7 +70,7 @@ class DimacsFileSolverTest {
         }
         solver.reset()
         with(solver) {
-            val x = newVariable()
+            val x = newLiteral()
             addClause(-x)
             numberOfVariables `should be equal to` 1
             numberOfClauses `should be equal to` 1

@@ -37,7 +37,7 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun newVariable(): Lit {
+    override fun newLiteral(): Lit {
         return backend.newVariable(frozen = false)
     }
 
@@ -132,8 +132,8 @@ class MiniSatSolver @JvmOverloads constructor(
 
 fun main() {
     MiniSatSolver().useWith {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)

@@ -22,7 +22,7 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun newVariable(): Lit {
+    override fun newLiteral(): Lit {
         return backend.newVariable()
     }
 
@@ -93,8 +93,8 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
 
 fun main() {
     CryptoMiniSatSolver().useWith {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)

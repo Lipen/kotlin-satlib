@@ -30,7 +30,7 @@ class DimacsFileSolver @JvmOverloads constructor(
 
     override fun _close() {}
 
-    override fun newVariable(): Lit {
+    override fun newLiteral(): Lit {
         return ++numberOfVariables
     }
 
@@ -133,8 +133,8 @@ private fun parseDimacsOutput(source: BufferedSource): RawAssignment? {
 
 fun main() {
     DimacsFileSolver("cryptominisat5 %s", File("cnf")).useWith {
-        val x = newVariable()
-        val y = newVariable()
+        val x = newLiteral()
+        val y = newLiteral()
 
         addClause(x)
         addClause(-y)
