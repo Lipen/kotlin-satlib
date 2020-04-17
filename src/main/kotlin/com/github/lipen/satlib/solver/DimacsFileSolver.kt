@@ -54,7 +54,7 @@ class DimacsFileSolver @JvmOverloads constructor(
     }
 
     override fun _addClause(literals: LitArray) {
-        addClause_(literals.toList())
+        _addClause(literals.toList())
     }
 
     override fun _addClause(literals: List<Lit>) {

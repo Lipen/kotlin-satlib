@@ -66,7 +66,7 @@ class MiniSatSolver @JvmOverloads constructor(
     }
 
     override fun _addClause(literals: List<Lit>) {
-        addClause_(literals.toIntArray())
+        _addClause(literals.toIntArray())
     }
 
     private fun <T> runMatchingSimpStrategy(block: (do_simp: Boolean, turn_off_simp: Boolean) -> T): T {
@@ -108,7 +108,7 @@ class MiniSatSolver @JvmOverloads constructor(
     }
 
     override fun _solve(assumptions: List<Lit>): Boolean {
-        return solve_(assumptions.toIntArray())
+        return _solve(assumptions.toIntArray())
     }
 
     override fun interrupt() {

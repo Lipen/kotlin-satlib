@@ -51,7 +51,7 @@ class CadicalSolver @JvmOverloads constructor(
     }
 
     override fun _addClause(literals: List<Int>) {
-        addClause_(literals.toIntArray())
+        _addClause(literals.toIntArray())
     }
 
     override fun _solve(): Boolean {
@@ -75,7 +75,7 @@ class CadicalSolver @JvmOverloads constructor(
     }
 
     override fun _solve(assumptions: List<Lit>): Boolean {
-        return solve_(assumptions.toIntArray())
+        return _solve(assumptions.toIntArray())
     }
 
     override fun interrupt() {
