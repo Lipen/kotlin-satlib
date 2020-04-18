@@ -124,6 +124,11 @@ JNI_METHOD(void, minisat_1interrupt)
     decode(handle)->interrupt();
   }
 
+JNI_METHOD(void, minisat_1clear_1interrupt)
+  (JNIEnv*, jobject, jlong handle) {
+    decode(handle)->clearInterrupt();
+  }
+
 JNI_METHOD(void, minisat_1to_1dimacs)
   (JNIEnv* env, jobject, jlong handle, jstring arg) {
     const char* file = env->GetStringUTFChars(arg, 0);
