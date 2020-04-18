@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.op.runWithTimeout
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
@@ -78,5 +79,14 @@ class MiniSatSolverTest {
             solve().`should be true`()
             (getValue(x) or getValue(y)).`should be true`()
         }
+    }
+
+    @Test
+    fun `solving with timeout`(): Unit = with(solver) {
+        declare_sgen_sat()
+        // The problem is satisfiable, but 1 millisecond is definitely not enough to solve it
+        runWithTimeout(1) { solve() }.`should be false`()
+        (this as MiniSatSolver).backend.clearInterrupt()
+        solve().`should be true`()
     }
 }
