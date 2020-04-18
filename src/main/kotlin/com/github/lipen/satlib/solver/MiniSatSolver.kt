@@ -38,7 +38,7 @@ class MiniSatSolver @JvmOverloads constructor(
     }
 
     override fun newLiteral(): Lit {
-        return backend.newVariable(frozen = false)
+        return backend.newVariable()
     }
 
     override fun _comment(comment: String) {}
