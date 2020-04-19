@@ -15,12 +15,7 @@ import com.github.lipen.satlib.solver.newBoolVarArray
 import com.github.lipen.satlib.solver.newDomainVarArray
 import com.github.lipen.satlib.solver.newIntVarArray
 import com.github.lipen.satlib.utils.useWith
-import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.PerformanceCounter
-import com.soywiz.klock.measureTimeWithResult
-import okio.buffer
-import okio.sink
-import java.io.File
 
 @Suppress("LocalVariableName")
 private fun Solver.declareVariables(P: Int, truthTable: Map<Row, Boolean>): BFVariables {
