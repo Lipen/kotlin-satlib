@@ -8,8 +8,6 @@ import com.github.lipen.satlib.core.DomainVarArray
 import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.RawAssignment
 import com.github.lipen.satlib.core.convert
-import com.github.lipen.satlib.solver.MiniSatSolver
-import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
@@ -18,14 +16,6 @@ import okio.buffer
 import okio.sink
 import java.io.File
 import kotlin.math.pow
-
-object Globals {
-    var solverProvider: () -> Solver = { MiniSatSolver() }
-    var IS_ENCODE_BFS: Boolean = true
-    var IS_FORBID_DOUBLE_NEGATION: Boolean = true
-    var Pmax: Int = 30
-    var timeout: Double = 30.0
-}
 
 enum class NodeType(val value: Int) {
     TERMINAL(1),
@@ -225,8 +215,8 @@ fun isBooleanFunctionCompliesWithTruthTable(f: Logic, tt: Map<Row, Boolean>): Bo
 
 fun solveAllIterative(
     X: Int,
-    Pmax: Int = Globals.Pmax,
-    timeout: Double = Globals.timeout
+    Pmax: Int = GlobalsBF.Pmax,
+    timeout: Double = GlobalsBF.timeout
 ) {
     File("results-inferAll$X-iterative.csv").sink().buffer().use { csv ->
         csv.writeln("f,P,time")
@@ -252,8 +242,8 @@ fun solveAllIterative(
 
 fun solveAllIncremental(
     X: Int,
-    Pmax: Int = Globals.Pmax,
-    timeout: Double = Globals.timeout
+    Pmax: Int = GlobalsBF.Pmax,
+    timeout: Double = GlobalsBF.timeout
 ) {
     File("results-inferAll$X-incremental.csv").sink().buffer().use { csv ->
         csv.writeln("f,P,time")
@@ -281,7 +271,7 @@ fun solveRandom(
     X: Int,
     n: Int,
     distribution: String = "01x",
-    timeout: Double = Globals.timeout
+    timeout: Double = GlobalsBF.timeout
 ) {
     File("results-inferRandom$X.csv").sink().buffer().use { csv ->
         csv.writeln("tt,bf,P,time")

@@ -1,10 +1,20 @@
 package examples.ph
 
+import com.github.lipen.satlib.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.Solver
 import com.soywiz.klock.PerformanceCounter
 import examples.bf.timeSince
 
+object GlobalsPH {
+    var solverProvider: () -> Solver = {
+        MiniSatSolver()
+        // CryptoMiniSatSolver()
+        // CadicalSolver()
+    }
+}
+
 fun main() {
-    val maxP = 3
+    val maxP = 11
     val timeStart = PerformanceCounter.reference
 
     provePigeonholePrincipleIterative(maxP)

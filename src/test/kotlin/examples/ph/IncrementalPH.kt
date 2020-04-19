@@ -6,7 +6,6 @@ import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.newIntVar
 import com.github.lipen.satlib.solver.newIntVarArray
@@ -16,10 +15,6 @@ import com.soywiz.klock.measureTimeWithResult
 import okio.buffer
 import okio.sink
 import java.io.File
-
-private val solverProvider: () -> Solver = {
-    MiniSatSolver()
-}
 
 inline fun <T> DomainVar<T>.changeDomain(
     newDomain: Iterable<T>,
@@ -70,7 +65,7 @@ fun provePigeonholePrincipleIncremental(maxP: Int): Boolean {
     println("Proving pigeonhole principle for maxP = $maxP: Incremental strategy...")
     File("pigeonholeIncremental.csv").sink().buffer().use { csv ->
         csv.writeln("P,time")
-        solverProvider().useWith {
+        GlobalsPH.solverProvider().useWith {
             var pigeonHole = generateInitialTable()
             for (P in 2..maxP) {
                 // println("P = $P")

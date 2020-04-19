@@ -162,7 +162,7 @@ private fun Solver.declareReduction(vars: BFVariables): Unit = with(vars) {
                 nodeChild[p] eq c
             )
 
-    if (Globals.IS_FORBID_DOUBLE_NEGATION) {
+    if (GlobalsBF.IS_FORBID_DOUBLE_NEGATION) {
         comment("NOT: forbid double negation")
         // (nodeType[p] = NOT) & (nodeChild[p] = c) => (nodeType[c] != NOT)
         for (p in 1..P)
@@ -238,7 +238,7 @@ fun solveFor(P: Int, tt: Map<Row, Boolean>, timeout: Double = 0.0): BFAssignment
     // DimacsFileSolver("D:/dev/tools/minisat/build/release/bin/minisat %s result; cat result", File("cnf")).useWith {
     // DimacsFileSolver("python run_minisat.py %s result-P$P", File("cnf-P$P")).useWith {
     // CryptoMiniSatSolver().useWith {
-    Globals.solverProvider().useWith {
+    GlobalsBF.solverProvider().useWith {
         val timeStart = PerformanceCounter.reference
         val nvarStart = numberOfVariables
         val nconStart = numberOfClauses
@@ -305,8 +305,8 @@ fun solveFor(P: Int, tt: Map<Row, Boolean>, timeout: Double = 0.0): BFAssignment
 
 fun solveIteratively(
     tt: Map<Row, Boolean>,
-    Pmax: Int = Globals.Pmax,
-    timeout: Double = Globals.timeout,
+    Pmax: Int = GlobalsBF.Pmax,
+    timeout: Double = GlobalsBF.timeout,
     quite: Boolean = false
 ): BFAssignment? {
     println("Searching BF for the truth table '${ttToBinaryString(tt)}'...")

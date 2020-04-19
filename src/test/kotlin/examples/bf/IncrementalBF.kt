@@ -118,7 +118,7 @@ private fun Solver.declareIncrementalReduction(vars: BFVariables): Int = with(va
         }
     }
 
-    if (Globals.IS_ENCODE_BFS) {
+    if (GlobalsBF.IS_ENCODE_BFS) {
         comment("BFS")
         // nodeParent[j + 1] >= nodeParent[j]
         for (j in 3 until P)
@@ -221,7 +221,7 @@ private fun Solver.declareIncrementalReduction(vars: BFVariables): Int = with(va
                 nodeChild[p] eq c
             )
 
-    if (Globals.IS_FORBID_DOUBLE_NEGATION) {
+    if (GlobalsBF.IS_FORBID_DOUBLE_NEGATION) {
         comment("NOT: forbid double negation")
         // (nodeType[p] = NOT) & (nodeChild[p] = c) => (nodeType[c] != NOT)
         for (p in 1..P)
@@ -294,7 +294,7 @@ private fun Solver.declareIncrementalReduction(vars: BFVariables): Int = with(va
 private fun Solver.makeInductionStep(
     P: Int,
     tt: Map<Row, Boolean>,
-    timeout: Double = Globals.timeout,
+    timeout: Double = GlobalsBF.timeout,
     previousAssumption: Int?,
     old: BFVariables?
 ): Pair<BFAssignment?, Pair<Int, BFVariables>?> {
@@ -373,14 +373,14 @@ private fun Solver.makeInductionStep(
 
 fun solveIncrementally(
     tt: Map<Row, Boolean>,
-    Pmax: Int = Globals.Pmax,
-    timeout: Double = Globals.timeout,
+    Pmax: Int = GlobalsBF.Pmax,
+    timeout: Double = GlobalsBF.timeout,
     quite: Boolean = false
 ): BFAssignment? {
     var result: Pair<BFAssignment?, Pair<Int, BFVariables>?>
     var prevStep: Pair<Int?, BFVariables?> = Pair(null, null)
     println("Searching BF for the truth table '${ttToBinaryString(tt)}'...")
-    Globals.solverProvider().useWith {
+    GlobalsBF.solverProvider().useWith {
         for (P in 1..Pmax) {
             println("\nTrying P = $P")
             result = makeInductionStep(

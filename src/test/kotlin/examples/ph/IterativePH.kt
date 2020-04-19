@@ -3,7 +3,6 @@ package examples.ph
 import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.newIntVarArray
 import com.github.lipen.satlib.utils.useWith
@@ -12,10 +11,6 @@ import com.soywiz.klock.measureTimeWithResult
 import okio.buffer
 import okio.sink
 import java.io.File
-
-private val solverProvider: () -> Solver = {
-    MiniSatSolver()
-}
 
 private fun Solver.generateIterative(P: Int, H: Int = P - 1): IntVarArray {
     val pigeonHole = newIntVarArray(P) { 1..H }
@@ -40,7 +35,7 @@ fun provePigeonholePrincipleIterative(maxP: Int): Boolean {
     File("pigeonholeIterative.csv").sink().buffer().use { csv ->
         csv.writeln("P,time")
         for (P in 2..maxP) {
-            solverProvider().useWith {
+            GlobalsPH.solverProvider().useWith {
                 // println("P = $P")
                 generateIterative(P)
 

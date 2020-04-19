@@ -1,6 +1,20 @@
 package examples.bf
 
+import com.github.lipen.satlib.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.Solver
 import com.soywiz.klock.PerformanceCounter
+
+object GlobalsBF {
+    var solverProvider: () -> Solver = {
+        MiniSatSolver()
+        // CryptoMiniSatSolver()
+        // CadicalSolver()
+    }
+    var IS_ENCODE_BFS: Boolean = true
+    var IS_FORBID_DOUBLE_NEGATION: Boolean = true
+    var Pmax: Int = 30
+    var timeout: Double = 30.0
+}
 
 @Suppress("LocalVariableName")
 fun main() {
