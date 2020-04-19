@@ -303,6 +303,10 @@ private fun Solver.makeInductionStep(
     val nvarStart = numberOfVariables
     val nconStart = numberOfClauses
 
+    if (previousAssumption != null) {
+        addClause(-previousAssumption)
+    }
+
     val vars: BFVariables = if (old != null) {
         declareIncrementalVariables(P, old)
     } else {
@@ -345,10 +349,6 @@ private fun Solver.makeInductionStep(
         if (timeout > 0) runWithTimeout((timeout * 1000).toLong()) { solve(activation) }
         else solve(activation)
     val solvingTime = timeSince(timeStartSolving)
-
-    if (timeout > 0 && solvingTime.seconds <= timeout) {
-        addClause(-activation)
-    }
 
     return if (isSat) {
         println("SAT for P = $P in %.3f s".format(solvingTime.seconds))
