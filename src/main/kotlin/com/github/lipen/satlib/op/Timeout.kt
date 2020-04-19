@@ -8,8 +8,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
-fun <T> Solver.runWithTimeout(timeMillis: Long, block: Solver.() -> T): T {
-    return runBlocking {
+fun <T> Solver.runWithTimeout(timeMillis: Long, block: Solver.() -> T): T =
+    runBlocking {
         val job = async(Dispatchers.Default) { block() }
         try {
             withTimeout(timeMillis) {
@@ -24,4 +24,3 @@ fun <T> Solver.runWithTimeout(timeMillis: Long, block: Solver.() -> T): T {
             }
         }
     }
-}
