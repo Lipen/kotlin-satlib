@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
@@ -17,6 +18,10 @@ fun <T> Solver.runWithTimeout(timeMillis: Long, block: Solver.() -> T): T {
         } catch (e: TimeoutCancellationException) {
             interrupt()
             job.await()
+        } finally {
+            if (this@runWithTimeout is MiniSatSolver) {
+                backend.clearInterrupt()
+            }
         }
     }
 }
