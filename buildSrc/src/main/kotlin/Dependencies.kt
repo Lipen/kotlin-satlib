@@ -16,8 +16,7 @@ object Versions {
 }
 
 object Libs {
-    const val junit_jupiter_api = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
-    const val junit_jupiter_engine = "org.junit.jupiter:junit-jupiter-engine:${Versions.junit}"
+    const val junit_jupiter = "org.junit.jupiter:junit-jupiter:${Versions.junit}"
     const val kluent = "org.amshove.kluent:kluent:${Versions.kluent}"
     const val okio = "com.squareup.okio:okio:${Versions.okio}"
     const val multiarray = "com.github.lipen:MultiArray:${Versions.multiarray}"

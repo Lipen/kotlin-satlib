@@ -27,8 +27,7 @@ dependencies {
     implementation(Libs.kotlin_jnisat)
     implementation(Libs.coroutines)
 
-    testImplementation(Libs.junit_jupiter_api)
-    testRuntimeOnly(Libs.junit_jupiter_engine)
+    testImplementation(Libs.junit_jupiter)
     testImplementation(Libs.kluent)
     testImplementation(Libs.klock)
 }
