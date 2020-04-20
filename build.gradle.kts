@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
     implementation(Libs.okio)
     implementation(Libs.multiarray)
