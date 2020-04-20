@@ -12,31 +12,6 @@ class MiniSatSolverTest {
     private val solver: Solver = MiniSatSolver()
 
     @Test
-    fun `simple SAT`(): Unit = with(solver) {
-        val x = newLiteral()
-        val y = newLiteral()
-
-        addClause(x)
-        addClause(-y)
-
-        solve().`should be true`()
-        getValue(x).`should be true`()
-        getValue(y).`should be false`()
-    }
-
-    @Test
-    fun `simple UNSAT`(): Unit = with(solver) {
-        val x = newLiteral()
-        val y = newLiteral()
-
-        addClause(x)
-        addClause(-y)
-        addClause(-x, y)
-
-        solve().`should be false`()
-    }
-
-    @Test
     fun `assumptions are supported`(): Unit = with(solver) {
         val x = newLiteral()
 
@@ -45,40 +20,6 @@ class MiniSatSolverTest {
         solve().`should be true`()
         solve(x).`should be true`()
         solve(-x).`should be false`()
-    }
-
-    @Test
-    fun `empty clause leads to UNSAT`(): Unit = with(solver) {
-        val x = newLiteral()
-
-        addClause(x)
-        @Suppress("deprecation")
-        addClause()
-
-        solve().`should be false`()
-    }
-
-    @Test
-    fun `solving after reset`() {
-        with(solver) {
-            val x = newLiteral()
-            val y = newLiteral()
-            addClause(x, y)
-            numberOfVariables `should be equal to` 2
-            numberOfClauses `should be equal to` 1
-            solve().`should be true`()
-            (getValue(x) or getValue(y)).`should be true`()
-        }
-        solver.reset()
-        with(solver) {
-            val x = newLiteral()
-            val y = newLiteral()
-            addClause(x, y)
-            numberOfVariables `should be equal to` 2
-            numberOfClauses `should be equal to` 1
-            solve().`should be true`()
-            (getValue(x) or getValue(y)).`should be true`()
-        }
     }
 
     @Test
