@@ -30,19 +30,19 @@ typealias DomainVarArray<T> = MultiArray<DomainVar<T>>
 
 typealias IntVarArray = MultiArray<IntVar>
 
-class BoolVarArray private constructor(
+class BoolVarArray @PublishedApi internal constructor(
     private val backend: IntMultiArray
 ) : MultiArray<Lit> by backend {
     companion object Factory {
         @JvmStatic
-        fun create(
+        inline fun create(
             vararg shape: Int,
             init: (IntArray) -> Lit
         ): BoolVarArray = create_(shape, init)
 
         @JvmStatic
         @Suppress("FunctionName")
-        fun create_(
+        inline fun create_(
             shape: IntArray,
             init: (IntArray) -> Lit
         ): BoolVarArray = BoolVarArray(IntMultiArray.create(shape, init))
