@@ -130,6 +130,10 @@ abstract class AbstractSolver : Solver {
         }
     }
 
+    override fun toString(): String {
+        return this::class.java.simpleName
+    }
+
     protected abstract fun _reset()
     protected abstract fun _close()
     protected abstract fun _comment(comment: String)

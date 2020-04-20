@@ -101,6 +101,10 @@ class DimacsFileSolver @JvmOverloads constructor(
         return _model ?: error("Model is null because the solver is not in the SAT state")
     }
 
+    override fun toString(): String {
+        return "${this::class.java.simpleName}(\"$command\", \"$file\")"
+    }
+
     companion object {
         private val ASSUMPTIONS_NOT_SUPPORTED: String =
             "${DimacsFileSolver::class.java.simpleName} does not support solving with assumptions"
