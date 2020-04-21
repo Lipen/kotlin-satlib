@@ -60,10 +60,10 @@ CCFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
 
-.PHONY: default libs libs-docker libjminisat libjcadical libjcms headers classes res clean vars
+.PHONY: default all libs libs-docker libjminisat libjcadical libjcms headers classes res clean vars
 
 default:
-	@echo "Specify a target! [all libs libjminisat libjcadical libjcms headers classes res solver-libs-docker clean vars]"
+	@echo "Specify a target! [all libs libs-docker libjminisat libjcadical libjcms headers classes res clean vars]"
 	@echo " - libs -- Build all libraries"
 	@echo " - libs-docker -- Build all libraries using Docker"
 	@echo " - libjminisat -- Build jminisat library"
@@ -72,7 +72,6 @@ default:
 	@echo " - headers -- Generate JNI headers from classes via javah"
 	@echo " - classes -- Compile Java/Kotlin classes (run 'gradlew classes')"
 	@echo " - res -- Copy libraries to '$(LIB_RES)'"
-	@echo " - solver-libs-docker -- Build solver libraries using Docker"
 	@echo " - clean -- Run 'gradlew clean'"
 	@echo " - vars -- Show Makefile variables"
 
