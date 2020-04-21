@@ -231,7 +231,7 @@ fun main() {
         println("Solving...")
         check(solve()) { "Unexpected UNSAT" }
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-        println("model = ${getModel()}")
+        println("model = ${getModel().drop(1)}")
 
         println("Solving with assumptions...")
         check(solve(y))
