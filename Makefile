@@ -148,3 +148,4 @@ clean:
 
 vars:
 	$(foreach v, $(sort $(.VARIABLES)), $(if $(filter file,$(origin $(v))), $(info $(v)=$($(v)))))
+	@:
