@@ -20,6 +20,17 @@ MINISAT_LIB_DIR = /usr/local/lib
 MINISAT_CPPFLAGS = -I$(MINISAT_INCLUDE_DIR)
 MINISAT_LDFLAGS = -L$(MINISAT_LIB_DIR) -lminisat
 
+JGLUCOSE_CLASSNAME = $(PACKAGE).JGlucose
+JGLUCOSE_HEADER = $(HEADERS_DIR)/$(subst .,_,$(JGLUCOSE_CLASSNAME)).h
+JGLUCOSE_SRC = $(CPP_DIR)/JGlucose.cpp
+JGLUCOSE_LIBNAME = libjglucose.so
+JGLUCOSE_LIB = $(LIB_DIR)/$(JGLUCOSE_LIBNAME)
+JGLUCOSE_RES = $(LIB_RES)/$(JGLUCOSE_LIBNAME)
+GLUCOSE_INCLUDE_DIR = /home/ann/Documents/SAT/solvers/
+GLUCOSE_LIB_DIR = /home/ann/Documents/SAT/solvers/glucose/build
+GLUCOSE_CPPFLAGS = -I$(GLUCOSE_INCLUDE_DIR)
+GLUCOSE_LDFLAGS = -L$(GLUCOSE_LIB_DIR) -lglucose
+
 JCADICAL_CLASSNAME = $(PACKAGE).JCadical
 JCADICAL_HEADER = $(HEADERS_DIR)/$(subst .,_,$(JCADICAL_CLASSNAME)).h
 JCADICAL_SRC = $(CPP_DIR)/JCadical.cpp
@@ -42,9 +53,9 @@ CMS_LIB_DIR = /usr/local/lib
 CMS_CPPFLAGS = -I$(CMS_INCLUDE_DIR)
 CMS_LDFLAGS = -L$(CMS_LIB_DIR) -lcryptominisat5
 
-CLASSNAMES = $(JMINISAT_CLASSNAME) $(JCADICAL_CLASSNAME) $(JCMS_CLASSNAME)
-HEADERS = $(JMINISAT_HEADER) $(JCADICAL_HEADER) $(JCMS_HEADER)
-LIBS = $(JMINISAT_LIB) $(JCADICAL_LIB) $(JCMS_LIB)
+CLASSNAMES = $(JMINISAT_CLASSNAME) $(JGLUCOSE_CLASSNAME) $(JCADICAL_CLASSNAME) $(JCMS_CLASSNAME)
+HEADERS = $(JMINISAT_HEADER) $(JGLUCOSE_HEADER) $(JCADICAL_HEADER) $(JCMS_HEADER)
+LIBS = $(JMINISAT_LIB) $(JGLUCOSE_LIB) $(JCADICAL_LIB) $(JCMS_LIB)
 
 JAVA_HOME ?= $(subst /bin/javac,,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
@@ -52,6 +63,7 @@ JAVA_INCLUDE = $(JAVA_HOME)/include
 DOCKER_IMAGE_NAME = kotlin-jnisat-builder
 DOCKER_PROJECT_DIR = /kotlin-jnisat
 DOCKER_MINISAT_DIR = /minisat
+DOCKER_GLUCOSE_DIR = /glucose
 DOCKER_CADICAL_DIR = /cadical
 DOCKER_CMS_DIR = /cms
 
@@ -77,7 +89,7 @@ default:
 	@echo " - vars -- Show Makefile variables"
 
 all: headers libs res
-libs: libjminisat libjcadical libjcms
+libs: libjminisat libjcadical libjcms libjglucose
 
 libs-docker: $(LIB_DIR)
 	@echo "=== Building libs in Docker..."
@@ -85,6 +97,7 @@ libs-docker: $(LIB_DIR)
 		--build-arg PROJECT_DIR=$(DOCKER_PROJECT_DIR) \
 		--build-arg MINISAT_DIR=$(DOCKER_MINISAT_DIR) \
 		--build-arg CADICAL_DIR=$(DOCKER_CADICAL_DIR) \
+		--build-arg GLUCOSE_DIR=$(DOCKER_GLUCOSE_DIR) \
 		--build-arg CMS_DIR=$(DOCKER_CMS_DIR) \
 	.
 	{ \
@@ -96,6 +109,7 @@ libs-docker: $(LIB_DIR)
 		docker cp -L $${id}:/usr/local/lib/libminisat.so $(LIB_DIR)/ ;\
 		docker cp -L $${id}:/usr/local/lib/libcadical.so $(LIB_DIR)/ ;\
 		docker cp -L $${id}:/usr/local/lib/libcryptominisat5.so $(LIB_DIR)/ ;\
+		docker cp -L $${id}:/usr/local/lib/libglucose.so $(LIB_DIR)/ ;\
 		docker rm --volumes $${id} ;\
 	}
 
@@ -105,6 +119,14 @@ libjminisat: CPPFLAGS += $(MINISAT_CPPFLAGS)
 libjminisat: LDFLAGS += $(MINISAT_LDFLAGS)
 libjminisat $(JMINISAT_LIB): $(LIB_DIR)
 	@echo "=== Building libjminisat library..."
+	$(CC) $(CCFLAGS) $(CPPFLAGS) $(SRC) $(LDFLAGS) -o $(LIB)
+
+libjglucose: LIB = $(JGLUCOSE_LIB)
+libjglucose: SRC = $(JGLUCOSE_SRC)
+libjglucose: CPPFLAGS += $(GLUCOSE_CPPFLAGS)
+libjglucose: LDFLAGS += $(GLUCOSE_LDFLAGS)
+libjglucose $(GLUCOSE_LIB): $(LIB_DIR)
+	@echo "=== Building libjglucose library..."
 	$(CC) $(CCFLAGS) $(CPPFLAGS) $(SRC) $(LDFLAGS) -o $(LIB)
 
 libjcadical: LIB = $(JCADICAL_LIB)
