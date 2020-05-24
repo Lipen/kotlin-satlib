@@ -7,11 +7,13 @@ FROM openjdk:8 as builder
 ARG PROJECT_DIR
 ARG MINISAT_DIR
 ARG CADICAL_DIR
+ARG GLUCOSE_DIR
 ARG CMS_DIR
 
 ENV PROJECT_DIR=${PROJECT_DIR} \
     MINISAT_DIR=${MINISAT_DIR} \
     CADICAL_DIR=${CADICAL_DIR} \
+    GLUCOSE_DIR=${GLUCOSE_DIR} \
     CMS_DIR=${CMS_DIR}
 
 RUN apt-get update &&\
@@ -32,6 +34,27 @@ RUN git clone --depth=1 https://github.com/niklasso/minisat .
 RUN make lsh MINISAT_REL='-O3 -DNDEBUG -fpermissive'
 RUN make install
 RUN strip --strip-unneeded /usr/local/lib/libminisat.so
+
+## Build Glucose
+WORKDIR ${GLUCOSE_DIR}
+RUN git clone --depth=1 https://github.com/wadoon/glucose .
+RUN mkdir build
+WORKDIR "build"
+RUN cmake -DBUILD_SHARED_LIBS=ON ..
+RUN make
+WORKDIR ".."
+RUN install -d /usr/local/include/glucose/simp
+RUN install -m 644 simp/*.h /usr/local/include/glucose/simp
+RUN install -d /usr/local/include/mtl
+RUN install -m 644 mtl/*.h /usr/local/include/mtl
+RUN install -d /usr/local/include/core
+RUN install -m 644 core/*.h /usr/local/include/core
+RUN install -d /usr/local/include/utils
+RUN install -m 644 utils/*.h /usr/local/include/utils
+RUN install -d /usr/local/lib
+RUN install -m 644 build/libglucose.so /usr/local/lib
+RUN strip --strip-unneeded /usr/local/lib/libglucose.so
+
 
 ## Build Cadical
 WORKDIR ${CADICAL_DIR}
