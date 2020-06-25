@@ -55,7 +55,7 @@ In order to use JNI wrappers for MiniSat or Cadical (link:src/main/kotlin/com/gi
 
 - Getting MiniSat shared library is as easy as cloning the https://github.com/niklasso/minisat[git repo] and executing `make lsh`.
 More specific build instructions can be found in link:Dockerfile[].
-- Cadical can be built from link:https://github.com/arminbiere/cadical[sources] by executing `./configure && make`, but this does not produce *shared* library, only the static one -- however, this may be easily link:cadical-shared-lib.patch[patched].
+- Cadical can be built from link:https://github.com/arminbiere/cadical[sources] by executing `./configure && make`, but this does not produce *shared* library, only the static one -- however, this may be easily link:patches/cadical-shared-lib.patch[patched].
 Another way is to unpack the static lib (`ar -x libcadical.a`, note: do it in an empty folder) and re-link objects into the shared lib (`g++ -o libcadical.so -shared *.o`).
 Again, more specific build instructions can be found in link:Dockerfile[].
 - Shared (dynamic) libraries must be placed somewhere, where they can be found by Java at runtime.

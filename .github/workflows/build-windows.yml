@@ -30,7 +30,7 @@ jobs:
       - name: Build MiniSat DLL
         run: |
           git clone https://github.com/niklasso/minisat minisat-src
-          git apply --directory minisat-src minisat-dll.patch
+          git apply --directory minisat-src patches/minisat-dll.patch
           make -C minisat-src dll
           cp minisat-src/build/dynamic/lib/minisat.dll .
 

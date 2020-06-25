@@ -36,7 +36,7 @@ RUN strip --strip-unneeded /usr/local/lib/libminisat.so
 ## Build Cadical
 WORKDIR ${CADICAL_DIR}
 RUN git clone --depth=1 https://github.com/arminbiere/cadical .
-COPY cadical-shared-lib.patch .
+COPY patches/cadical-shared-lib.patch .
 RUN git apply cadical-shared-lib.patch
 RUN ./configure -j8 -fPIC CXXFLAGS="-s"
 RUN make lsh
