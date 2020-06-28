@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "com.github.lipen"
 
 plugins {
+    idea
     kotlin("jvm") version Versions.kotlin
     id("org.jmailen.kotlinter") version Versions.kotlinter
     id("com.github.ben-manes.versions") version Versions.gradle_versions
@@ -18,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
 
     testImplementation(Libs.junit_jupiter_api)
@@ -25,11 +27,26 @@ dependencies {
     testImplementation(Libs.kluent)
 }
 
-jmh {
-    jmhVersion = Versions.jmh
-    humanOutputFile = project.file("${project.buildDir}/reports/jmh/human.txt")
-    resultsFile = project.file("${project.buildDir}/reports/jmh/results.json")
-    resultFormat = "JSON"
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.withType<Test> {
+    @Suppress("UnstableApiUsage")
+    useJUnitPlatform()
+    testLogging.events(
+        // TestLogEvent.PASSED,
+        TestLogEvent.FAILED,
+        TestLogEvent.SKIPPED,
+        TestLogEvent.STANDARD_ERROR
+    )
+}
+
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
 }
 
 kotlinter {
@@ -52,19 +69,12 @@ publishing {
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+jmh {
+    jmhVersion = Versions.jmh
+    humanOutputFile = project.file("${project.buildDir}/reports/jmh/human.txt")
+    resultsFile = project.file("${project.buildDir}/reports/jmh/results.json")
+    resultFormat = "JSON"
 }
-
-tasks.withType<Test> {
-    @Suppress("UnstableApiUsage")
-    useJUnitPlatform()
-    testLogging.events(
-        // TestLogEvent.PASSED,
-        TestLogEvent.FAILED,
-        TestLogEvent.SKIPPED,
-        TestLogEvent.STANDARD_ERROR
-    )
 
 tasks.shadowJar {
     minimize()
