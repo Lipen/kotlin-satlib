@@ -242,7 +242,7 @@ fun main() {
 
         println("Solving with assumptions...")
         check(solve(y))
-        check(solve(-y))
+        check(!solve(-y))
 
         val t = newVariable()
         check(solve(t))
