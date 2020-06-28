@@ -4,25 +4,21 @@ ARG CADICAL_DIR=/cadical
 ARG CMS_DIR=/cms
 
 FROM openjdk:8 as builder
+
 ARG PROJECT_DIR
 ARG MINISAT_DIR
 ARG CADICAL_DIR
 ARG CMS_DIR
 
-ENV PROJECT_DIR=${PROJECT_DIR} \
-    MINISAT_DIR=${MINISAT_DIR} \
-    CADICAL_DIR=${CADICAL_DIR} \
-    CMS_DIR=${CMS_DIR}
-
 RUN apt-get update &&\
-    apt-get install --no-install-recommends -y \
+    apt-get install --no-install-recommends --no-install-suggests -y \
         build-essential \
-        cmake \
-        gcc \
+        ca-certificates \
+        cmake `#for CryptoMiniSat` \
         git \
-        libboost-program-options-dev \
-        libm4ri-dev \
-        zlib1g-dev \
+        libboost-program-options-dev `#for CryptoMiniSat` \
+        libm4ri-dev `#for CryptoMiniSat` \
+        zlib1g-dev `#for MiniSat and CryptoMiniSat` \
     &&\
     rm -rf /var/lib/apt/lists/*
 
@@ -35,28 +31,28 @@ RUN strip --strip-unneeded /usr/local/lib/libminisat.so
 
 ## Build Cadical
 WORKDIR ${CADICAL_DIR}
-RUN git clone --depth=1 https://github.com/arminbiere/cadical .
+RUN git clone --depth=1 --branch rel-1.3.0 https://github.com/arminbiere/cadical .
 COPY patches/cadical-shared-lib.patch .
 RUN git apply cadical-shared-lib.patch
 RUN ./configure -j8 -fPIC CXXFLAGS="-s"
 RUN make lsh
-RUN install -d /usr/local/include/cadical
-RUN install -m 644 src/cadical.hpp /usr/local/include/cadical
-RUN install -d /usr/local/lib
-RUN install -m 644 build/libcadical.so /usr/local/lib
+RUN install -m 644 src/cadical.hpp -Dt /usr/local/include/cadical
+RUN install -m 644 build/libcadical.so -Dt /usr/local/lib
 RUN strip --strip-unneeded /usr/local/lib/libcadical.so
+RUN make cadical
+RUN install -m 755 build/cadical -Dt /usr/local/bin
 
 ## Build CryptoMiniSat
 WORKDIR ${CMS_DIR}
-RUN git clone --depth=1 https://github.com/msoos/cryptominisat .
+RUN git clone --depth=1 --branch 5.7.1 https://github.com/msoos/cryptominisat .
 RUN mkdir build
 WORKDIR build
-RUN cmake ..
+RUN cmake -DENABLE_PYTHON_INTERFACE=OFF ..
 RUN make -j8
 RUN make install/strip
 
-## Build libs
+## Build JNI libs
 WORKDIR ${PROJECT_DIR}
 COPY . .
-# Note: 'make headers' must be executed outside
+# Note: 'make headers' must be executed outside!
 RUN make libs LIB_DIR=build/lib
