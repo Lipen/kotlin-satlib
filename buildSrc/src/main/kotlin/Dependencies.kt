@@ -9,6 +9,7 @@ object Versions {
     const val jmh = "1.23"
     const val junit = "5.5.0-M1"
     const val kluent = "1.49"
+    const val shadow = "5.2.0"
 }
 
 object Libs {

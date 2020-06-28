@@ -10,6 +10,7 @@ plugins {
     id("fr.brouillard.oss.gradle.jgitver") version Versions.jgitver
     id("me.champeau.gradle.jmh") version Versions.jmh_gradle_plugin
     `maven-publish`
+    id("com.github.johnrengelman.shadow") version Versions.shadow
 }
 
 repositories {
@@ -64,6 +65,9 @@ tasks.withType<Test> {
         TestLogEvent.SKIPPED,
         TestLogEvent.STANDARD_ERROR
     )
+
+tasks.shadowJar {
+    minimize()
 }
 
 tasks.wrapper {
