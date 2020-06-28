@@ -19,7 +19,7 @@ object Loader {
                 }
                 System.load(libFile.absolutePath)
             } else {
-                throw UnsatisfiedLinkError(name)
+                throw e
             }
         }
     }
