@@ -10,7 +10,7 @@ object Loader {
             System.loadLibrary(name)
         } catch (e: UnsatisfiedLinkError) {
             val libName = System.mapLibraryName(name)
-            val resource = "/lib/$LIBDIR/$libName"
+            val resource = "/$LIBDIR/$libName"
             val stream = this::class.java.getResourceAsStream(resource)
             if (stream != null) stream.use {
                 val libFile = NATIVE_LIB_TEMP_DIR.resolve(libName).apply { deleteOnExit() }
@@ -37,7 +37,7 @@ object Loader {
             "x86_64", "amd64" -> "64"
             else -> return@lazy "unknown"
         }
-        "$os$arch"
+        "lib/$os$arch"
     }
 
     private val NATIVE_LIB_TEMP_DIR by lazy {
