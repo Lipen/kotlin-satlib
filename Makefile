@@ -109,7 +109,7 @@ LDLIBS =
 .PHONY: help all all-docker libs libs-docker libjminisat libjglucose libjcadical libjcms res headers classes clean vars
 
 define _USAGE
-Specify a target! [all libs libs-docker libjminisat libjcadical libjcms res headers classes clean vars]
+Specify a target! [all libs libs-docker libjminisat libjglucose libjcadical libjcms res headers classes clean vars]
   - all -- headers + libs + res
   - libs -- Build all libraries
   - libs-docker -- Build all libraries using Docker
