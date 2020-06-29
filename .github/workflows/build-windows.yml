@@ -56,4 +56,3 @@ jobs:
         with:
           files: |
             build/lib/jminisat.dll
-            minisat.dll

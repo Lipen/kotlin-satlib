@@ -3,6 +3,7 @@
 package com.github.lipen.jnisat
 
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork

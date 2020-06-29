@@ -31,6 +31,7 @@ jobs:
         run: |
           make headers libs-docker res
           sudo install -m 644 build/lib/libminisat.so /usr/lib
+          sudo install -m 644 build/lib/libglucose.so /usr/lib
           sudo install -m 644 build/lib/libcadical.so /usr/lib
           sudo install -m 644 build/lib/libcryptominisat5.so /usr/lib
 
@@ -45,8 +46,6 @@ jobs:
         with:
           files: |
             build/lib/libjminisat.so
+            build/lib/libjglucose.so
             build/lib/libjcadical.so
             build/lib/libjcms.so
-            build/lib/libminisat.so
-            build/lib/libcadical.so
-            build/lib/libcryptominisat5.so

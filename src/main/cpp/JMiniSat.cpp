@@ -38,6 +38,10 @@ static inline Minisat::SimpSolver* decode(jlong h) {
     return (Minisat::SimpSolver*) (intptr_t) h;
 }
 
+static inline int lit2var(int lit) {
+    return lit > 0 ? lit - 1 : -lit - 1;
+}
+
 JNI_METHOD(jlong, minisat_1ctor)
   (JNIEnv*, jobject) {
     return encode(new Minisat::SimpSolver());
@@ -76,25 +80,25 @@ JNI_METHOD(jint, minisat_1new_1var)
 
 JNI_METHOD(void, minisat_1set_1polarity)
   (JNIEnv*, jobject, jlong handle, jint lit, jbyte polarity) {
-    int v = lit > 0 ? lit - 1 : -lit - 1;
+    int v = lit2var(lit);
     decode(handle)->setPolarity(v, Minisat::lbool((uint8_t) polarity));
   }
 
 JNI_METHOD(void, minisat_1set_1decision)
   (JNIEnv*, jobject, jlong handle, jint lit, jboolean b) {
-    int v = lit > 0 ? lit - 1 : -lit - 1;
+    int v = lit2var(lit);
     decode(handle)->setDecisionVar(v, b);
   }
 
 JNI_METHOD(void, minisat_1set_1frozen)
   (JNIEnv*, jobject, jlong handle, jint lit, jboolean b) {
-    int v = lit > 0 ? lit - 1 : -lit - 1;
+    int v = lit2var(lit);
     decode(handle)->setFrozen(v, b);
   }
 
 JNI_METHOD(void, minisat_1freeze)
   (JNIEnv*, jobject, jlong handle, jint lit) {
-    int v = lit > 0 ? lit - 1 : -lit - 1;
+    int v = lit2var(lit);
     decode(handle)->freezeVar(v);
   }
 
@@ -115,7 +119,7 @@ JNI_METHOD(jboolean, minisat_1eliminate)
 
 JNI_METHOD(jboolean, minisat_1is_1eliminated)
   (JNIEnv*, jobject, jlong handle, jint lit) {
-    int v = lit > 0 ? lit - 1 : -lit - 1;
+    int v = lit2var(lit);
     return decode(handle)->isEliminated(v);
   }
 

@@ -6,6 +6,9 @@
 out/
 build/
 
+# Shared libs
+src/main/resources/lib/
+
 # Images
 *.png
 *.jpg
