@@ -106,7 +106,7 @@ CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
 LDFLAGS = -shared -s
 LDLIBS =
 
-.PHONY: help all libs libs-docker libjminisat libjglucose libjcadical libjcms res headers classes clean vars
+.PHONY: help all all-docker libs libs-docker libjminisat libjglucose libjcadical libjcms res headers classes clean vars
 
 define _USAGE
 Specify a target! [all libs libs-docker libjminisat libjcadical libjcms res headers classes clean vars]
@@ -125,6 +125,7 @@ help:
 	@echo "$${_USAGE}"
 
 all: headers libs res
+all-docker: headers libs-docker res
 libs: $(LIBS)
 
 libjminisat: $(JMINISAT_LIB)
