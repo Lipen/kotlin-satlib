@@ -19,7 +19,6 @@ RUN apt-get update &&\
         cmake \
         git \
         libboost-program-options-dev `#for CryptoMiniSat` \
-        libm4ri-dev `#for CryptoMiniSat` \
         zlib1g-dev \
     &&\
     rm -rf /var/lib/apt/lists/*
