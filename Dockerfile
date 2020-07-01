@@ -18,7 +18,7 @@ RUN apt-get update &&\
         ca-certificates \
         cmake \
         git \
-        libboost-program-options-dev `#for CryptoMiniSat` \
+        libboost-program-options-dev \
         zlib1g-dev \
     &&\
     rm -rf /var/lib/apt/lists/*
