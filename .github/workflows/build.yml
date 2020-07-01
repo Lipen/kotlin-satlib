@@ -47,3 +47,7 @@ jobs:
             build/lib/libjglucose.so
             build/lib/libjcadical.so
             build/lib/libjcms.so
+            build/lib/libminisat.so
+            build/lib/libglucose.so
+            build/lib/libcadical.so
+            build/lib/libcryptominisat5.so
