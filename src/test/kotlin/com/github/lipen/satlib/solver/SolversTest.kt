@@ -47,7 +47,10 @@ class SolversTest {
         @Suppress("deprecation")
         addClause()
 
-        solve().`should be false`()
+        if (this is CryptoMiniSatSolver)
+            solve() // CMS does not produce UNSAT with empty clause but must finish solving without errors
+        else
+            solve().`should be false`()
     }
 
     @ParameterizedTest(name = "{displayName} [{0}]")
