@@ -74,6 +74,15 @@ class JGlucose : AutoCloseable {
         return glucose_simplify(handle)
     }
 
+    @JvmOverloads
+    fun eliminate(turn_off_elim: Boolean = false): Boolean {
+        return glucose_eliminate(handle, turn_off_elim)
+    }
+
+    fun isEliminated(lit: Int): Boolean {
+        return glucose_is_eliminated(handle, lit)
+    }
+
     fun interrupt() {
         glucose_interrupt(handle)
     }
