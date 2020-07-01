@@ -83,6 +83,7 @@ class SolversTest {
         } else {
             listOf(
                 MiniSatSolver(),
+                GlucoseSolver(),
                 CadicalSolver(),
                 CryptoMiniSatSolver(),
                 DimacsFileSolver("cryptominisat5 %s")
