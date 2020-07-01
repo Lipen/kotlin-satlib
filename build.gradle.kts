@@ -112,7 +112,7 @@ tasks.register("downloadLibs") {
                         dest(solverLibDir)
                     }
                 }
-                println("\nPlease, run `sudo ldconfig $(realpath ${solverLibDir})` to use solver libs!\n")
+                println("\nPlease, run `sudo ldconfig ${solverLibDir.absolutePath}` to use solver libs!\n")
             }
             "win64" -> {
                 download {
