@@ -1,26 +1,19 @@
 ## Dirs
 BUILD_DIR = build
 CLASSES_DIR = $(BUILD_DIR)/classes
+CLASSPATH = $(CLASSES_DIR)/kotlin/main
 HEADERS_DIR = $(BUILD_DIR)/headers
+LIB_DIR = $(BUILD_DIR)/lib
 SRC_DIR = src/main
 CPP_DIR = $(SRC_DIR)/cpp
-LIB_DIR = $(BUILD_DIR)/lib
 RES_DIR = $(SRC_DIR)/resources
 LIB_RES_DIR = $(RES_DIR)/lib/linux64
-CLASSPATH = $(CLASSES_DIR)/kotlin/main
-PACKAGE = com.github.lipen.jnisat
-
-## Utils
 getSrc = $(CPP_DIR)/$(1).cpp
-getHeader = $(HEADERS_DIR)/$(subst .,_,$(PACKAGE).$(1)).h
-getClass = $(CLASSPATH)/$(subst .,/,$(PACKAGE).$(1)).class
 
 ## MiniSat
 JMINISAT_NAME = JMiniSat
 JMINISAT_LIB = $(LIB_DIR)/libjminisat.so
 JMINISAT_SRC = $(call getSrc,$(JMINISAT_NAME))# do not change
-JMINISAT_HEADER = $(call getHeader,$(JMINISAT_NAME))# do not change
-JMINISAT_CLASS = $(call getClass,$(JMINISAT_NAME))# do not change
 MINISAT_INCLUDE_DIR = /usr/local/include
 MINISAT_LIB_DIR = /usr/local/lib
 JMINISAT_CXXFLAGS = -fpermissive
@@ -32,8 +25,6 @@ JMINISAT_LDLIBS = -lminisat
 JGLUCOSE_NAME = JGlucose
 JGLUCOSE_LIB = $(LIB_DIR)/libjglucose.so
 JGLUCOSE_SRC = $(call getSrc,$(JGLUCOSE_NAME))# do not change
-JGLUCOSE_HEADER = $(call getHeader,$(JGLUCOSE_NAME))# do not change
-JGLUCOSE_CLASS = $(call getClass,$(JGLUCOSE_NAME))# do not change
 GLUCOSE_INCLUDE_DIR = /usr/local/include
 GLUCOSE_LIB_DIR = /usr/local/lib
 JGLUCOSE_CXXFLAGS =
@@ -45,8 +36,6 @@ JGLUCOSE_LDLIBS = -lglucose
 JCADICAL_NAME = JCadical
 JCADICAL_LIB = $(LIB_DIR)/libjcadical.so
 JCADICAL_SRC = $(call getSrc,$(JCADICAL_NAME))# do not change
-JCADICAL_HEADER = $(call getHeader,$(JCADICAL_NAME))# do not change
-JCADICAL_CLASS = $(call getClass,$(JCADICAL_NAME))# do not change
 CADICAL_INCLUDE_DIR = /usr/local/include
 CADICAL_LIB_DIR = /usr/local/lib
 JCADICAL_CXXFLAGS =
@@ -58,8 +47,6 @@ JCADICAL_LDLIBS = -lcadical
 JCMS_NAME = JCryptoMiniSat
 JCMS_LIB = $(LIB_DIR)/libjcms.so
 JCMS_SRC = $(call getSrc,$(JCMS_NAME))# do not change
-JCMS_HEADER = $(call getHeader,$(JCMS_NAME))# do not change
-JCMS_CLASS = $(call getClass,$(JCMS_NAME))# do not change
 CMS_INCLUDE_DIR = /usr/local/include
 CMS_LIB_DIR = /usr/local/lib
 JCMS_CXXFLAGS =
@@ -71,8 +58,6 @@ JCMS_LDLIBS = -lcryptominisat5
 # JSOLVER_NAME = JSolver
 # JSOLVER_LIB = $(LIB_DIR)/libjsolver.so
 # JSOLVER_SRC = $(call getSrc,$(JSOLVER_NAME))# do not change
-# JSOLVER_HEADER = $(call getHeader,$(JSOLVER_NAME))# do not change
-# JSOLVER_CLASS = $(call getClass,$(JSOLVER_NAME))# do not change
 # SOLVER_INCLUDE_DIR = /usr/local/include
 # SOLVER_LIB_DIR = /usr/local/lib
 # JSOLVER_CXXFLAGS =
@@ -83,9 +68,8 @@ JCMS_LDLIBS = -lcryptominisat5
 ## Common
 NAMES = $(JMINISAT_NAME) $(JGLUCOSE_NAME) $(JCADICAL_NAME) $(JCMS_NAME)# ...more
 LIBS = $(JMINISAT_LIB) $(JGLUCOSE_LIB) $(JCADICAL_LIB) $(JCMS_LIB)# ...more
-HEADERS = $(foreach s,$(NAMES),$(call getHeader,$(s)))# do not change
-CLASSES = $(foreach s,$(NAMES),$(call getClass,$(s)))# do not change
-CLASSNAMES_FULL = $(addprefix $(PACKAGE).,$(NAMES))# do not change
+PACKAGE = com.github.lipen.jnisat
+CLASSNAMES = $(addprefix $(PACKAGE).,$(NAMES))# do not change
 
 ## Docker
 DOCKER_IMAGE_NAME = kotlin-jnisat-builder
@@ -110,7 +94,7 @@ LDLIBS =
 
 define _USAGE
 Specify a target! [all libs libs-docker libjminisat libjglucose libjcadical libjcms res headers classes clean vars]
-  - all -- headers + libs + res
+  - all -- classes + headers + libs + res
   - libs -- Build all libraries
   - libs-docker -- Build all libraries using Docker
   - libjminisat/libjglucose/libjcadical/libjcms -- Build specific JNI binding library
@@ -124,37 +108,33 @@ export _USAGE
 help:
 	@echo "$${_USAGE}"
 
-all: headers libs res
-all-docker: headers libs-docker res
+all: classes headers libs res
+all-docker: classes headers libs-docker res
 libs: $(LIBS)
 
 libjminisat: $(JMINISAT_LIB)
-$(JMINISAT_LIB): $(JMINISAT_HEADER)
-$(JMINISAT_LIB): SRC = $(JMINISAT_SRC)
+$(JMINISAT_LIB): $(JMINISAT_SRC)
 $(JMINISAT_LIB): CXXFLAGS += $(JMINISAT_CXXFLAGS)
 $(JMINISAT_LIB): CPPFLAGS += $(JMINISAT_CPPFLAGS)
 $(JMINISAT_LIB): LDFLAGS += $(JMINISAT_LDFLAGS)
 $(JMINISAT_LIB): LDLIBS += $(JMINISAT_LDLIBS)
 
 libjglucose: $(JCLUCOSE_LIB)
-$(JGLUCOSE_LIB): $(JGLUCOSE_HEADER)
-$(JGLUCOSE_LIB): SRC = $(JGLUCOSE_SRC)
+$(JGLUCOSE_LIB): $(JGLUCOSE_SRC)
 $(JGLUCOSE_LIB): CXXFLAGS += $(JGLUCOSE_CXXFLAGS)
 $(JGLUCOSE_LIB): CPPFLAGS += $(JGLUCOSE_CPPFLAGS)
 $(JGLUCOSE_LIB): LDFLAGS += $(JGLUCOSE_LDFLAGS)
 $(JGLUCOSE_LIB): LDLIBS += $(JGLUCOSE_LDLIBS)
 
 libjcadical: $(JCADICAL_LIB)
-$(JCADICAL_LIB): $(JCADICAL_HEADER)
-$(JCADICAL_LIB): SRC = $(JCADICAL_SRC)
+$(JCADICAL_LIB): $(JCADICAL_SRC)
 $(JCADICAL_LIB): CXXFLAGS += $(JCADICAL_CXXFLAGS)
 $(JCADICAL_LIB): CPPFLAGS += $(JCADICAL_CPPFLAGS)
 $(JCADICAL_LIB): LDFLAGS += $(JCADICAL_LDFLAGS)
 $(JCADICAL_LIB): LDLIBS += $(JCADICAL_LDLIBS)
 
 libjcms: $(JCMS_LIB)
-$(JCMS_LIB): $(JCMS_HEADER)
-$(JCMS_LIB): SRC = $(JCMS_SRC)
+$(JCMS_LIB): $(JCMS_SRC)
 $(JCMS_LIB): CXXFLAGS += $(JCMS_CXXFLAGS)
 $(JCMS_LIB): CPPFLAGS += $(JCMS_CPPFLAGS)
 $(JCMS_LIB): LDFLAGS += $(JCMS_LDFLAGS)
@@ -163,11 +143,11 @@ $(JCMS_LIB): LDLIBS += $(JCMS_LDLIBS)
 $(LIBS):
 	@echo "=== Building $@..."
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC) $(LDLIBS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 	@echo "= Done building $@"
 
 export DOCKER_IMAGE_NAME DOCKER_PROJECT_DIR LIB_DIR
-libs-docker: $(HEADERS)
+libs-docker:
 	@echo "=== Building libs using Docker..."
 	docker build . \
 		--tag $(DOCKER_IMAGE_NAME) \
@@ -184,13 +164,12 @@ res:
 	install -m 644 $(LIBS) -Dt $(LIB_RES_DIR)
 	@echo "= Done copying libraries to resources"
 
-headers: $(CLASSES)
-headers $(HEADERS):
+headers:
 	@echo "=== Generating headers..."
-	javah -d $(HEADERS_DIR) -classpath $(CLASSPATH) $(CLASSNAMES_FULL)
+	javah -d $(HEADERS_DIR) -classpath $(CLASSPATH) $(CLASSNAMES)
 	@echo "= Done generating headers"
 
-classes $(CLASSES):
+classes:
 	@echo "=== Compiling classes..."
 	./gradlew classes
 	@echo "= Done compiling classes"
