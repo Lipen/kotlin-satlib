@@ -1,0 +1,60 @@
+name: Build (Windows)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      # Note: jdk8 is necessary to use javah
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - name: Set up build cache
+        uses: actions/cache@v2
+        with:
+          path: $HOME/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Install Make
+        run: choco install make
+
+      - name: Build MiniSat DLL
+        run: |
+          git clone https://github.com/niklasso/minisat minisat-src
+          git apply --directory minisat-src kotlin-satlib-jni/patches/minisat-dll.patch
+          make -C minisat-src dll
+          cp minisat-src/build/dynamic/lib/minisat.dll .
+
+      - name: Compile classes
+        run: ./gradlew classes --stacktrace
+
+      - name: Build jminisat.dll
+        working-directory: kotlin-satlib-jni
+        run: |
+          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
+          md build/lib -ea 0
+          g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I $Env:JAVA_HOME/include -I $Env:JAVA_HOME/include/win32 -I build/headers -I minisat-src -L . -L .. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
+          md src/main/resources/lib/win64 -ea 0
+          cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
+
+      - name: Build package using Gradle wrapper
+        run: ./gradlew build -x test --stacktrace
+
+      - name: Upload to GH Releases
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            build/lib/jminisat.dll
+            minisat.dll

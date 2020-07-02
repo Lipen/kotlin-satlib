@@ -1,4 +1,3 @@
-import de.undercouch.gradle.tasks.download.DownloadAction
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -6,133 +5,108 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "com.github.lipen"
 
 plugins {
+    idea
     kotlin("jvm") version Versions.kotlin
     id("org.jmailen.kotlinter") version Versions.kotlinter
-    id("com.github.ben-manes.versions") version Versions.gradle_versions
     id("fr.brouillard.oss.gradle.jgitver") version Versions.jgitver
-    id("de.undercouch.download") version Versions.gradle_download
     `maven-publish`
-}
-
-repositories {
-    maven(url = "https://jitpack.io")
-    jcenter()
+    id("com.github.ben-manes.versions") version Versions.gradle_versions
+    id("com.github.johnrengelman.shadow") version Versions.shadow
+    id("me.champeau.gradle.jmh") version Versions.jmh_gradle_plugin apply false
 }
 
 dependencies {
-    implementation(platform(kotlin("bom")))
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(Libs.okio)
-    implementation(Libs.multiarray)
-    implementation(Libs.kotlin_jnisat)
-    implementation(Libs.coroutines)
-
-    testImplementation(Libs.junit_jupiter)
-    testImplementation(Libs.kluent)
-    testImplementation(Libs.klock)
-}
-
-kotlinter {
-    ignoreFailures = true
-    experimentalRules = true
-    disabledRules = arrayOf("import-ordering")
-}
-
-jgitver {
-    strategy("MAVEN")
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-        }
+    subprojects.forEach {
+        api(it)
     }
+}
+
+allprojects {
+    apply(plugin = "kotlin")
+    apply(plugin = "org.jmailen.kotlinter")
+    apply(plugin = "fr.brouillard.oss.gradle.jgitver")
+    apply(plugin = "maven-publish")
+    apply(plugin = "com.github.johnrengelman.shadow")
+
     repositories {
-        maven(url = "$buildDir/repository")
+        maven(url = "https://jitpack.io")
+        jcenter()
     }
-}
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        showExceptions = true
-        showStandardStreams = true
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
-        exceptionFormat = TestExceptionFormat.FULL
+    dependencies {
+        implementation(platform(kotlin("bom")))
+        implementation(kotlin("stdlib-jdk8"))
     }
-}
 
-fun Task.download(action: DownloadAction.() -> Unit) =
-    download.configure(delegateClosureOf(action))
-
-val osArch: String = run {
-    val osName = System.getProperty("os.name")
-    val os = when {
-        osName.startsWith("Linux") -> "linux"
-        osName.startsWith("Windows") -> "win"
-        osName.startsWith("Mac OS X") || osName.startsWith("Darwin") -> "osx"
-        else -> return@run "unknown"
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
     }
-    val arch = when (System.getProperty("os.arch")) {
-        "x86", "i386" -> "32"
-        "x86_64", "amd64" -> "64"
-        else -> return@run "unknown"
+
+    kotlinter {
+        ignoreFailures = true
+        experimentalRules = true
+        disabledRules = arrayOf("import-ordering")
     }
-    "$os$arch"
-}
 
-tasks.register("downloadLibs") {
-    doLast {
-        val urlTemplate = "https://github.com/Lipen/kotlin-jnisat/releases/download/${Versions.kotlin_jnisat}/%s"
-        val libDir = projectDir.resolve("src/main/resources/lib/$osArch")
-            .also { it.mkdirs() }
-            .also { check(it.exists()) { "'$it' does not exist" } }
+    val sourcesJar by tasks.creating(Jar::class) {
+        archiveClassifier.set("sources")
+        from(sourceSets["main"].allSource)
+    }
 
-        when (osArch) {
-            "linux64" -> {
-                val jniLibs = listOf("libjminisat.so", "libjglucose.so", "libjcadical.so", "libjcms.so")
-                for (name in jniLibs) {
-                    download {
-                        src(urlTemplate.format(name))
-                        dest(libDir)
-                    }
-                }
-                val solverLibDir = projectDir.resolve("libs")
-                    .also { it.mkdirs() }
-                    .also { check(it.exists()) { "'$it' does not exist" } }
-                val solverLibs = listOf("libminisat.so", "libglucose.so", "libcadical.so", "libcryptominisat5.so")
-                for (name in solverLibs) {
-                    download {
-                        src(urlTemplate.format(name))
-                        dest(solverLibDir)
-                    }
-                }
-                println("\nPlease, run `sudo ldconfig ${solverLibDir.absolutePath}` to use solver libs!\n")
-            }
-            "win64" -> {
-                download {
-                    src(urlTemplate.format("jminisat.dll"))
-                    dest(libDir)
-                }
-                download {
-                    src(urlTemplate.format("minisat.dll"))
-                    dest(projectDir)
-                }
-            }
-            else -> {
-                error("$osArch is unsupported")
+    jgitver {
+        strategy("MAVEN")
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                from(components["java"])
+                artifact(sourcesJar)
             }
         }
+        repositories {
+            maven(url = "$buildDir/repository")
+        }
     }
+}
+
+subprojects {
+    group = "${rootProject.group}.${rootProject.name}"
+
+    dependencies {
+        testImplementation(Libs.junit_jupiter)
+        testImplementation(Libs.kluent)
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            showExceptions = true
+            showStandardStreams = true
+            events(
+                TestLogEvent.PASSED,
+                TestLogEvent.FAILED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_ERROR
+            )
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+    }
+}
+
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
+}
+
+tasks.shadowJar {
+    minimize()
 }
 
 tasks.wrapper {
-    gradleVersion = "6.3"
+    gradleVersion = "6.5"
     distributionType = Wrapper.DistributionType.ALL
 }
 

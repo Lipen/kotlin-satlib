@@ -1,0 +1,79 @@
+diff --git a/Makefile b/Makefile
+index ceb9d77..9d39eea 100644
+--- a/Makefile
++++ b/Makefile
+@@ -53,6 +53,7 @@ MINISAT      = minisat#       Name of MiniSat main executable.
+ MINISAT_CORE = minisat_core#  Name of simplified MiniSat executable (only core solver support).
+ MINISAT_SLIB = lib$(MINISAT).a#  Name of MiniSat static library.
+ MINISAT_DLIB = lib$(MINISAT).so# Name of MiniSat shared library.
++MINISAT_DLL  = $(MINISAT).dll# Name of MiniSat DLL.
+ 
+ # Shared Library Version
+ SOMAJOR=2
+@@ -88,6 +89,8 @@ ld:	$(BUILD_DIR)/debug/lib/$(MINISAT_SLIB)
+ lp:	$(BUILD_DIR)/profile/lib/$(MINISAT_SLIB)
+ lsh:	$(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE)
+ 
++dll: $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLL)
++
+ ## Build-type Compile-flags:
+ $(BUILD_DIR)/release/%.o:			MINISAT_CXXFLAGS +=$(MINISAT_REL) $(MINISAT_RELSYM)
+ $(BUILD_DIR)/debug/%.o:				MINISAT_CXXFLAGS +=$(MINISAT_DEB) -g
+@@ -122,6 +125,8 @@ $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE)\
+  $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR)\
+  $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB):	$(foreach o,$(OBJS),$(BUILD_DIR)/dynamic/$(o))
+ 
++$(BUILD_DIR)/dynamic/lib/$(MINISAT_DLL): $(foreach o,$(OBJS),$(BUILD_DIR)/release/$(o))
++
+ ## Compile rules (these should be unified, buit I have not yet found a way which works in GNU Make)
+ $(BUILD_DIR)/release/%.o:	%.cc
+ 	$(ECHO) Compiling: $@
+@@ -166,6 +171,12 @@ $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE)\
+ 	$(VERB) ln -sf $(MINISAT_DLIB).$(SOMAJOR).$(SOMINOR)$(SORELEASE) $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB).$(SOMAJOR)
+ 	$(VERB) ln -sf $(MINISAT_DLIB).$(SOMAJOR) $(BUILD_DIR)/dynamic/lib/$(MINISAT_DLIB)
+ 
++## DLL rule
++$(BUILD_DIR)/dynamic/lib/$(MINISAT_DLL):
++	$(ECHO) Linking DLL: $@
++	$(VERB) mkdir -p $(dir $@)
++	$(VERB) $(CXX) $(MINISAT_LDFLAGS) $(LDFLAGS) -o $@ -shared $^
++
+ install:	install-headers install-lib install-bin
+ install-debug:	install-headers install-lib-debug
+ 
+diff --git a/minisat/utils/Options.h b/minisat/utils/Options.h
+index 4e71a18..7d2e83a 100644
+--- a/minisat/utils/Options.h
++++ b/minisat/utils/Options.h
+@@ -282,15 +282,15 @@ class Int64Option : public Option
+         if (range.begin == INT64_MIN)
+             fprintf(stderr, "imin");
+         else
+-            fprintf(stderr, "%4"PRIi64, range.begin);
++            fprintf(stderr, "%4" PRIi64, range.begin);
+ 
+         fprintf(stderr, " .. ");
+         if (range.end == INT64_MAX)
+             fprintf(stderr, "imax");
+         else
+-            fprintf(stderr, "%4"PRIi64, range.end);
++            fprintf(stderr, "%4" PRIi64, range.end);
+ 
+-        fprintf(stderr, "] (default: %"PRIi64")\n", value);
++        fprintf(stderr, "] (default: %" PRIi64 ")\n", value);
+         if (verbose){
+             fprintf(stderr, "\n        %s\n", description);
+             fprintf(stderr, "\n");
+diff --git a/minisat/utils/System.cc b/minisat/utils/System.cc
+index 21aa4ff..f89b08a 100644
+--- a/minisat/utils/System.cc
++++ b/minisat/utils/System.cc
+@@ -91,7 +91,7 @@ double Minisat::memUsedPeak() { return memUsed(); }
+ 
+ #else
+ double Minisat::memUsed()     { return 0; }
+-double Minisat::memUsedPeak() { return 0; }
++double Minisat::memUsedPeak(bool strictlyPeak) { return 0; }
+ #endif
+ 
+ 
