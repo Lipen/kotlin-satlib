@@ -27,12 +27,16 @@ jobs:
       - name: Install Make
         run: choco install make
 
-      - name: Build MiniSat DLL
+      - name: Build minisat.dll
+        working-directory: kotlin-satlib-jni
         run: |
           git clone https://github.com/niklasso/minisat minisat-src
-          git apply --directory minisat-src kotlin-satlib-jni/patches/minisat-dll.patch
+          git apply --directory minisat-src patches/minisat-dll.patch
           make -C minisat-src dll
           cp minisat-src/build/dynamic/lib/minisat.dll .
+
+      - name: Make soft link to minisat.dll
+        run: New-Item -ItemType SymbolicLink -Path minisat.dll -Target kotlin-satlib-jni/minisat.dll
 
       - name: Compile classes
         run: ./gradlew classes --stacktrace
@@ -42,7 +46,7 @@ jobs:
         run: |
           javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
           md build/lib -ea 0
-          g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I $Env:JAVA_HOME/include -I $Env:JAVA_HOME/include/win32 -I build/headers -I minisat-src -L . -L .. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
+          g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I $Env:JAVA_HOME/include -I $Env:JAVA_HOME/include/win32 -I build/headers -I minisat-src -L . -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
           md src/main/resources/lib/win64 -ea 0
           cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
 
