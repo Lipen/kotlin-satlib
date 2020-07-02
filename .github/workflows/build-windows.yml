@@ -40,7 +40,7 @@ jobs:
       - name: Build jminisat.dll
         working-directory: kotlin-satlib-jni
         run: |
-          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.jnisat.JMiniSat
+          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
           md build/lib -ea 0
           g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I $Env:JAVA_HOME/include -I $Env:JAVA_HOME/include/win32 -I build/headers -I minisat-src -L . -L .. -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
           md src/main/resources/lib/win64 -ea 0
