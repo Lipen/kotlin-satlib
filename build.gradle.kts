@@ -15,12 +15,6 @@ plugins {
     id("me.champeau.gradle.jmh") version Versions.jmh_gradle_plugin apply false
 }
 
-dependencies {
-    subprojects.forEach {
-        api(it)
-    }
-}
-
 allprojects {
     apply(plugin = "kotlin")
     apply(plugin = "org.jmailen.kotlinter")
@@ -36,10 +30,28 @@ allprojects {
     dependencies {
         implementation(platform(kotlin("bom")))
         implementation(kotlin("stdlib-jdk8"))
+
+        testImplementation(Libs.junit_jupiter)
+        testImplementation(Libs.kluent)
     }
 
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            showExceptions = true
+            showStandardStreams = true
+            events(
+                TestLogEvent.PASSED,
+                TestLogEvent.FAILED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_ERROR
+            )
+            exceptionFormat = TestExceptionFormat.FULL
+        }
     }
 
     kotlinter {
@@ -72,26 +84,15 @@ allprojects {
 
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
+}
 
-    dependencies {
-        testImplementation(Libs.junit_jupiter)
-        testImplementation(Libs.kluent)
-    }
+dependencies {
+    api(project(":core"))
+    implementation(project("utils"))
 
-    tasks.withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            showExceptions = true
-            showStandardStreams = true
-            events(
-                TestLogEvent.PASSED,
-                TestLogEvent.FAILED,
-                TestLogEvent.SKIPPED,
-                TestLogEvent.STANDARD_ERROR
-            )
-            exceptionFormat = TestExceptionFormat.FULL
-        }
-    }
+    testImplementation(Libs.okio)
+    testImplementation(Libs.multiarray)
+    testImplementation(Libs.klock)
 }
 
 idea {

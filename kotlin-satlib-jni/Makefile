@@ -84,6 +84,7 @@ JAVA_HOME ?= $(patsubst %/bin/javac,%,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
 
 ## Compile/link
+GRADLE = ../gradlew# Best choice is 'gw', but not everyone uses it
 CXX = g++
 CXXFLAGS = -Wall -O3 -fPIC -fpermissive
 CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
@@ -171,12 +172,12 @@ headers:
 
 classes:
 	@echo "=== Compiling classes..."
-	gw classes
+	$(GRADLE) classes
 	@echo "= Done compiling classes"
 
 clean:
 	@echo "=== Cleaning..."
-	gw clean
+	$(GRADLE) clean
 	@echo "= Done cleaning"
 
 clean-res:

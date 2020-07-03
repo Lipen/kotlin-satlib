@@ -10,7 +10,7 @@ object Versions {
     const val okio = "2.6.0"
     const val multiarray = "0.6.1"
     const val kotlin_jnisat = "0.15.0"
-    const val klock = "1.8.6"
+    const val klock = "1.11.12"
     const val coroutines = "1.3.5"
     const val jmh_gradle_plugin = "0.5.0"
     const val jmh = "1.23"

@@ -78,6 +78,7 @@ class SolversTest {
         }
     }
 
+    @Suppress("unused")
     private fun solvers(): List<Solver> =
         if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             listOf(

@@ -17,4 +17,5 @@ fun myInclude(name:String) {
 }
 
 myInclude("core")
+myInclude("utils")
 myInclude("jni")

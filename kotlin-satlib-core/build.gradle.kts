@@ -1,4 +1,5 @@
 dependencies {
+    implementation(project(":utils"))
     api(project(":jni"))
 
     implementation(Libs.okio)
