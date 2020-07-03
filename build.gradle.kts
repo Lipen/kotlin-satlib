@@ -18,7 +18,6 @@ plugins {
 allprojects {
     apply(plugin = "kotlin")
     apply(plugin = "org.jmailen.kotlinter")
-    apply(plugin = "fr.brouillard.oss.gradle.jgitver")
     apply(plugin = "maven-publish")
     apply(plugin = "com.github.johnrengelman.shadow")
 
@@ -65,10 +64,6 @@ allprojects {
         from(sourceSets["main"].allSource)
     }
 
-    jgitver {
-        strategy("MAVEN")
-    }
-
     publishing {
         publications {
             create<MavenPublication>("maven") {
@@ -84,6 +79,7 @@ allprojects {
 
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
+    version = rootProject.version
 }
 
 dependencies {
@@ -100,6 +96,10 @@ idea {
         isDownloadSources = true
         isDownloadJavadoc = true
     }
+}
+
+jgitver {
+    strategy("MAVEN")
 }
 
 tasks.shadowJar {
