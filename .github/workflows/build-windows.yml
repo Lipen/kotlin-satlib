@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout latest code
@@ -35,8 +38,8 @@ jobs:
           make -C minisat-src dll
           cp minisat-src/build/dynamic/lib/minisat.dll .
 
-      - name: Make soft link to minisat.dll
-        run: New-Item -ItemType SymbolicLink -Path minisat.dll -Target kotlin-satlib-jni/minisat.dll
+      - name: Make soft link to minisat.dll in root project
+        run: ln -s kotlin-satlib-jni/minisat.dll
 
       - name: Compile classes
         run: ./gradlew classes --stacktrace
@@ -45,10 +48,9 @@ jobs:
         working-directory: kotlin-satlib-jni
         run: |
           javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
-          md build/lib -ea 0
-          g++ -Wall -O3 -shared -fpic -s -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -I $Env:JAVA_HOME/include -I $Env:JAVA_HOME/include/win32 -I build/headers -I minisat-src -L . -lminisat -lz -o build/lib/jminisat.dll src/main/cpp/JMiniSat.cpp
-          md src/main/resources/lib/win64 -ea 0
-          cp build/lib/jminisat.dll src/main/resources/lib/win64/jminisat.dll
+          mkdir -p build/lib
+          g++ -Wall -O3 -fPIC -shared -s -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -L. src/main/cpp/JMiniSat.cpp -lminisat -lz -o build/lib/jminisat.dll
+          install -m 644 build/lib/jminisat.dll -Dt src/main/resources/lib/win64
 
       - name: Build package using Gradle wrapper
         run: ./gradlew build -x test --stacktrace
