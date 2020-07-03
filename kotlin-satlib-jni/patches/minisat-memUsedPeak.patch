@@ -1,0 +1,13 @@
+diff --git a/minisat/utils/System.cc b/minisat/utils/System.cc
+index 21aa4ff..f89b08a 100644
+--- a/minisat/utils/System.cc
++++ b/minisat/utils/System.cc
+@@ -91,7 +91,7 @@ double Minisat::memUsedPeak() { return memUsed(); }
+ 
+ #else
+ double Minisat::memUsed()     { return 0; }
+-double Minisat::memUsedPeak() { return 0; }
++double Minisat::memUsedPeak(bool strictlyPeak) { return 0; }
+ #endif
+ 
+ 

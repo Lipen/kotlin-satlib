@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ae4da00..eadf322 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -34,6 +34,7 @@ include_directories(${minisat_SOURCE_DIR})
+ # Compile flags:
+ 
+ add_definitions(-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS)
++add_compile_options(-fpermissive)
+ 
+ #--------------------------------------------------------------------------------------------------
+ # Build Targets:
