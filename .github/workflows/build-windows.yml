@@ -33,8 +33,8 @@ jobs:
           git clone https://github.com/niklasso/minisat minisat-src
           cd minisat-src
           git apply -v ../patches/minisat-*.patch
-          cmake -B build -G "MinGW Makefiles"
-          cmake --build build
+          cmake -B build
+          cmake --build build --target minisat-lib-shared
 
       - name: Compile classes
         run: ./gradlew classes --stacktrace
