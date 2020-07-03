@@ -49,7 +49,7 @@ jobs:
         run: |
           javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
           mkdir -p build/lib
-          g++ -Wall -O3 -fPIC -shared -s -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -L. src/main/cpp/JMiniSat.cpp -lminisat -lz -o build/lib/jminisat.dll
+          g++ -Wall -O3 -fPIC -shared -s -fpermissive -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -L. src/main/cpp/JMiniSat.cpp -lminisat -lz -o build/lib/jminisat.dll
           install -m 644 build/lib/jminisat.dll -Dt src/main/resources/lib/win64
 
       - name: Build package using Gradle wrapper
