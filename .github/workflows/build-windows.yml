@@ -27,19 +27,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Install Make
-        run: choco install make
-
       - name: Build minisat.dll
         working-directory: kotlin-satlib-jni
         run: |
           git clone https://github.com/niklasso/minisat minisat-src
-          patch -d minisat-src -p1 < patches/minisat-dll.patch
-          make -C minisat-src dll
-          cp minisat-src/build/dynamic/lib/minisat.dll .
+          cd minisat-src
+          cmake -B build -G "MinGw Makefiles"
+          cmake --build build
+        # Note: cmake produces 'lib'-prefixed library file 'build/libminisat.dll' despite building for Windows
 
-      - name: Make soft link to minisat.dll in root project
-        run: ln -s kotlin-satlib-jni/minisat.dll
+      - name: Soft link minisat.dll in the root project
+        run: ln -s kotlin-satlib-jni/minisat-src/build/libminisat.dll minisat.dll
 
       - name: Compile classes
         run: ./gradlew classes --stacktrace
@@ -49,7 +47,7 @@ jobs:
         run: |
           javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
           mkdir -p build/lib
-          g++ -Wall -O3 -fPIC -shared -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -L. src/main/cpp/JMiniSat.cpp -lminisat -lz -o build/lib/jminisat.dll
+          g++ -Wall -O3 -fPIC -shared -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -Lminisat-src/build src/main/cpp/JMiniSat.cpp -lminisat -lz -o build/lib/jminisat.dll
           install -m 644 build/lib/jminisat.dll -Dt src/main/resources/lib/win64
 
       - name: Build package using Gradle wrapper
