@@ -33,7 +33,7 @@ jobs:
           git clone https://github.com/niklasso/minisat minisat-src
           cd minisat-src
           git apply -v ../patches/minisat-*.patch
-          cmake -B build
+          cmake -B build -G "MinGW Makefiles"
           cmake --build build --target minisat-lib-shared
 
       - name: Compile classes
