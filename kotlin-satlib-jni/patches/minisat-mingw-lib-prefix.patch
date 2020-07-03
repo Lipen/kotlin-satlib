@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ae4da00..a33e12a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,6 +23,13 @@ else()
+ endif()
+ set(MINISAT_SOVERSION ${MINISAT_SOMAJOR})
+ 
++#--------------------------------------------------------------------------------------------------
++# Remove 'lib'-prefix when building with MinGW
++if(MINGW)
++    set(CMAKE_SHARED_LIBRARY_PREFIX "")
++    set(CMAKE_STATIC_LIBRARY_PREFIX "")
++endif()
++
+ #--------------------------------------------------------------------------------------------------
+ # Dependencies:
+ 

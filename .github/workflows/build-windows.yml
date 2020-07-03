@@ -32,12 +32,9 @@ jobs:
         run: |
           git clone https://github.com/niklasso/minisat minisat-src
           cd minisat-src
+          git apply -v ../patches/minisat-*.patch
           cmake -B build -G "MinGW Makefiles"
           cmake --build build
-        # Note: cmake produces 'lib'-prefixed library file 'build/libminisat.dll' despite building for Windows
-
-      - name: Soft link minisat.dll in the root project
-        run: ln -s kotlin-satlib-jni/minisat-src/build/libminisat.dll minisat.dll
 
       - name: Compile classes
         run: ./gradlew classes --stacktrace
@@ -61,4 +58,4 @@ jobs:
         with:
           files: |
             build/lib/jminisat.dll
-            minisat.dll
+            kotlin-satlib-jni/minisat-src/build/minisat.dll
