@@ -19,3 +19,6 @@ build/
 # Libs
 *.so
 *.dll
+
+# Internal
+/kotlin-satlib-jni/minisat-src/
