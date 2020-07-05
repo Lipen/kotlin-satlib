@@ -10,7 +10,7 @@ import okio.buffer
 import okio.sink
 import java.io.File
 
-@Suppress("MemberVisibilityCanBePrivate", "FunctionName")
+@Suppress("FunctionName")
 abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
     private val assumptions: MutableList<Lit> = mutableListOf()
@@ -83,14 +83,13 @@ abstract class AbstractSolver : Solver {
         assumptions.clear()
     }
 
-    final override fun solve(): Boolean {
-        return if (assumptions.isEmpty()) {
+    final override fun solve(): Boolean =
+        if (assumptions.isEmpty()) {
             buffer.writeln("c solve")
             _solve()
         } else {
             solve_(assumptions)
         }
-    }
 
     final override fun solve(lit: Lit): Boolean {
         buffer.writeln("c solve $lit")
