@@ -22,8 +22,8 @@ allprojects {
     apply(plugin = "com.github.johnrengelman.shadow")
 
     repositories {
-        maven(url = "https://jitpack.io")
         jcenter()
+        maven(url = "https://jitpack.io")
     }
 
     dependencies {
