@@ -30,7 +30,7 @@ jobs:
       - name: Build minisat.dll
         working-directory: kotlin-satlib-jni
         run: |
-          git clone https://github.com/niklasso/minisat minisat-src
+          git clone --depth=1 https://github.com/niklasso/minisat minisat-src
           cd minisat-src
           git apply -v ../patches/minisat-*.patch
           cmake -B build -G "MinGW Makefiles"
