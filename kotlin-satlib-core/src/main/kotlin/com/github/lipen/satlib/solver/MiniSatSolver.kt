@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.solver.jni.JMiniSat
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
@@ -134,13 +135,21 @@ fun main() {
     MiniSatSolver().useWith {
         val x = newLiteral()
         val y = newLiteral()
+        val z = newLiteral()
 
-        addClause(x)
-        addClause(-y)
-        println("nvars = $numberOfVariables")
-        println("ncons = $numberOfClauses")
+        println("Encoding exactlyOne(x, y, z)")
+        exactlyOne(x, y, z)
+
+        println("nVars = $numberOfVariables")
+        println("nClauses = $numberOfClauses")
 
         check(solve())
         println("model = ${getModel()}")
+
+        println("Solving with assumptions...")
+        check(solve(x)); println("model = ${getModel()}"); check(getValue(x))
+        check(solve(y)); println("model = ${getModel()}"); check(getValue(y))
+        check(solve(z)); println("model = ${getModel()}"); check(getValue(z))
+        println("Solving with assumptions: OK")
     }
 }
