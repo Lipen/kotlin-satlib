@@ -57,5 +57,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            build/lib/jminisat.dll
+            kotlin-satlib-jni/build/lib/jminisat.dll
             kotlin-satlib-jni/minisat-src/build/minisat.dll
