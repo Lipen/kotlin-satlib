@@ -25,5 +25,6 @@ build/
 logs/
 *.log
 
-# MiniSat sources
+# Solvers sources
 /kotlin-satlib-jni/minisat-src/
+/kotlin-satlib-jni/glucose-src/

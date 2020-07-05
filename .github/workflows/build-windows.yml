@@ -36,6 +36,15 @@ jobs:
           cmake -B build -G "MinGW Makefiles"
           cmake --build build --target minisat-lib-shared
 
+      - name: Build glucose.dll
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/wadoon/glucose glucose-src
+          cd glucose-src
+          git apply -v ../patches/glucose-*.patch
+          cmake -B build -G "MinGW Makefiles"
+          cmake --build build --target glucose
+
       - name: Compile classes
         run: ./gradlew classes --stacktrace
 
@@ -44,8 +53,15 @@ jobs:
         run: |
           javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
           mkdir -p build/lib
-          g++ -Wall -O3 -fPIC -shared -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -Lminisat-src/build src/main/cpp/JMiniSat.cpp -lminisat -lz -o build/lib/jminisat.dll
-          install -m 644 build/lib/jminisat.dll -Dt src/main/resources/lib/win64
+          g++ -Wall -O3 -fPIC -shared -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -Lminisat-src/build src/main/cpp/JMiniSat.cpp -lminisat -o build/lib/jminisat.dll
+
+      - name: Build jglucose.dll
+        working-directory: kotlin-satlib-jni
+        run: |
+          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JGlucose
+          mkdir -p build/lib
+          ln -s glucose-src glucose
+          g++ -Wall -O3 -fPIC -shared -s -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iglucose-src -I. -Lglucose-src/build src/main/cpp/JGlucose.cpp -lglucose -o build/lib/jglucose.dll
 
       - name: Build package using Gradle wrapper
         run: ./gradlew build -x test --stacktrace
@@ -58,4 +74,6 @@ jobs:
         with:
           files: |
             kotlin-satlib-jni/build/lib/jminisat.dll
+            kotlin-satlib-jni/build/lib/jglucose.dll
             kotlin-satlib-jni/minisat-src/build/minisat.dll
+            kotlin-satlib-jni/glucose-src/build/glucose.dll
