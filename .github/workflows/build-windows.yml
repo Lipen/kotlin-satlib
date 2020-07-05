@@ -42,7 +42,7 @@ jobs:
           git clone --depth=1 https://github.com/wadoon/glucose glucose-src
           cd glucose-src
           git apply -v ../patches/glucose-*.patch
-          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target glucose
 
       - name: Compile classes
