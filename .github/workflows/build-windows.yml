@@ -33,7 +33,7 @@ jobs:
           git clone --depth=1 https://github.com/niklasso/minisat minisat-src
           cd minisat-src
           git apply -v ../patches/minisat-*.patch
-          cmake -B build -G "MinGW Makefiles"
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target minisat-lib-shared
 
       - name: Build glucose.dll
@@ -42,7 +42,7 @@ jobs:
           git clone --depth=1 https://github.com/wadoon/glucose glucose-src
           cd glucose-src
           git apply -v ../patches/glucose-*.patch
-          cmake -B build -G "MinGW Makefiles"
+          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target glucose
 
       - name: Compile classes
