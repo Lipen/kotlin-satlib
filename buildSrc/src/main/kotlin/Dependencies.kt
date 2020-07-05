@@ -15,6 +15,8 @@ object Versions {
     const val jmh_gradle_plugin = "0.5.0"
     const val jmh = "1.23"
     const val shadow = "5.2.0"
+    const val kotlin_logging = "1.8.0.1"
+    const val log4j_slf4j = "2.13.3"
 }
 
 object Libs {
@@ -25,4 +27,6 @@ object Libs {
     const val kotlin_jnisat = "com.github.lipen:kotlin-jnisat:${Versions.kotlin_jnisat}"
     const val klock = "com.soywiz.korlibs.klock:klock-jvm:${Versions.klock}"
     const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}"
+    const val kotlin_logging = "io.github.microutils:kotlin-logging:${Versions.kotlin_logging}"
+    const val log4j_slf4j = "org.apache.logging.log4j:log4j-slf4j-impl:${Versions.log4j_slf4j}"
 }

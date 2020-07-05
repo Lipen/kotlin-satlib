@@ -12,13 +12,18 @@ build/
 *.jpeg
 *.pdf
 
-# Data
+# Data, archives
 *.csv
 *.zip
+*.gz
 
 # Libs
 *.so
 *.dll
+
+# Logs
+logs/
+*.log
 
 # MiniSat sources
 /kotlin-satlib-jni/minisat-src/

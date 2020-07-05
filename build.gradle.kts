@@ -29,6 +29,8 @@ allprojects {
     dependencies {
         implementation(platform(kotlin("bom")))
         implementation(kotlin("stdlib-jdk8"))
+        implementation(Libs.kotlin_logging)
+        implementation(Libs.log4j_slf4j)
 
         testImplementation(Libs.junit_jupiter)
         testImplementation(Libs.kluent)
@@ -77,6 +79,12 @@ allprojects {
     }
 }
 
+configure(allprojects - project(":utils")) {
+    dependencies {
+        implementation(project(":utils"))
+    }
+}
+
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
     version = rootProject.version
@@ -84,7 +92,6 @@ subprojects {
 
 dependencies {
     api(project(":core"))
-    implementation(project("utils"))
 
     testImplementation(Libs.okio)
     testImplementation(Libs.multiarray)

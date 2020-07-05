@@ -1,5 +1,7 @@
 package com.github.lipen.satlib.solver.jni
 
+private val log = mu.KotlinLogging.logger {}
+
 /**
  * Native library loader.
  */
@@ -7,21 +9,26 @@ object Loader {
     @JvmStatic
     fun load(name: String) {
         try {
+            log.debug { "Loading $name..." }
             System.loadLibrary(name)
         } catch (e: UnsatisfiedLinkError) {
+            log.debug { "Resorting to loading from a resource" }
             val libName = System.mapLibraryName(name)
             val resource = "/$LIBDIR/$libName"
             val stream = this::class.java.getResourceAsStream(resource)
-            if (stream != null) stream.use {
+            if (stream != null) stream.use { resourceStream ->
                 val libFile = NATIVE_LIB_TEMP_DIR.resolve(libName).apply { deleteOnExit() }
                 libFile.outputStream().use { libFileStream ->
-                    it.copyTo(libFileStream)
+                    resourceStream.copyTo(libFileStream)
                 }
+                log.debug { "Loading ${libFile.absolutePath}..." }
                 System.load(libFile.absolutePath)
             } else {
+                log.error { "Could not load $name neither using System.loadLibrary, nor from a resource" }
                 throw e
             }
         }
+        log.debug { "Successfully loaded $name" }
     }
 
     private val LIBDIR: String by lazy {
