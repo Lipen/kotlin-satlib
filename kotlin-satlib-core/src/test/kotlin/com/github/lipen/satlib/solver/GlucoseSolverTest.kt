@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-class MiniSatSolverTest {
-    private val solver = MiniSatSolver()
+class GlucoseSolverTest {
+    private val solver = GlucoseSolver()
 
     @Test
     fun `assumptions are supported`(): Unit = with(solver) {

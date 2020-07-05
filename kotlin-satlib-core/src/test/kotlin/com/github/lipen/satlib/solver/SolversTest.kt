@@ -83,6 +83,7 @@ class SolversTest {
         if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             listOf(
                 MiniSatSolver(),
+                GlucoseSolver(),
                 DimacsFileSolver("cryptominisat5 %s")
             )
         } else {

@@ -1,6 +1,6 @@
 package com.github.lipen.satlib.solver
 
-fun Solver.declare_sgen_sat() {
+fun Solver.declare_sgen_n120_sat() {
     check(numberOfVariables == 0)
     // sgen4 -n 120 -sat
     repeat(120) { newLiteral() }
