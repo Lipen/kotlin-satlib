@@ -1,18 +1,3 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 375dbc8..ddfb174 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -31,6 +31,10 @@ else()
-   set(lib_type "STATIC")
- endif()
- 
-+if(MINGW)
-+    set(CMAKE_SHARED_LIBRARY_PREFIX "")
-+    set(CMAKE_STATIC_LIBRARY_PREFIX "")
-+endif()
- 
- include_directories(
-   ${CMAKE_CURRENT_SOURCE_DIR}
 diff --git a/utils/System.h b/utils/System.h
 index 4e48fee..56d0afc 100644
 --- a/utils/System.h
