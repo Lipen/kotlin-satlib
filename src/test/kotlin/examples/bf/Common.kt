@@ -28,12 +28,19 @@ fun Int.pow(n: Int): Int =
     if (this == 2) 1 shl n
     else this.toDouble().pow(n).toInt()
 
+fun Long.pow(n: Int): Long =
+    if (this == 2L) 1L shl n
+    else this.toDouble().pow(n).toLong()
+
 data class Row(val values: List<Boolean>) {
     val size: Int = values.size
     val index: Int = values.reversed().withIndex().map { (i, v) -> if (v) 2.pow(i) else 0 }.sum()
 
     constructor(i: Int, numberOfVariables: Int) :
-        this(List(numberOfVariables) { j -> 2.pow(numberOfVariables - j - 1) and i != 0 })
+        this(i.toLong(), numberOfVariables)
+
+    constructor(i: Long, numberOfVariables: Int) :
+        this(List(numberOfVariables) { j -> 2L.pow(numberOfVariables - j - 1) and i != 0L })
 }
 
 class BFVariables(
@@ -219,7 +226,7 @@ fun solveAllIterative(
     timeout: Double = GlobalsBF.timeout
 ) {
     File("results-inferAll$X-iterative.csv").sink().buffer().use { csv ->
-        csv.writeln("f,P,time")
+        csv.writeln("f,bf,P,time")
         val U = 2.pow(X)
         val F = 2.pow(U)
         for (f in 0 until F) {
@@ -231,10 +238,10 @@ fun solveAllIterative(
             }
             if (assignment == null) {
                 println("Could not infer BF for TT '$bin'")
-                csv.writeln("$bin,,${time.seconds}").flush()
+                csv.writeln("$bin,?,,${time.seconds}").flush()
                 continue
             } else {
-                csv.writeln("$bin,${assignment.P},${time.seconds}").flush()
+                csv.writeln("$bin,${assignment.toLogic().toPrettyString()},${assignment.P},${time.seconds}").flush()
             }
         }
     }

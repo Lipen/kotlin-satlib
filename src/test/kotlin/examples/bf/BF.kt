@@ -2,6 +2,7 @@ package examples.bf
 
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.jni.JMiniSat
 import com.soywiz.klock.PerformanceCounter
 
 object GlobalsBF {
@@ -14,14 +15,20 @@ object GlobalsBF {
     var IS_FORBID_DOUBLE_NEGATION: Boolean = true
     var Pmax: Int = 30
     var timeout: Double = 30.0
+
+    init {
+        JMiniSat
+    }
 }
 
 @Suppress("LocalVariableName")
 fun main() {
     val timeStart = PerformanceCounter.reference
 
-    solveAllIterative(X = 3)
+    // solveAllIterative(X = 3)
     solveAllIncremental(X = 3)
+
+    // solveAllIterative(X = 4, timeout = 0.8)
 
     // val X = 3
     // val values = "10010110"

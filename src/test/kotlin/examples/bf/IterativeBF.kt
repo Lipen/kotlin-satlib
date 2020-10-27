@@ -340,6 +340,9 @@ fun solveIteratively(
             }
             return assignment
         }
+        if (timeSince(timeStart).seconds >= timeout) {
+            return null
+        }
     }
     return null
 }

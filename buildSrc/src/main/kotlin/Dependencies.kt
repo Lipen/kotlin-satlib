@@ -1,16 +1,16 @@
 @file:Suppress("PublicApiImplicitType")
 
 object Versions {
-    const val kotlin = "1.3.72"
-    const val kotlinter = "2.4.1"
-    const val gradle_versions = "0.28.0"
+    const val kotlin = "1.4.10"
+    const val kotlinter = "3.2.0"
+    const val gradle_versions = "0.33.0"
     const val jgitver = "0.9.1"
     const val junit = "5.6.1"
     const val kluent = "1.61"
-    const val okio = "2.6.0"
+    const val okio = "2.9.0"
     const val multiarray = "0.6.1"
     const val kotlin_jnisat = "0.15.0"
-    const val klock = "1.11.12"
+    const val klock = "1.12.1"
     const val coroutines = "1.3.5"
     const val jmh_gradle_plugin = "0.5.0"
     const val jmh = "1.23"
