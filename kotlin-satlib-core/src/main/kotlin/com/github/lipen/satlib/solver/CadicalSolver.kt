@@ -4,13 +4,13 @@ import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.solver.jni.JCadical
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.RawAssignment
-import com.github.lipen.satlib.utils.RawAssignment1
+import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.utils.Model1
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver @JvmOverloads constructor(
-    val backend: JCadical = JCadical()
+    val backend: JCadical = JCadical(),
 ) : AbstractSolver() {
     override val numberOfVariables: Int get() = backend.numberOfVariables
     override val numberOfClauses: Int get() = backend.numberOfClauses
@@ -87,8 +87,8 @@ class CadicalSolver @JvmOverloads constructor(
         return backend.getValue(lit)
     }
 
-    override fun getModel(): RawAssignment {
-        return RawAssignment1(backend.getModel())
+    override fun getModel(): Model {
+        return Model1(backend.getModel())
     }
 }
 

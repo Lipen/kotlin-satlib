@@ -3,8 +3,8 @@ package com.github.lipen.satlib.solver
 import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.RawAssignment
-import com.github.lipen.satlib.utils.RawAssignment0
+import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.utils.Model0
 import com.github.lipen.satlib.utils.lineSequence
 import com.github.lipen.satlib.utils.useWith
 import okio.BufferedSource
@@ -15,9 +15,9 @@ import java.io.File
 @Suppress("MemberVisibilityCanBePrivate")
 class DimacsFileSolver @JvmOverloads constructor(
     val command: String,
-    val file: File = createTempFile()
+    val file: File = createTempFile(),
 ) : AbstractSolver() {
-    private var _model: RawAssignment? = null
+    private var _model: Model? = null
 
     override var numberOfVariables: Int = 0
         private set
@@ -98,7 +98,7 @@ class DimacsFileSolver @JvmOverloads constructor(
         return getModel()[lit]
     }
 
-    override fun getModel(): RawAssignment {
+    override fun getModel(): Model {
         return _model ?: error("Model is null because the solver is not in the SAT state")
     }
 
@@ -114,7 +114,7 @@ class DimacsFileSolver @JvmOverloads constructor(
     }
 }
 
-private fun parseDimacsOutput(source: BufferedSource): RawAssignment? {
+private fun parseDimacsOutput(source: BufferedSource): Model? {
     val answer = source.lineSequence().firstOrNull { it.startsWith("s ") }
         ?: error("No answer from solver")
     return when {
@@ -131,7 +131,7 @@ private fun parseDimacsOutput(source: BufferedSource): RawAssignment? {
                 .toList()
                 .toBooleanArray()
                 .also { check(it.isNotEmpty()) { "Model is empty" } }
-                .let { RawAssignment0(it) }
+                .let { Model0(it) }
         else -> error("Bad answer (neither SAT nor UNSAT) from solver: '$answer'")
     }
 }

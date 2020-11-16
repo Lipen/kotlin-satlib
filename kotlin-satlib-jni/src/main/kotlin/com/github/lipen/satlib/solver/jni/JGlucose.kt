@@ -47,7 +47,7 @@ class JGlucose : AutoCloseable {
     fun newVariable(
         polarity: Boolean = true,
         decision: Boolean = true,
-        frozen: Boolean = true
+        frozen: Boolean = true,
     ): Int {
         val lit = glucose_new_var(handle, polarity, decision)
         if (frozen) freeze(lit)
@@ -211,14 +211,14 @@ class JGlucose : AutoCloseable {
     private external fun glucose_solve(
         handle: Long,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun glucose_solve(
         handle: Long,
         lit: Int,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun glucose_solve(
@@ -226,7 +226,7 @@ class JGlucose : AutoCloseable {
         lit1: Int,
         lit2: Int,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun glucose_solve(
@@ -235,14 +235,14 @@ class JGlucose : AutoCloseable {
         lit2: Int,
         lit3: Int,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun glucose_solve(
         handle: Long,
         assumptions: IntArray,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun glucose_get_value(handle: Long, lit: Int): Byte

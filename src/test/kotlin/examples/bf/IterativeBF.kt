@@ -286,7 +286,7 @@ fun solveFor(P: Int, tt: Map<Row, Boolean>, timeout: Double = 0.0): BFAssignment
 
         return if (isSat) {
             println("SAT for P = $P in %.3f s".format(timeSolving.seconds))
-            BFAssignment.fromRaw(getModel(), vars)
+            BFAssignment.fromModel(getModel(), vars)
                 .also {
                     val f = it.toLogic()
                     println("f = ${f.toPrettyString()}")
@@ -307,13 +307,13 @@ fun solveIteratively(
     tt: Map<Row, Boolean>,
     Pmax: Int = GlobalsBF.Pmax,
     timeout: Double = GlobalsBF.timeout,
-    quite: Boolean = false
+    quite: Boolean = false,
 ): BFAssignment? {
-    println("Searching BF for the truth table '${ttToBinaryString(tt)}'...")
+    println("Searching BF by Iterative strategy for the truth table '${ttToBinaryString(tt)}'...")
     val timeStart = PerformanceCounter.reference
     for (P in 1..Pmax) {
         println("\nTrying P = $P")
-        val assignment = solveFor(P, tt, timeout = timeout)
+        val assignment = solveFor(P, tt, timeout = timeout - timeSince(timeStart).seconds)
         if (assignment != null) {
             if (!quite) {
                 println("Solution found in %.3f s!".format(timeSince(timeStart).seconds))

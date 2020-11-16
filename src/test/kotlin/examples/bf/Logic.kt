@@ -20,7 +20,7 @@ sealed class Literal : Logic() {
 }
 
 data class Proposition(
-    val name: String
+    val name: String,
 ) : Logic() {
     override fun eval(values: List<Boolean>, variables: List<String>): Boolean {
         return values[variables.indexOf(name)]
@@ -41,7 +41,7 @@ sealed class UnaryOperation : Logic() {
 }
 
 data class Not(
-    override val expr: Logic
+    override val expr: Logic,
 ) : UnaryOperation() {
     override fun eval(values: List<Boolean>, variables: List<String>): Boolean {
         return !expr.eval(values, variables)
@@ -72,7 +72,7 @@ sealed class BinaryOperation : Logic() {
 
 data class And(
     override val lhs: Logic,
-    override val rhs: Logic
+    override val rhs: Logic,
 ) : BinaryOperation() {
     override val prettySymbol: String = "&"
     override fun eval(lhs: Boolean, rhs: Boolean): Boolean = lhs && rhs
@@ -80,7 +80,7 @@ data class And(
 
 data class Or(
     override val lhs: Logic,
-    override val rhs: Logic
+    override val rhs: Logic,
 ) : BinaryOperation() {
     override val prettySymbol: String = "|"
     override fun eval(lhs: Boolean, rhs: Boolean): Boolean = lhs || rhs
@@ -88,7 +88,7 @@ data class Or(
 
 data class Imply(
     override val lhs: Logic,
-    override val rhs: Logic
+    override val rhs: Logic,
 ) : BinaryOperation() {
     override val prettySymbol: String = "->"
     override fun eval(lhs: Boolean, rhs: Boolean): Boolean = !lhs || rhs
@@ -96,7 +96,7 @@ data class Imply(
 
 data class Iff(
     override val lhs: Logic,
-    override val rhs: Logic
+    override val rhs: Logic,
 ) : BinaryOperation() {
     override val prettySymbol: String = "<->"
     override fun eval(lhs: Boolean, rhs: Boolean): Boolean = lhs == rhs

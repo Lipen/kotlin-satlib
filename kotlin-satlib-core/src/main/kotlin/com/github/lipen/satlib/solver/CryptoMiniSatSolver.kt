@@ -3,13 +3,13 @@ package com.github.lipen.satlib.solver
 import com.github.lipen.satlib.solver.jni.JCryptoMiniSat
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.RawAssignment
-import com.github.lipen.satlib.utils.RawAssignment1
+import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.utils.Model1
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CryptoMiniSatSolver @JvmOverloads constructor(
-    val backend: JCryptoMiniSat = JCryptoMiniSat()
+    val backend: JCryptoMiniSat = JCryptoMiniSat(),
 ) : AbstractSolver() {
     override val numberOfVariables: Int get() = backend.numberOfVariables
     override val numberOfClauses: Int get() = backend.numberOfClauses
@@ -86,8 +86,8 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
         return backend.getValue(lit)
     }
 
-    override fun getModel(): RawAssignment {
-        return RawAssignment1(backend.getModel())
+    override fun getModel(): Model {
+        return Model1(backend.getModel())
     }
 }
 

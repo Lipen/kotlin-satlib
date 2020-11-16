@@ -31,10 +31,10 @@ private fun Solver.emptyBFVariables(tt: Map<Row, Boolean>): BFVariables =
         U = tt.size,
         inputs = tt.keys.map { it.values },
         values = tt.values.toList(),
-        nodeType = newDomainVarArray() { NodeType.values().asIterable() },
-        nodeInputVariable = IntVarArray.create() { IntVar(mapOf()) },
-        nodeParent = IntVarArray.create() { IntVar(mapOf()) },
-        nodeChild = IntVarArray.create() { IntVar(mapOf()) },
+        nodeType = newDomainVarArray { NodeType.values().asIterable() },
+        nodeInputVariable = IntVarArray.create { IntVar(mapOf()) },
+        nodeParent = IntVarArray.create { IntVar(mapOf()) },
+        nodeChild = IntVarArray.create { IntVar(mapOf()) },
         nodeValue = newBoolVarArray()
     )
 
@@ -296,7 +296,7 @@ private fun Solver.makeInductionStep(
     tt: Map<Row, Boolean>,
     timeout: Double = GlobalsBF.timeout,
     previousAssumption: Int?,
-    old: BFVariables?
+    old: BFVariables?,
 ): Pair<BFAssignment?, Pair<Int, BFVariables>?> {
     require(P >= 1)
     val timeStart = PerformanceCounter.reference
@@ -353,7 +353,7 @@ private fun Solver.makeInductionStep(
     return if (isSat) {
         println("SAT for P = $P in %.3f s".format(solvingTime.seconds))
         Pair(
-            BFAssignment.fromRaw(getModel(), vars)
+            BFAssignment.fromModel(getModel(), vars)
                 .also {
                     val f = it.toLogic()
                     println("f = ${f.toPrettyString()}")
@@ -375,18 +375,19 @@ fun solveIncrementally(
     tt: Map<Row, Boolean>,
     Pmax: Int = GlobalsBF.Pmax,
     timeout: Double = GlobalsBF.timeout,
-    quite: Boolean = false
+    quite: Boolean = false,
 ): BFAssignment? {
+    val timeStart = PerformanceCounter.reference
     var result: Pair<BFAssignment?, Pair<Int, BFVariables>?>
     var prevStep: Pair<Int?, BFVariables?> = Pair(null, null)
-    println("Searching BF for the truth table '${ttToBinaryString(tt)}'...")
+    println("Searching BF by Incremental strategy for the truth table '${ttToBinaryString(tt)}'...")
     GlobalsBF.solverProvider().useWith {
         for (P in 1..Pmax) {
             println("\nTrying P = $P")
             result = makeInductionStep(
                 P = P,
                 tt = tt,
-                timeout = timeout,
+                timeout = timeout - timeSince(timeStart).seconds,
                 previousAssumption = prevStep.first,
                 old = prevStep.second
             )
@@ -416,6 +417,9 @@ fun solveIncrementally(
                     }
                 }
                 return assignment
+            }
+            if (timeSince(timeStart).seconds >= timeout) {
+                return null
             }
             prevStep = result.second!!
         }

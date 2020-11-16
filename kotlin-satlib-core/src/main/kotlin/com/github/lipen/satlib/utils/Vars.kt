@@ -9,7 +9,7 @@ typealias LitArray = IntArray
 infix fun Lit.sign(b: Boolean): Lit = if (b) this else -this
 
 class DomainVar<T>(
-    val storage: Map<T, Lit>
+    val storage: Map<T, Lit>,
 ) {
     val domain: Set<T> = storage.keys
     val literals: Collection<Lit> = storage.values
@@ -31,13 +31,13 @@ typealias DomainVarArray<T> = MultiArray<DomainVar<T>>
 typealias IntVarArray = MultiArray<IntVar>
 
 class BoolVarArray @PublishedApi internal constructor(
-    private val backend: IntMultiArray
+    private val backend: IntMultiArray,
 ) : MultiArray<Lit> by backend {
     companion object Factory {
         @JvmStatic
         inline fun create(
             vararg shape: Int,
-            init: (IntArray) -> Lit
+            init: (IntArray) -> Lit,
         ): BoolVarArray =
             create_(shape, init)
 
@@ -45,7 +45,7 @@ class BoolVarArray @PublishedApi internal constructor(
         @Suppress("FunctionName")
         inline fun create_(
             shape: IntArray,
-            init: (IntArray) -> Lit
+            init: (IntArray) -> Lit,
         ): BoolVarArray =
             BoolVarArray(IntMultiArray.create(shape, init))
     }

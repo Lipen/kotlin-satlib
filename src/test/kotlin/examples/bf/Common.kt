@@ -6,7 +6,7 @@ import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.satlib.utils.BoolVarArray
 import com.github.lipen.satlib.utils.DomainVarArray
 import com.github.lipen.satlib.utils.IntVarArray
-import com.github.lipen.satlib.utils.RawAssignment
+import com.github.lipen.satlib.utils.Model
 import com.github.lipen.satlib.utils.convert
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.PerformanceCounter
@@ -53,7 +53,7 @@ class BFVariables(
     val nodeInputVariable: IntVarArray,
     val nodeParent: IntVarArray,
     val nodeChild: IntVarArray,
-    val nodeValue: BoolVarArray
+    val nodeValue: BoolVarArray,
 ) {
     init {
         // for (p in 1..P) {
@@ -86,7 +86,7 @@ class BFAssignment(
     val nodeInputVariable: IntMultiArray,
     val nodeParent: IntMultiArray,
     val nodeChild: IntMultiArray,
-    val nodeValue: BooleanMultiArray
+    val nodeValue: BooleanMultiArray,
 ) {
     init {
         val padding: Int = when {
@@ -96,14 +96,16 @@ class BFAssignment(
         }
         println("                    ${(1..P).joinPadded(padding, "")}")
         println(
-            "nodeType =          ${nodeType.values.map {
-                when (it) {
-                    NodeType.TERMINAL -> "x"
-                    NodeType.NOT -> "~"
-                    NodeType.AND -> "&"
-                    NodeType.OR -> "|"
-                }
-            }.joinPadded(padding, "")}"
+            "nodeType =          ${
+                nodeType.values.map {
+                    when (it) {
+                        NodeType.TERMINAL -> "x"
+                        NodeType.NOT -> "~"
+                        NodeType.AND -> "&"
+                        NodeType.OR -> "|"
+                    }
+                }.joinPadded(padding, "")
+            }"
         )
         println("nodeInputVariable = ${nodeInputVariable.values.joinPadded(padding, "")}")
         println("nodeParent        = ${nodeParent.values.joinPadded(padding, "")}")
@@ -153,14 +155,14 @@ class BFAssignment(
     }
 
     companion object {
-        fun fromRaw(raw: RawAssignment, vars: BFVariables): BFAssignment = with(vars) {
+        fun fromModel(model: Model, vars: BFVariables): BFAssignment = with(vars) {
             BFAssignment(
                 P = P, X = X, U = U,
-                nodeType = nodeType.convert(raw),
-                nodeInputVariable = nodeInputVariable.convert(raw),
-                nodeParent = nodeParent.convert(raw),
-                nodeChild = nodeChild.convert(raw),
-                nodeValue = nodeValue.convert(raw)
+                nodeType = nodeType.convert(model),
+                nodeInputVariable = nodeInputVariable.convert(model),
+                nodeParent = nodeParent.convert(model),
+                nodeChild = nodeChild.convert(model),
+                nodeValue = nodeValue.convert(model)
             )
         }
     }
@@ -223,12 +225,12 @@ fun isBooleanFunctionCompliesWithTruthTable(f: Logic, tt: Map<Row, Boolean>): Bo
 fun solveAllIterative(
     X: Int,
     Pmax: Int = GlobalsBF.Pmax,
-    timeout: Double = GlobalsBF.timeout
+    timeout: Double = GlobalsBF.timeout,
 ) {
     File("results-inferAll$X-iterative.csv").sink().buffer().use { csv ->
         csv.writeln("f,bf,P,time")
         val U = 2.pow(X)
-        val F = 2.pow(U)
+        val F = 2L.pow(U)
         for (f in 0 until F) {
             val values = Row(f, U).values
             val bin = values.toBinaryString()
@@ -239,7 +241,6 @@ fun solveAllIterative(
             if (assignment == null) {
                 println("Could not infer BF for TT '$bin'")
                 csv.writeln("$bin,?,,${time.seconds}").flush()
-                continue
             } else {
                 csv.writeln("$bin,${assignment.toLogic().toPrettyString()},${assignment.P},${time.seconds}").flush()
             }
@@ -250,12 +251,12 @@ fun solveAllIterative(
 fun solveAllIncremental(
     X: Int,
     Pmax: Int = GlobalsBF.Pmax,
-    timeout: Double = GlobalsBF.timeout
+    timeout: Double = GlobalsBF.timeout,
 ) {
     File("results-inferAll$X-incremental.csv").sink().buffer().use { csv ->
-        csv.writeln("f,P,time")
+        csv.writeln("f,bf,P,time")
         val U = 2.pow(X)
-        val F = 2.pow(U)
+        val F = 2L.pow(U)
         for (f in 0 until F) {
             val values = Row(f, U).values
             val bin = values.toBinaryString()
@@ -265,10 +266,60 @@ fun solveAllIncremental(
             }
             if (assignment == null) {
                 println("Could not infer BF for TT '$bin'")
-                csv.writeln("$bin,,${time.seconds}").flush()
-                continue
+                csv.writeln("$bin,?,,${time.seconds}").flush()
             } else {
-                csv.writeln("$bin,${assignment.P},${time.seconds}").flush()
+                csv.writeln("$bin,${assignment.toLogic().toPrettyString()},${assignment.P},${time.seconds}").flush()
+            }
+        }
+    }
+}
+
+fun solveAllInterleaved(
+    X: Int,
+    Pmax: Int = GlobalsBF.Pmax,
+    timeout: Double = GlobalsBF.timeout,
+) {
+    val fileIterative = File("results-inferAll$X-iterative.csv")
+    val fileIncremental = File("results-inferAll$X-incremental.csv")
+    val header = "f,bf,P,time"
+    fileIterative.sink().buffer().use { csvIterative ->
+        csvIterative.writeln(header)
+        fileIncremental.sink().buffer().use { csvIncremental ->
+            csvIncremental.writeln(header)
+
+            val U = 2.pow(X)
+            val F = 2L.pow(U)
+
+            for (f in 0 until F) {
+                val values = Row(f, U).values
+                val bin = values.toBinaryString()
+                val tt = valuesToTruthTable(values, X)
+
+                // Iterative
+                val (assignmentIterative, timeIterative) = measureTimeWithResult {
+                    solveIteratively(tt, Pmax = Pmax, timeout = timeout, quite = true)
+                }
+                if (assignmentIterative == null) {
+                    println("Could not infer BF by Iterative for TT '$bin'")
+                    csvIterative.writeln("$bin,?,,${timeIterative.seconds}").flush()
+                } else {
+                    csvIterative.writeln("$bin,${
+                        assignmentIterative.toLogic().toPrettyString()
+                    },${assignmentIterative.P},${timeIterative.seconds}").flush()
+                }
+
+                // Incremental
+                val (assignmentIncremental, timeIncremental) = measureTimeWithResult {
+                    solveIncrementally(tt, Pmax = Pmax, timeout = timeout, quite = true)
+                }
+                if (assignmentIncremental == null) {
+                    println("Could not infer BF by Incremental for TT '$bin'")
+                    csvIncremental.writeln("$bin,?,,${timeIncremental.seconds}").flush()
+                } else {
+                    csvIncremental.writeln("$bin,${
+                        assignmentIncremental.toLogic().toPrettyString()
+                    },${assignmentIncremental.P},${timeIncremental.seconds}").flush()
+                }
             }
         }
     }
@@ -278,7 +329,7 @@ fun solveRandom(
     X: Int,
     n: Int,
     distribution: String = "01x",
-    timeout: Double = GlobalsBF.timeout
+    timeout: Double = GlobalsBF.timeout,
 ) {
     File("results-inferRandom$X.csv").sink().buffer().use { csv ->
         csv.writeln("tt,bf,P,time")

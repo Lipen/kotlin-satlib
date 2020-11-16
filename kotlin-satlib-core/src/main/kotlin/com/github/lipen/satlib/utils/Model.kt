@@ -8,11 +8,11 @@ import com.github.lipen.multiarray.mapToBoolean
 import com.github.lipen.multiarray.mapToInt
 import kotlin.math.absoluteValue
 
-interface RawAssignment {
+interface Model {
     operator fun get(v: Lit): Boolean // 1-based, as Lit
 }
 
-class RawAssignment0(private val data: BooleanArray) : RawAssignment {
+class Model0(private val data: BooleanArray) : Model {
     override operator fun get(v: Lit): Boolean = when (v) {
         // Solver.trueLiteral -> true
         // Solver.falseLiteral -> false
@@ -24,7 +24,7 @@ class RawAssignment0(private val data: BooleanArray) : RawAssignment {
     }
 }
 
-class RawAssignment1(private val data: BooleanArray) : RawAssignment {
+class Model1(private val data: BooleanArray) : Model {
     override operator fun get(v: Lit): Boolean = when (v) {
         // Solver.trueLiteral -> true
         // Solver.falseLiteral -> false
@@ -36,26 +36,26 @@ class RawAssignment1(private val data: BooleanArray) : RawAssignment {
     }
 }
 
-fun <T> DomainVar<T>.convert(raw: RawAssignment): T? =
-    storage.entries.firstOrNull { raw[it.value] }?.key
+fun <T> DomainVar<T>.convert(model: Model): T? =
+    storage.entries.firstOrNull { model[it.value] }?.key
 
-inline fun <reified T> DomainVarArray<T>.convert(raw: RawAssignment): MultiArray<T> =
-    map { it.convert(raw) ?: error("So sad :c") }
+inline fun <reified T> DomainVarArray<T>.convert(model: Model): MultiArray<T> =
+    map { it.convert(model) ?: error("So sad :c") }
 
-fun IntVarArray.convert(raw: RawAssignment): IntMultiArray =
-    mapToInt { it.convert(raw) ?: error("So sad :c") }
+fun IntVarArray.convert(model: Model): IntMultiArray =
+    mapToInt { it.convert(model) ?: error("So sad :c") }
 
-fun BoolVarArray.convert(raw: RawAssignment): BooleanMultiArray =
-    mapToBoolean { raw[it] }
+fun BoolVarArray.convert(model: Model): BooleanMultiArray =
+    mapToBoolean { model[it] }
 
 @JvmName("multiArrayDomainVarArrayConvert")
-inline fun <reified T> MultiArray<DomainVarArray<T>>.convert(raw: RawAssignment): MultiArray<MultiArray<T>> =
-    map { it.convert(raw) }
+inline fun <reified T> MultiArray<DomainVarArray<T>>.convert(model: Model): MultiArray<MultiArray<T>> =
+    map { it.convert(model) }
 
 @JvmName("multiArrayIntVarArrayConvert")
-fun MultiArray<IntVarArray>.convert(raw: RawAssignment): MultiArray<IntMultiArray> =
-    map { it.convert(raw) }
+fun MultiArray<IntVarArray>.convert(model: Model): MultiArray<IntMultiArray> =
+    map { it.convert(model) }
 
 @JvmName("multiArrayBoolVarArrayConvert")
-fun MultiArray<BoolVarArray>.convert(raw: RawAssignment): MultiArray<BooleanMultiArray> =
-    map { it.convert(raw) }
+fun MultiArray<BoolVarArray>.convert(model: Model): MultiArray<BooleanMultiArray> =
+    map { it.convert(model) }

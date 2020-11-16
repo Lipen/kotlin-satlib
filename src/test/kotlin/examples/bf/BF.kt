@@ -26,9 +26,14 @@ fun main() {
     val timeStart = PerformanceCounter.reference
 
     // solveAllIterative(X = 3)
-    solveAllIncremental(X = 3)
+    // solveAllIncremental(X = 3)
 
     // solveAllIterative(X = 4, timeout = 0.8)
+
+    // solveAllIterative(X = 5, timeout = 30.0)
+    // solveAllIncremental(X = 5, timeout = 30.0)
+
+    solveAllInterleaved(X = 5, Pmax = 30, timeout = 1200.0)
 
     // val X = 3
     // val values = "10010110"

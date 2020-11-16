@@ -4,14 +4,14 @@ import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.solver.jni.JGlucose
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.RawAssignment
-import com.github.lipen.satlib.utils.RawAssignment1
+import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.utils.Model1
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class GlucoseSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
-    val backend: JGlucose = JGlucose()
+    val backend: JGlucose = JGlucose(),
 ) : AbstractSolver() {
     private var simplified = false
 
@@ -120,8 +120,8 @@ class GlucoseSolver @JvmOverloads constructor(
         return backend.getValue(lit)
     }
 
-    override fun getModel(): RawAssignment {
-        return RawAssignment1(backend.getModel())
+    override fun getModel(): Model {
+        return Model1(backend.getModel())
     }
 
     companion object {

@@ -18,7 +18,7 @@ import java.io.File
 
 inline fun <T> DomainVar<T>.changeDomain(
     newDomain: Iterable<T>,
-    init: (T) -> Lit
+    init: (T) -> Lit,
 ): DomainVar<T> =
     DomainVar.new(newDomain) { d ->
         if (d in domain) this eq d else init(d)

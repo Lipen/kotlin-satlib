@@ -58,7 +58,7 @@ class JMiniSat : AutoCloseable {
     fun newVariable(
         polarity: Polarity = Polarity.UNDEF,
         decision: Boolean = true,
-        frozen: Boolean = true
+        frozen: Boolean = true,
     ): Int {
         val lit = minisat_new_var(handle, polarity.value, decision)
         if (frozen) freeze(lit)
@@ -226,14 +226,14 @@ class JMiniSat : AutoCloseable {
     private external fun minisat_solve(
         handle: Long,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun minisat_solve(
         handle: Long,
         lit: Int,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun minisat_solve(
@@ -241,7 +241,7 @@ class JMiniSat : AutoCloseable {
         lit1: Int,
         lit2: Int,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun minisat_solve(
@@ -250,14 +250,14 @@ class JMiniSat : AutoCloseable {
         lit2: Int,
         lit3: Int,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun minisat_solve(
         handle: Long,
         assumptions: IntArray,
         do_simp: Boolean,
-        turn_off_simp: Boolean
+        turn_off_simp: Boolean,
     ): Boolean
 
     private external fun minisat_get_value(handle: Long, lit: Int): Byte
