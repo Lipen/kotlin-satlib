@@ -1,5 +1,3 @@
-@file:Suppress("ClassName", "MemberVisibilityCanBePrivate", "unused")
-
 package com.github.lipen.satlib.solver.jni
 
 import org.openjdk.jmh.annotations.Benchmark
@@ -53,6 +51,7 @@ abstract class BenchBase {
     }
 }
 
+@Suppress("ClassName")
 open class Bench_withK : BenchBase() {
     // @Param("1", "100", "1000", "10000", "100000")
     @Param(
@@ -90,6 +89,7 @@ open class Bench_withK : BenchBase() {
     }
 }
 
+@Suppress("ClassName")
 open class Bench_onlyN : BenchBase() {
     @Benchmark
     fun getModel(bh: Blackhole) {

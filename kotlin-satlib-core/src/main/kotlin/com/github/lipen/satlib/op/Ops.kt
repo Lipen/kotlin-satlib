@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package com.github.lipen.satlib.op
 
 import com.github.lipen.satlib.solver.Solver
