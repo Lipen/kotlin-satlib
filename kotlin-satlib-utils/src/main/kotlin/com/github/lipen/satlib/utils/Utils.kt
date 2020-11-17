@@ -27,5 +27,5 @@ fun BufferedSink.writeln(s: String): BufferedSink = write(s).writeByte(10) // 10
 
 inline fun <T : AutoCloseable?, R> T.useWith(block: T.() -> R): R = use(block)
 
-val <T> T.exhaustive: T
+inline val <T> T.exhaustive: T
     get() = this
