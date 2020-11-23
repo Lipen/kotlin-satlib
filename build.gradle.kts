@@ -7,19 +7,19 @@ group = "com.github.lipen"
 plugins {
     idea
     kotlin("jvm") version Versions.kotlin
-    id("org.jmailen.kotlinter") version Versions.kotlinter
-    id("fr.brouillard.oss.gradle.jgitver") version Versions.jgitver
+    with(Plugins.Kotlinter) { id(id) version (version) }
+    with(Plugins.Jgitver) { id(id) version (version) }
+    with(Plugins.GradleVersions) { id(id) version (version) }
+    with(Plugins.Shadow) { id(id) version (version) }
+    with(Plugins.Jmh) { id(id) version (version) apply false }
     `maven-publish`
-    id("com.github.ben-manes.versions") version Versions.gradle_versions
-    id("com.github.johnrengelman.shadow") version Versions.shadow
-    id("me.champeau.gradle.jmh") version Versions.jmh_gradle_plugin apply false
 }
 
 allprojects {
     apply(plugin = "kotlin")
-    apply(plugin = "org.jmailen.kotlinter")
+    apply(plugin = Plugins.Kotlinter.id )
     apply(plugin = "maven-publish")
-    apply(plugin = "com.github.johnrengelman.shadow")
+    apply(plugin = Plugins.Shadow.id)
 
     repositories {
         jcenter()
@@ -29,11 +29,13 @@ allprojects {
     dependencies {
         implementation(platform(kotlin("bom")))
         implementation(kotlin("stdlib-jdk8"))
-        implementation(Libs.kotlin_logging)
-        implementation(Libs.log4j_slf4j)
+        implementation(Libs.KotlinLogging.kotlin_logging)
+        implementation(Libs.Log4j_SLF4J.log4j_slf4j_impl)
 
-        testImplementation(Libs.junit_jupiter)
-        testImplementation(Libs.kluent)
+        testImplementation(Libs.JUnit.jupiter_api)
+        testRuntimeOnly(Libs.JUnit.jupiter_engine)
+        testImplementation(Libs.JUnit.jupiter_params)
+        testImplementation(Libs.Kluent.kluent)
     }
 
     tasks.withType<KotlinCompile> {
@@ -93,9 +95,9 @@ subprojects {
 dependencies {
     api(project(":core"))
 
-    testImplementation(Libs.okio)
-    testImplementation(Libs.multiarray)
-    testImplementation(Libs.klock)
+    testImplementation(Libs.Okio.okio)
+    testImplementation(Libs.MultiArray.multiarray)
+    testImplementation(Libs.Klock.klock_jvm)
 }
 
 idea {

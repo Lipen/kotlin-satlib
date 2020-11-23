@@ -1,5 +1,5 @@
 plugins {
-    id("me.champeau.gradle.jmh")
+    id(Plugins.Jmh.id)
 }
 
 dependencies {
