@@ -1,6 +1,7 @@
 /**
  * Copyright © 2020, Darya Grechishkina, Konstantin Chukharev, ITMO University
  */
+
 package com.github.lipen.satlib.solver.jni
 
 import java.io.File
