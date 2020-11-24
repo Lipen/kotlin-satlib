@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package examples.bf
 
 sealed class Logic {
