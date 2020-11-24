@@ -5,6 +5,7 @@ package com.github.lipen.satlib.op
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
+import com.github.lipen.satlib.utils.SequenceScopeLit
 
 /** `AtLeastOne`([literals]) */
 fun Solver.atLeastOne_(literals: LitArray) {
@@ -22,7 +23,7 @@ fun Solver.atLeastOne(literals: Sequence<Lit>) {
 }
 
 /** `AtLeastOne`(literals) */
-fun Solver.atLeastOne(block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.atLeastOne(block: SequenceScopeLit) {
     atLeastOne(sequence(block))
 }
 
@@ -42,7 +43,7 @@ fun Solver.atMostOne(literals: Sequence<Lit>) {
 }
 
 /** `AtMostOne`(literals) */
-fun Solver.atMostOne(block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.atMostOne(block: SequenceScopeLit) {
     atMostOne(sequence(block))
 }
 
@@ -62,7 +63,7 @@ fun Solver.exactlyOne(literals: Sequence<Lit>) {
 }
 
 /** `ExactlyOne`(literals) */
-fun Solver.exactlyOne(block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.exactlyOne(block: SequenceScopeLit) {
     exactlyOne(sequence(block))
 }
 
@@ -82,7 +83,7 @@ fun Solver.implyAnd(lhs: Lit, rhs: Sequence<Lit>) {
 }
 
 /** [lhs] => `AND`(rhs) */
-fun Solver.implyAnd(lhs: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyAnd(lhs: Lit, block: SequenceScopeLit) {
     implyAnd(lhs, sequence(block))
 }
 
@@ -102,7 +103,7 @@ fun Solver.implyOr(lhs: Lit, rhs: Sequence<Lit>) {
 }
 
 /** [lhs] => `OR`(rhs) */
-fun Solver.implyOr(lhs: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyOr(lhs: Lit, block: SequenceScopeLit) {
     implyOr(lhs, sequence(block))
 }
 
@@ -122,7 +123,7 @@ fun Solver.implyImplyAnd(x1: Lit, x2: Lit, rhs: Sequence<Lit>) {
 }
 
 /** [x1] => (x2 => `AND`(rhs) */
-fun Solver.implyImplyAnd(x1: Lit, x2: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyImplyAnd(x1: Lit, x2: Lit, block: SequenceScopeLit) {
     implyImplyAnd(x1, x2, sequence(block))
 }
 
@@ -142,7 +143,7 @@ fun Solver.implyImplyOr(x1: Lit, x2: Lit, rhs: Sequence<Lit>) {
 }
 
 /** [x1] => (x2 => `OR`(rhs) */
-fun Solver.implyImplyOr(x1: Lit, x2: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyImplyOr(x1: Lit, x2: Lit, block: SequenceScopeLit) {
     implyImplyOr(x1, x2, sequence(block))
 }
 
@@ -162,7 +163,7 @@ fun Solver.implyImplyImplyAnd(x1: Lit, x2: Lit, x3: Lit, xs: Sequence<Lit>) {
 }
 
 /**  [x1] => ([x2] => ([x3] => `AND`(xs)) */
-fun Solver.implyImplyImplyAnd(x1: Lit, x2: Lit, x3: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyImplyImplyAnd(x1: Lit, x2: Lit, x3: Lit, block: SequenceScopeLit) {
     implyImplyImplyAnd(x1, x2, x3, sequence(block))
 }
 
@@ -182,7 +183,7 @@ fun Solver.implyImplyImplyOr(x1: Lit, x2: Lit, x3: Lit, xs: Sequence<Lit>) {
 }
 
 /** [x1] => ([x2] => ([x3] => `OR`(xs)) */
-fun Solver.implyImplyImplyOr(x1: Lit, x2: Lit, x3: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyImplyImplyOr(x1: Lit, x2: Lit, x3: Lit, block: SequenceScopeLit) {
     implyImplyImplyOr(x1, x2, x3, sequence(block))
 }
 
@@ -202,7 +203,7 @@ fun Solver.implyImplyIffAnd(x1: Lit, x2: Lit, x3: Lit, xs: Sequence<Lit>) {
 }
 
 /**  [x1] => ([x2] => ([x3] <=> `AND`(xs)) */
-fun Solver.implyImplyIffAnd(x1: Lit, x2: Lit, x3: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyImplyIffAnd(x1: Lit, x2: Lit, x3: Lit, block: SequenceScopeLit) {
     implyImplyIffAnd(x1, x2, x3, sequence(block))
 }
 
@@ -222,7 +223,7 @@ fun Solver.implyImplyIffOr(x1: Lit, x2: Lit, x3: Lit, xs: Sequence<Lit>) {
 }
 
 /** [x1] => ([x2] => ([x3] <=> `OR`(xs)) */
-fun Solver.implyImplyIffOr(x1: Lit, x2: Lit, x3: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyImplyIffOr(x1: Lit, x2: Lit, x3: Lit, block: SequenceScopeLit) {
     implyImplyIffOr(x1, x2, x3, sequence(block))
 }
 
@@ -242,7 +243,7 @@ fun Solver.implyIffAnd(x1: Lit, x2: Lit, xs: Sequence<Lit>) {
 }
 
 /** [x1] => ([x2] <=> `AND`(xs)) */
-fun Solver.implyIffAnd(x1: Lit, x2: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyIffAnd(x1: Lit, x2: Lit, block: SequenceScopeLit) {
     implyIffAnd(x1, x2, sequence(block))
 }
 
@@ -262,7 +263,7 @@ fun Solver.implyIffOr(x1: Lit, x2: Lit, xs: Sequence<Lit>) {
 }
 
 /** [x1] => ([x2] <=> `OR`(xs)) */
-fun Solver.implyIffOr(x1: Lit, x2: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.implyIffOr(x1: Lit, x2: Lit, block: SequenceScopeLit) {
     implyIffOr(x1, x2, sequence(block))
 }
 
@@ -282,7 +283,7 @@ fun Solver.iffAnd(lhs: Lit, rhs: Sequence<Lit>) {
 }
 
 /** [lhs] <=> `AND`(rhs) */
-fun Solver.iffAnd(lhs: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.iffAnd(lhs: Lit, block: SequenceScopeLit) {
     iffAnd(lhs, sequence(block))
 }
 
@@ -302,6 +303,6 @@ fun Solver.iffOr(lhs: Lit, rhs: Sequence<Lit>) {
 }
 
 /** [lhs] <=> `OR`(rhs) */
-fun Solver.iffOr(lhs: Lit, block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.iffOr(lhs: Lit, block: SequenceScopeLit) {
     iffOr(lhs, sequence(block))
 }

@@ -10,6 +10,7 @@ import com.github.lipen.satlib.utils.IntVarArray
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.utils.SequenceScopeLit
 import com.github.lipen.satlib.utils.toList_
 import okio.BufferedSink
 import java.io.File
@@ -80,7 +81,7 @@ fun Solver.addClause(literals: Sequence<Lit>) {
     addClause(literals.asIterable())
 }
 
-fun Solver.addClause(block: suspend SequenceScope<Lit>.() -> Unit) {
+fun Solver.addClause(block: SequenceScopeLit) {
     addClause(sequence(block).constrainOnce())
 }
 
