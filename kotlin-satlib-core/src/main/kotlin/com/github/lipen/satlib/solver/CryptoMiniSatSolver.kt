@@ -93,13 +93,6 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
 
 fun main() {
     CryptoMiniSatSolver().useWith {
-        val x = newLiteral()
-        val y = newLiteral()
-
-        addClause(x)
-        addClause(-y)
-
-        check(solve())
-        println("model = ${getModel()}")
+        testSolverWithAssumptions()
     }
 }

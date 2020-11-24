@@ -1,13 +1,10 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.Model0
-import com.github.lipen.satlib.utils.lineSequence
+import com.github.lipen.satlib.utils.parseDimacsOutput
 import com.github.lipen.satlib.utils.useWith
-import okio.BufferedSource
 import okio.buffer
 import okio.source
 import java.io.File
@@ -114,47 +111,8 @@ class DimacsFileSolver @JvmOverloads constructor(
     }
 }
 
-private fun parseDimacsOutput(source: BufferedSource): Model? {
-    val answer = source.lineSequence().firstOrNull { it.startsWith("s ") }
-        ?: error("No answer from solver")
-    return when {
-        "UNSAT" in answer -> null
-        "INDETERMINATE" in answer -> null
-        "SAT" in answer ->
-            source
-                .lineSequence()
-                .filter { it.startsWith("v ") }
-                .flatMap { it.drop(2).trim().splitToSequence(' ') }
-                .map { it.toInt() }
-                .takeWhile { it != 0 }
-                .map { it > 0 }
-                .toList()
-                .toBooleanArray()
-                .also { check(it.isNotEmpty()) { "Model is empty" } }
-                .let { Model0(it) }
-        else -> error("Bad answer (neither SAT nor UNSAT) from solver: '$answer'")
-    }
-}
-
 fun main() {
-    DimacsFileSolver("cryptominisat5 %s", File("cnf")).useWith {
-        val x = newLiteral()
-        val y = newLiteral()
-        val z = newLiteral()
-
-        println("Encoding exactlyOne(x, y, z)")
-        exactlyOne(x, y, z)
-
-        println("nVars = $numberOfVariables")
-        println("nClauses = $numberOfClauses")
-
-        check(solve())
-        println("model = ${getModel()}")
-
-        println("Solving with assumptions...")
-        check(solve(x)); println("model = ${getModel()}"); check(getValue(x))
-        check(solve(y)); println("model = ${getModel()}"); check(getValue(y))
-        check(solve(z)); println("model = ${getModel()}"); check(getValue(z))
-        println("Solving with assumptions: OK")
+    DimacsFileSolver("cryptominisat5 %s", File("dimacs.cnf")).useWith {
+        testSolverWithoutAssumptions()
     }
 }
