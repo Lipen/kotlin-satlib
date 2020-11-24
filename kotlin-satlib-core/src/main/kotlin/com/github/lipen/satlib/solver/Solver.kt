@@ -2,6 +2,7 @@ package com.github.lipen.satlib.solver
 
 import com.github.lipen.satlib.op.encodeOneHot
 import com.github.lipen.satlib.utils.BoolVarArray
+import com.github.lipen.satlib.utils.Context
 import com.github.lipen.satlib.utils.DomainVar
 import com.github.lipen.satlib.utils.DomainVarArray
 import com.github.lipen.satlib.utils.IntVar
@@ -15,6 +16,8 @@ import java.io.File
 
 @Suppress("FunctionName")
 interface Solver : AutoCloseable {
+    var context: Context
+
     val numberOfVariables: Int
     val numberOfClauses: Int
 
@@ -60,6 +63,13 @@ interface Solver : AutoCloseable {
 
     fun dumpDimacs(sink: BufferedSink)
     fun dumpDimacs(file: File)
+}
+
+inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
+    val oldContext = this.context
+    this.context = newContext
+    block()
+    this.context = oldContext
 }
 
 fun Solver.addClause(literals: Iterable<Lit>) {

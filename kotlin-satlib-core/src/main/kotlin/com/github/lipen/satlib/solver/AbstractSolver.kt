@@ -1,7 +1,9 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.utils.Context
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
+import com.github.lipen.satlib.utils.newContext
 import com.github.lipen.satlib.utils.write
 import com.github.lipen.satlib.utils.writeln
 import okio.Buffer
@@ -15,7 +17,10 @@ abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
     private val assumptions: MutableList<Lit> = mutableListOf()
 
+    final override var context: Context = newContext()
+
     final override fun reset() {
+        context = newContext()
         assumptions.clear()
         buffer.clear()
         _reset()
