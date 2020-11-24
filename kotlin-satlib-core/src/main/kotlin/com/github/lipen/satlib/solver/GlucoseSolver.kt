@@ -1,6 +1,5 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.solver.jni.JGlucose
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
