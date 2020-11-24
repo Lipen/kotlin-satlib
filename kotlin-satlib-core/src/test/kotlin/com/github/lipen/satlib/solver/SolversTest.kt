@@ -84,7 +84,8 @@ class SolversTest {
             listOf(
                 MiniSatSolver(),
                 GlucoseSolver(),
-                DimacsFileSolver("cryptominisat5 %s")
+                DimacsFileSolver("cryptominisat5 %s"),
+                DimacsStreamSolver("cryptominisat5"),
             )
         } else {
             listOf(
@@ -92,7 +93,8 @@ class SolversTest {
                 GlucoseSolver(),
                 CadicalSolver(),
                 CryptoMiniSatSolver(),
-                DimacsFileSolver("cryptominisat5 %s")
+                DimacsFileSolver("cryptominisat5 %s"),
+                DimacsStreamSolver("cryptominisat5"),
             )
         }
 }
