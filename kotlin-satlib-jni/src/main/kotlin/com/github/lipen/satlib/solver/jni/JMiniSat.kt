@@ -23,6 +23,7 @@
 
 package com.github.lipen.satlib.solver.jni
 
+import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
 @Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
@@ -281,8 +282,6 @@ class JMiniSat : AutoCloseable {
 }
 
 fun main() {
-    fun <T : AutoCloseable, R> T.useWith(block: T.() -> R): R = use(block)
-
     @Suppress("DuplicatedCode")
     JMiniSat().useWith {
         val x = newVariable()
