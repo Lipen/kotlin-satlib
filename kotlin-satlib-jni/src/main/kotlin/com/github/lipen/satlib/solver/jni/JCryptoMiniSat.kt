@@ -220,6 +220,7 @@ class JCryptoMiniSat : AutoCloseable {
 fun main() {
     fun <T : AutoCloseable, R> T.useWith(block: T.() -> R): R = use(block)
 
+    @Suppress("DuplicatedCode")
     JCryptoMiniSat().useWith {
         val x = newVariable()
         val y = newVariable()

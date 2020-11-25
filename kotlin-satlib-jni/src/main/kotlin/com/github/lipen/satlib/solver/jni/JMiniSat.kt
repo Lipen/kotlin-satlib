@@ -283,6 +283,7 @@ class JMiniSat : AutoCloseable {
 fun main() {
     fun <T : AutoCloseable, R> T.useWith(block: T.() -> R): R = use(block)
 
+    @Suppress("DuplicatedCode")
     JMiniSat().useWith {
         val x = newVariable()
         val y = newVariable()

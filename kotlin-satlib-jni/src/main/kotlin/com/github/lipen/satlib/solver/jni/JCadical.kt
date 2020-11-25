@@ -226,6 +226,7 @@ class JCadical : AutoCloseable {
 fun main() {
     fun <T : AutoCloseable, R> T.useWith(block: T.() -> R): R = use(block)
 
+    @Suppress("DuplicatedCode")
     JCadical().useWith {
         val x = newVariable()
         val y = newVariable()
