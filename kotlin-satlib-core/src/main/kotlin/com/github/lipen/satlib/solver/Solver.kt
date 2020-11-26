@@ -1,6 +1,7 @@
 package com.github.lipen.satlib.solver
 
 import com.github.lipen.satlib.op.encodeOneHot
+import com.github.lipen.satlib.op.encodeOneHotBinary
 import com.github.lipen.satlib.utils.BoolVarArray
 import com.github.lipen.satlib.utils.Context
 import com.github.lipen.satlib.utils.DomainVar
@@ -10,6 +11,10 @@ import com.github.lipen.satlib.utils.IntVarArray
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.utils.OneHotBinaryDomainVar
+import com.github.lipen.satlib.utils.OneHotBinaryDomainVarArray
+import com.github.lipen.satlib.utils.OneHotBinaryIntVar
+import com.github.lipen.satlib.utils.OneHotBinaryIntVarArray
 import com.github.lipen.satlib.utils.SequenceScopeLit
 import com.github.lipen.satlib.utils.toList_
 import okio.BufferedSink
@@ -64,6 +69,11 @@ interface Solver : AutoCloseable {
 
     fun dumpDimacs(sink: BufferedSink)
     fun dumpDimacs(file: File)
+
+    // companion object {
+    //     const val trueLiteral: Lit = Int.MAX_VALUE
+    //     const val falseLiteral: Lit = -trueLiteral
+    // }
 }
 
 inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
@@ -110,16 +120,48 @@ fun <T> Solver.newDomainVarArray(
     encodeOneHot: Boolean = true,
     init: (T) -> Lit = { newLiteral() },
     domain: (IntArray) -> Iterable<T>,
-): DomainVarArray<T> = DomainVarArray.create(shape) { index -> newDomainVar(domain(index), encodeOneHot, init) }
+): DomainVarArray<T> = DomainVarArray.create(shape) { index ->
+    newDomainVar(domain(index), encodeOneHot, init)
+}
 
 fun Solver.newIntVarArray(
     vararg shape: Int,
     encodeOneHot: Boolean = true,
     init: (Int) -> Lit = { newLiteral() },
     domain: (IntArray) -> Iterable<Int>,
-): IntVarArray = IntVarArray.create(shape) { index -> newIntVar(domain(index), encodeOneHot, init) }
+): IntVarArray = IntVarArray.create(shape) { index ->
+    newIntVar(domain(index), encodeOneHot, init)
+}
 
 fun Solver.newBoolVarArray(
     vararg shape: Int,
     init: (IntArray) -> Lit = { newLiteral() },
 ): BoolVarArray = BoolVarArray.create_(shape, init)
+
+/// OneHotBinary counterparts
+
+fun <T> Solver.newOneHotBinaryDomainVar(
+    domain: Iterable<T>,
+    init: (T) -> Lit = { newLiteral() },
+): OneHotBinaryDomainVar<T> = OneHotBinaryDomainVar.new(domain, ::encodeOneHotBinary, init)
+
+fun Solver.newOneHotBinaryIntVar(
+    domain: Iterable<Int>,
+    init: (Int) -> Lit = { newLiteral() },
+): OneHotBinaryIntVar = newOneHotBinaryDomainVar(domain, init)
+
+fun <T> Solver.newOneHotBinaryDomainVarArray(
+    vararg shape: Int,
+    init: (T) -> Lit = { newLiteral() },
+    domain: (IntArray) -> Iterable<T>,
+): OneHotBinaryDomainVarArray<T> = OneHotBinaryDomainVarArray.create(shape) { index ->
+    newOneHotBinaryDomainVar(domain(index), init)
+}
+
+fun Solver.newOneHotBinaryIntVarArray(
+    vararg shape: Int,
+    init: (Int) -> Lit = { newLiteral() },
+    domain: (IntArray) -> Iterable<Int>,
+): OneHotBinaryIntVarArray = OneHotBinaryIntVarArray.create(shape) { index ->
+    newOneHotBinaryIntVar(domain(index), init)
+}
