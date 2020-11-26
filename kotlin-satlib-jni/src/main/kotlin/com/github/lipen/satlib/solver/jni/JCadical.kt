@@ -7,7 +7,7 @@ package com.github.lipen.satlib.solver.jni
 import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
-@Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
+@Suppress("FunctionName", "MemberVisibilityCanBePrivate")
 class JCadical : AutoCloseable {
     private var handle: Long = 0
 
@@ -153,6 +153,7 @@ class JCadical : AutoCloseable {
         cadical_add_assumption(handle, literals)
     }
 
+    // TODO: Return enum SolveResult
     fun solve(): Boolean {
         return when (val result = cadical_solve(handle)) {
             0 -> false // UNSOLVED

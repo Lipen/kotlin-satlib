@@ -119,6 +119,7 @@ JNI_METHOD(void, cadical_1add_1assumption)
     jsize array_length = env->GetArrayLength(literals);
     CaDiCaL::Solver* solver = decode(p);
 
+    // TODO: use GetPrimitiveArrayCritical
     jint* array = env->GetIntArrayElements(literals, 0);
     for (int i = 0; i < array_length; i++) {
         solver->assume(array[i]);
