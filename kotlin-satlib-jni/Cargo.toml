@@ -1,0 +1,18 @@
+[package]
+name = "kotlin-satlib-jni-splr"
+version = "0.1.0"
+authors = ["Konstantin Chukharev <lipen00@gmail.com>"]
+
+[lib]
+name = "jsplr"
+path = "src/main/rust/JSplr.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+jni = "0.18"
+
+[dependencies.splr]
+#version = "0.5.0"
+path = "D:/dev/Rust/splr"
+default-features = false
+features = ["incremental_solver"]

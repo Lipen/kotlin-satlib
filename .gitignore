@@ -5,6 +5,7 @@
 # Build folders
 out/
 build/
+target/
 
 # Images
 *.png
