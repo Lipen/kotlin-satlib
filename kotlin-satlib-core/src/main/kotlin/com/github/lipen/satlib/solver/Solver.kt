@@ -138,7 +138,7 @@ fun Solver.newBoolVarArray(
     init: (IntArray) -> Lit = { newLiteral() },
 ): BoolVarArray = BoolVarArray.create_(shape, init)
 
-/// OneHotBinary counterparts
+// OneHotBinary counterparts
 
 fun <T> Solver.newOneHotBinaryDomainVar(
     domain: Iterable<T>,
