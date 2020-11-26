@@ -64,7 +64,7 @@ jobs:
           g++ -Wall -O3 -fPIC -shared -s -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iglucose-src -I. -Lglucose-src/build src/main/cpp/JGlucose.cpp -lglucose -o build/lib/jglucose.dll
 
       - name: Build package using Gradle wrapper
-        run: ./gradlew build -x test --stacktrace
+        run: ./gradlew build -x test --stacktrace -x :jni:cargoBuild -x :jni:cargoTest -x :jni:cargoClean
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1

@@ -12,6 +12,7 @@ plugins {
     with(Plugins.GradleVersions) { id(id) version (version) }
     with(Plugins.Shadow) { id(id) version (version) }
     with(Plugins.Jmh) { id(id) version (version) apply false }
+    with(Plugins.Rust) { id(id) version (version) apply false }
     `maven-publish`
 }
 

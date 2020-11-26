@@ -55,7 +55,7 @@ jobs:
         run: echo "$(realpath bin/)" >> $GITHUB_PATH
 
       - name: Build package using Gradle wrapper
-        run: ./gradlew build --stacktrace --scan
+        run: ./gradlew build --stacktrace --scan -x :jni:cargoBuild -x :jni:cargoTest -x :jni:cargoClean
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1

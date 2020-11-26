@@ -16,6 +16,7 @@ object Versions {
     const val multiarray = "0.6.1"
     const val okio = "2.9.0"
     const val shadow = "5.2.0"
+    const val rust_gradle_plugin = "0.1.0"
 }
 
 object Libs {
@@ -99,5 +100,11 @@ object Plugins {
     object Jmh {
         const val version = Versions.jmh_gradle_plugin
         const val id = "me.champeau.gradle.jmh"
+    }
+
+    // https://github.com/liurenjie1024/rust-gradle-plugin
+    object Rust {
+        const val version = Versions.rust_gradle_plugin
+        const val id = "io.github.liurenjie1024.gradle.rust"
     }
 }
