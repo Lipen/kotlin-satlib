@@ -39,7 +39,7 @@ interface Solver : AutoCloseable {
     fun addClause(lit1: Lit, lit2: Lit, lit3: Lit)
     fun addClause(vararg literals: Lit): Unit = addClause_(literals)
     fun addClause_(literals: LitArray)
-    fun addClause_(literals: List<Lit>)
+    fun addClause(literals: List<Lit>)
 
     fun assume(vararg literals: Lit): Unit = assume_(literals)
     fun assume_(literals: LitArray)
@@ -55,7 +55,7 @@ interface Solver : AutoCloseable {
     fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean
     fun solve(vararg assumptions: Lit): Boolean = solve_(assumptions)
     fun solve_(assumptions: LitArray): Boolean
-    fun solve_(assumptions: List<Lit>): Boolean
+    fun solve(assumptions: List<Lit>): Boolean
 
     fun interrupt()
 
@@ -74,7 +74,7 @@ inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
 }
 
 fun Solver.addClause(literals: Iterable<Lit>) {
-    addClause_(literals.toList_())
+    addClause(literals.toList_())
 }
 
 fun Solver.addClause(literals: Sequence<Lit>) {
@@ -86,7 +86,7 @@ fun Solver.addClause(block: SequenceScopeLit) {
 }
 
 fun Solver.solve(assumptions: Iterable<Lit>): Boolean {
-    return solve_(assumptions.toList_())
+    return solve(assumptions.toList_())
 }
 
 fun <T> Solver.newDomainVar(

@@ -67,7 +67,7 @@ abstract class AbstractSolver : Solver {
         _addClause(literals)
     }
 
-    final override fun addClause_(literals: List<Lit>) {
+    final override fun addClause(literals: List<Lit>) {
         for (lit in literals)
             buffer.write(lit.toString()).write(" ")
         buffer.writeln("0")
@@ -93,7 +93,7 @@ abstract class AbstractSolver : Solver {
             buffer.writeln("c solve")
             _solve()
         } else {
-            solve_(assumptions)
+            solve(assumptions)
         }
 
     final override fun solve(lit: Lit): Boolean {
@@ -118,7 +118,7 @@ abstract class AbstractSolver : Solver {
         return _solve(assumptions)
     }
 
-    final override fun solve_(assumptions: List<Lit>): Boolean {
+    final override fun solve(assumptions: List<Lit>): Boolean {
         buffer.writeln("c solve ${assumptions.joinToString(" ")}")
         return _solve(assumptions)
     }
