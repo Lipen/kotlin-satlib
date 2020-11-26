@@ -32,9 +32,9 @@ private fun Solver.emptyBFVariables(tt: Map<Row, Boolean>): BFVariables =
         inputs = tt.keys.map { it.values },
         values = tt.values.toList(),
         nodeType = newDomainVarArray { NodeType.values().asIterable() },
-        nodeInputVariable = IntVarArray.create { IntVar(mapOf()) },
-        nodeParent = IntVarArray.create { IntVar(mapOf()) },
-        nodeChild = IntVarArray.create { IntVar(mapOf()) },
+        nodeInputVariable = IntVarArray.create { IntVar.empty() },
+        nodeParent = IntVarArray.create { IntVar.empty() },
+        nodeChild = IntVarArray.create { IntVar.empty() },
         nodeValue = newBoolVarArray()
     )
 

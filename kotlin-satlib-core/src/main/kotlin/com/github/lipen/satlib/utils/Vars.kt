@@ -26,6 +26,8 @@ interface DomainVar<T> {
             domain: Iterable<T>,
             init: (T) -> Lit,
         ): DomainVar<T> = DefaultDomainVar(domain, init)
+
+        fun <T> empty(): DomainVar<T> = DefaultDomainVar(emptyMap())
     }
 }
 
