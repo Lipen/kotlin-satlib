@@ -1,5 +1,6 @@
 = SAT-LIB for Kotlin
 
 image:https://github.com/Lipen/kotlin-satlib/workflows/Build/badge.svg?branch=master["Build", link="https://github.com/Lipen/kotlin-satlib/actions"]
+image:https://github.com/Lipen/kotlin-satlib/workflows/Build%20(Windows)/badge.svg?branch=master["Build (Windows)", link="https://github.com/Lipen/kotlin-satlib/actions"]
 image:https://jitpack.io/v/Lipen/kotlin-satlib.svg["JitPack", link="https://jitpack.io/p/Lipen/kotlin-satlib"]
 image:https://hitsofcode.com/github/Lipen/kotlin-satlib["Hits-of-Code", link="https://hitsofcode.com/view/github/Lipen/kotlin-satlib"]
