@@ -3,8 +3,22 @@ name: Build (Windows)
 on: [push, pull_request]
 
 jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          github_token: ${{ github.token }}
+          paths_ignore: '["**/README.{md,adoc}", ".editorconfig", ".gitignore"]'
+
   build:
     runs-on: windows-latest
+
     defaults:
       run:
         shell: bash
