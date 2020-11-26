@@ -2,7 +2,7 @@ import io.github.liurenjie1024.gradle.rust.CargoBuildTask
 
 plugins {
     id(Plugins.Jmh.id)
-    id("io.github.liurenjie1024.gradle.rust") version "0.1.0"
+    id(Plugins.Rust.id)
 }
 
 dependencies {
