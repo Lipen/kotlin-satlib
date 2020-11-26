@@ -11,7 +11,6 @@ import com.github.lipen.satlib.op.implyImplyIffOr
 import com.github.lipen.satlib.op.implyImplyImply
 import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.solver.newBoolVarArray
 import com.github.lipen.satlib.solver.newDomainVar
 import com.github.lipen.satlib.solver.newDomainVarArray
