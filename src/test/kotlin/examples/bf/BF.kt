@@ -2,7 +2,6 @@ package examples.bf
 
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.solver.jni.JMiniSat
 import com.soywiz.klock.PerformanceCounter
 
 object GlobalsBF {
@@ -17,7 +16,7 @@ object GlobalsBF {
     var timeout: Double = 30.0
 
     init {
-        JMiniSat
+        solverProvider()
     }
 }
 
