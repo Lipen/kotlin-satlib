@@ -90,6 +90,7 @@ subprojects {
 dependencies {
     api(project(":core"))
 
+    testImplementation(project(":utils"))
     testImplementation(Libs.Okio.okio)
     testImplementation(Libs.MultiArray.multiarray)
     testImplementation(Libs.Klock.klock_jvm)
