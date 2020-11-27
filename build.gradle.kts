@@ -82,12 +82,6 @@ allprojects {
     }
 }
 
-configure(allprojects - project(":utils")) {
-    dependencies {
-        implementation(project(":utils"))
-    }
-}
-
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
     version = rootProject.version
