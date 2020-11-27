@@ -1,6 +1,6 @@
 dependencies {
     implementation(project(":utils"))
-    api(project(":jni"))
+    implementation(project(":jni"))
 
     implementation(Libs.Okio.okio)
     implementation(Libs.MultiArray.multiarray)
