@@ -218,7 +218,7 @@ class JCryptoMiniSat : AutoCloseable {
     }
 }
 
-fun main() {
+private fun main() {
     @Suppress("DuplicatedCode")
     JCryptoMiniSat().useWith {
         val x = newVariable()

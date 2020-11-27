@@ -130,7 +130,7 @@ class MiniSatSolver @JvmOverloads constructor(
     }
 }
 
-fun main() {
+private fun main() {
     MiniSatSolver().useWith {
         testSolverWithAssumptions()
     }

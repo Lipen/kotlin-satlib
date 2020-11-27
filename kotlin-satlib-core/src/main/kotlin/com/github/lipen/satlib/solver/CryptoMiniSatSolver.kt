@@ -91,7 +91,7 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
     }
 }
 
-fun main() {
+private fun main() {
     CryptoMiniSatSolver().useWith {
         testSolverWithAssumptions()
     }

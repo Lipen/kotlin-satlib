@@ -260,7 +260,7 @@ class JGlucose : AutoCloseable {
     }
 }
 
-fun main() {
+private fun main() {
     @Suppress("DuplicatedCode")
     JGlucose().useWith {
         val x = newVariable()

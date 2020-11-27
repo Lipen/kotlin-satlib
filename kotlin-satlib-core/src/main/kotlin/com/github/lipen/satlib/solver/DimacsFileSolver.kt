@@ -111,7 +111,7 @@ class DimacsFileSolver @JvmOverloads constructor(
     }
 }
 
-fun main() {
+private fun main() {
     DimacsFileSolver("cryptominisat5 %s", File("dimacs.cnf")).useWith {
         testSolverWithoutAssumptions()
     }

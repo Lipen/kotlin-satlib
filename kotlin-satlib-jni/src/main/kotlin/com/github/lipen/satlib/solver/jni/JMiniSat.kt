@@ -281,7 +281,7 @@ class JMiniSat : AutoCloseable {
     }
 }
 
-fun main() {
+private fun main() {
     @Suppress("DuplicatedCode")
     JMiniSat().useWith {
         val x = newVariable()

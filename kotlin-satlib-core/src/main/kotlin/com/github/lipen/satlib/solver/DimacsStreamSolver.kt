@@ -113,7 +113,7 @@ class DimacsStreamSolver(
     }
 }
 
-fun main() {
+private fun main() {
     DimacsStreamSolver("cryptominisat5").useWith {
         testSolverWithoutAssumptions()
     }

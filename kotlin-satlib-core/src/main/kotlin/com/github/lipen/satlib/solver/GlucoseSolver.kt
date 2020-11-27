@@ -130,7 +130,7 @@ class GlucoseSolver @JvmOverloads constructor(
     }
 }
 
-fun main() {
+private fun main() {
     GlucoseSolver().useWith {
         testSolverWithAssumptions()
     }

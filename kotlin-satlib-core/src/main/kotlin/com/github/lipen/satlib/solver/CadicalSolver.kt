@@ -91,7 +91,7 @@ class CadicalSolver @JvmOverloads constructor(
     }
 }
 
-fun main() {
+private fun main() {
     CadicalSolver().useWith {
         testSolverWithAssumptions()
     }

@@ -225,7 +225,7 @@ class JCadical : AutoCloseable {
     }
 }
 
-fun main() {
+private fun main() {
     @Suppress("DuplicatedCode")
     JCadical().useWith {
         val x = newVariable()
