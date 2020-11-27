@@ -30,7 +30,7 @@ allprojects {
         implementation(platform(kotlin("bom")))
         implementation(kotlin("stdlib-jdk8"))
         implementation(Libs.KotlinLogging.kotlin_logging)
-        implementation(Libs.Log4j_SLF4J.log4j_slf4j_impl)
+        implementation(Libs.Log4j.log4j_slf4j_impl)
 
         testImplementation(Libs.JUnit.jupiter_api)
         testRuntimeOnly(Libs.JUnit.jupiter_engine)

@@ -12,7 +12,7 @@ object Versions {
     const val kotlin_logging = "2.0.3"
     const val kotlinter = "3.2.0"
     const val kotlinx_coroutines = "1.4.1"
-    const val log4j_slf4j = "2.14.0"
+    const val log4j = "2.14.0"
     const val multiarray = "0.6.1"
     const val okio = "2.9.0"
     const val shadow = "5.2.0"
@@ -58,8 +58,8 @@ object Libs {
     }
 
     // https://github.com/apache/logging-log4j2
-    object Log4j_SLF4J {
-        const val version = Versions.log4j_slf4j
+    object Log4j {
+        const val version = Versions.log4j
         const val log4j_slf4j_impl = "org.apache.logging.log4j:log4j-slf4j-impl:$version"
     }
 
