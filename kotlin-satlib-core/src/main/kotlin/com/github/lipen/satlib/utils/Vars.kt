@@ -2,6 +2,8 @@ package com.github.lipen.satlib.utils
 
 import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray
+import com.github.lipen.satlib.op.encodeOneHot
+import com.github.lipen.satlib.solver.Solver
 
 typealias Lit = Int
 typealias LitArray = IntArray
@@ -77,3 +79,42 @@ class BoolVarArray @PublishedApi internal constructor(
         ): BoolVarArray = BoolVarArray(IntMultiArray.create(shape, init))
     }
 }
+
+fun <T> Solver.newDomainVar(
+    domain: Iterable<T>,
+    encodeOneHot: Boolean = true,
+    init: (T) -> Lit = { newLiteral() },
+): DomainVar<T> {
+    val v = DomainVar.new(domain, init)
+    if (encodeOneHot) encodeOneHot(v)
+    return v
+}
+
+fun Solver.newIntVar(
+    domain: Iterable<Int>,
+    encodeOneHot: Boolean = true,
+    init: (Int) -> Lit = { newLiteral() },
+): IntVar = newDomainVar(domain, encodeOneHot, init)
+
+fun <T> Solver.newDomainVarArray(
+    vararg shape: Int,
+    encodeOneHot: Boolean = true,
+    init: (T) -> Lit = { newLiteral() },
+    domain: (IntArray) -> Iterable<T>,
+): DomainVarArray<T> = DomainVarArray.create(shape) { index ->
+    newDomainVar(domain(index), encodeOneHot, init)
+}
+
+fun Solver.newIntVarArray(
+    vararg shape: Int,
+    encodeOneHot: Boolean = true,
+    init: (Int) -> Lit = { newLiteral() },
+    domain: (IntArray) -> Iterable<Int>,
+): IntVarArray = IntVarArray.create(shape) { index ->
+    newIntVar(domain(index), encodeOneHot, init)
+}
+
+fun Solver.newBoolVarArray(
+    vararg shape: Int,
+    init: (IntArray) -> Lit = { newLiteral() },
+): BoolVarArray = BoolVarArray.create_(shape, init)

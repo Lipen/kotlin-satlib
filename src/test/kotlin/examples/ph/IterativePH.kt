@@ -3,7 +3,7 @@ package examples.ph
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.solver.newIntVarArray
+import com.github.lipen.satlib.utils.newIntVarArray
 import com.github.lipen.satlib.utils.IntVarArray
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln

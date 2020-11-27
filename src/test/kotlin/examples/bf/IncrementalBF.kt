@@ -11,10 +11,10 @@ import com.github.lipen.satlib.op.implyImplyIffOr
 import com.github.lipen.satlib.op.implyImplyImply
 import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.solver.newBoolVarArray
-import com.github.lipen.satlib.solver.newDomainVar
-import com.github.lipen.satlib.solver.newDomainVarArray
-import com.github.lipen.satlib.solver.newIntVar
+import com.github.lipen.satlib.utils.newBoolVarArray
+import com.github.lipen.satlib.utils.newDomainVar
+import com.github.lipen.satlib.utils.newDomainVarArray
+import com.github.lipen.satlib.utils.newIntVar
 import com.github.lipen.satlib.utils.DomainVarArray
 import com.github.lipen.satlib.utils.IntVar
 import com.github.lipen.satlib.utils.IntVarArray

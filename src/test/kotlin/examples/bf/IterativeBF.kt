@@ -10,9 +10,9 @@ import com.github.lipen.satlib.op.implyImplyIffOr
 import com.github.lipen.satlib.op.implyImplyImply
 import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.solver.newBoolVarArray
-import com.github.lipen.satlib.solver.newDomainVarArray
-import com.github.lipen.satlib.solver.newIntVarArray
+import com.github.lipen.satlib.utils.newBoolVarArray
+import com.github.lipen.satlib.utils.newDomainVarArray
+import com.github.lipen.satlib.utils.newIntVarArray
 import com.github.lipen.satlib.utils.sign
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.PerformanceCounter
