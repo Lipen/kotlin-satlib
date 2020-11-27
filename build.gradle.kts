@@ -63,16 +63,17 @@ allprojects {
         disabledRules = arrayOf("import-ordering")
     }
 
-    val sourcesJar by tasks.creating(Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets["main"].allSource)
+    java {
+        @Suppress("UnstableApiUsage")
+        withSourcesJar()
+        // @Suppress("UnstableApiUsage")
+        // withJavadocJar()
     }
 
     publishing {
         publications {
             create<MavenPublication>("maven") {
                 from(components["java"])
-                artifact(sourcesJar)
             }
         }
         repositories {
