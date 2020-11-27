@@ -19,7 +19,6 @@ allprojects {
     apply(plugin = "kotlin")
     apply(plugin = Plugins.Kotlinter.id )
     apply(plugin = "maven-publish")
-    apply(plugin = Plugins.Shadow.id)
 
     repositories {
         jcenter()
