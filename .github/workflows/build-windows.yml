@@ -1,14 +1,12 @@
 name: Build (Windows)
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   pre_job:
     runs-on: ubuntu-latest
-
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
-
     steps:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
@@ -17,12 +15,12 @@ jobs:
           paths_ignore: '["**/README.{md,adoc}", ".editorconfig", ".gitignore"]'
 
   build:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: windows-latest
-
     defaults:
       run:
         shell: bash
-
     steps:
       - name: Checkout latest code
         uses: actions/checkout@v2
