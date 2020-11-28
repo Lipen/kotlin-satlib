@@ -49,7 +49,6 @@ abstract class AbstractSolver : Solver {
     final override fun newLiteral(): Lit {
         val outerNumberOfVariables = ++numberOfVariables
         return _newLiteral(outerNumberOfVariables)
-            .also { check(it == outerNumberOfVariables) { "newLiteral mismatch" } }
     }
 
     @Suppress("OverridingDeprecatedMember")
