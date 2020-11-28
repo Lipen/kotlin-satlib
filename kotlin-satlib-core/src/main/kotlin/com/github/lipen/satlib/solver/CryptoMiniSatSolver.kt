@@ -21,12 +21,10 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
 
     override fun _comment(comment: String) {}
 
-    // override fun _newLiteral(outerNumberOfVariables: Int): Lit {
-    //     // Note: Cryptominisat automatically calls `new_vars` in `add_clause` internally,
-    //     //   so we can skip calling `backend.newVariable()` here.
-    //     // backend.newVariable()
-    //     return outerNumberOfVariables
-    // }
+    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
+        backend.newVariable()
+        return outerNumberOfVariables
+    }
 
     override fun _addClause() {
         @Suppress("deprecation")
