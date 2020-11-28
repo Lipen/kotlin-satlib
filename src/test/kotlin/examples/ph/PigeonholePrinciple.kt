@@ -11,6 +11,10 @@ object GlobalsPH {
         // CryptoMiniSatSolver()
         // CadicalSolver()
     }
+
+    init {
+        solverProvider()
+    }
 }
 
 fun main() {
