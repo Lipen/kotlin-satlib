@@ -77,7 +77,7 @@ JNI_METHOD(jint, cms_1nvars)
 JNI_METHOD(void, cms_1add_1clause)
   (JNIEnv* env, jobject, jlong p, jintArray literals) {
     auto lits = to_literals_vector(env, literals);
-    decode(p)->add_clause(&lits);
+    decode(p)->add_clause(lits);
   }
 
 JNI_METHOD(jint, cms_1solve__J)
