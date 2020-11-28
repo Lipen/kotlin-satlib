@@ -17,7 +17,7 @@ plugins {
 
 allprojects {
     apply(plugin = "kotlin")
-    apply(plugin = Plugins.Kotlinter.id )
+    apply(plugin = Plugins.Kotlinter.id)
     apply(plugin = "maven-publish")
 
     repositories {
