@@ -87,10 +87,9 @@ subprojects {
 }
 
 dependencies {
-    api(project(":core"))
-
+    testImplementation(project(":core"))
+    testCompileOnly(project(":jni"))
     testImplementation(project(":utils"))
-    testImplementation(project(":jni"))
     testImplementation(Libs.Okio.okio)
     testImplementation(Libs.MultiArray.multiarray)
     testImplementation(Libs.Klock.klock_jvm)
