@@ -11,10 +11,7 @@ import java.io.File
 class JCadical : AutoCloseable {
     private var handle: Long = 0
 
-    var numberOfVariables: Int = 0
-        private set
-    var numberOfClauses: Int = 0
-        private set
+    val numberOfVariables: Int get() = cadical_vars(handle)
 
     init {
         reset()
@@ -23,9 +20,7 @@ class JCadical : AutoCloseable {
     fun reset() {
         if (handle != 0L) cadical_delete(handle)
         handle = cadical_create()
-        if (handle == 0L) throw OutOfMemoryError()
-        numberOfVariables = 0
-        numberOfClauses = 0
+        if (handle == 0L) throw OutOfMemoryError("cadical_create returned NULL")
     }
 
     override fun close() {
@@ -42,8 +37,6 @@ class JCadical : AutoCloseable {
     fun setLongOption(arg: String): Boolean {
         return cadical_set_long_option(handle, arg)
     }
-
-    fun newVariable(): Int = ++numberOfVariables
 
     fun frozen(lit: Int): Boolean {
         return cadical_frozen(handle, lit)
@@ -93,64 +86,38 @@ class JCadical : AutoCloseable {
         cadical_assume(handle, lit)
     }
 
-    @Deprecated(
-        "Clause must contain at least one literal!",
-        ReplaceWith("addClause(...)")
-    )
     fun addClause() {
-        ++numberOfClauses
         add(0)
     }
 
     fun addClause(lit1: Int) {
-        ++numberOfClauses
         add(lit1); add(0)
     }
 
     fun addClause(lit1: Int, lit2: Int) {
-        ++numberOfClauses
         add(lit1); add(lit2); add(0)
     }
 
     fun addClause(lit1: Int, lit2: Int, lit3: Int) {
-        ++numberOfClauses
         add(lit1); add(lit2); add(lit3); add(0)
     }
 
-    fun addClause(vararg literals: Int) {
-        addClause_(literals)
-    }
-
-    fun addClause_(literals: IntArray) {
-        ++numberOfClauses
+    fun addClause(literals: IntArray) {
         cadical_add_clause(handle, literals)
     }
 
-    @Deprecated(
-        "Assumption should contain at least one literal",
-        ReplaceWith("addAssumption(...)")
-    )
-    fun addAssumption() {
+    @JvmName("addClauseVararg")
+    fun addClause(vararg literals: Int) {
+        addClause(literals)
     }
 
-    fun addAssumption(lit1: Int) {
-        assume(lit1)
+    fun addAssumptions(literals: IntArray) {
+        cadical_add_assumptions(handle, literals)
     }
 
-    fun addAssumption(lit1: Int, lit2: Int) {
-        assume(lit1); assume(lit2)
-    }
-
-    fun addAssumption(lit1: Int, lit2: Int, lit3: Int) {
-        assume(lit1); assume(lit2); assume(lit3)
-    }
-
-    fun addAssumption(vararg literals: Int) {
-        addAssumption_(literals)
-    }
-
-    fun addAssumption_(literals: IntArray) {
-        cadical_add_assumption(handle, literals)
+    @JvmName("addAssumptionsVararg")
+    fun addAssumptions(vararg literals: Int) {
+        addAssumptions(literals)
     }
 
     // TODO: Return enum SolveResult
@@ -163,28 +130,14 @@ class JCadical : AutoCloseable {
         }
     }
 
-    fun solve(lit1: Int): Boolean {
-        addAssumption(lit1)
+    fun solve(assumptions: IntArray): Boolean {
+        addAssumptions(assumptions)
         return solve()
     }
 
-    fun solve(lit1: Int, lit2: Int): Boolean {
-        addAssumption(lit1, lit2)
-        return solve()
-    }
-
-    fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
-        addAssumption(lit1, lit2, lit3)
-        return solve()
-    }
-
-    fun solve(vararg literals: Int): Boolean {
-        return solve_(literals)
-    }
-
-    fun solve_(assumptions: IntArray): Boolean {
-        addAssumption_(assumptions)
-        return solve()
+    @JvmName("solveVararg")
+    fun solve(vararg assumptions: Int): Boolean {
+        return solve(assumptions)
     }
 
     fun getValue(lit: Int): Boolean {
@@ -201,6 +154,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_delete(handle: Long)
     private external fun cadical_set(handle: Long, name: String, value: Int): Boolean
     private external fun cadical_set_long_option(handle: Long, arg: String): Boolean
+    private external fun cadical_vars(handle: Long): Int
     private external fun cadical_frozen(handle: Long, lit: Int): Boolean
     private external fun cadical_freeze(handle: Long, lit: Int)
     private external fun cadical_melt(handle: Long, lit: Int)
@@ -213,7 +167,7 @@ class JCadical : AutoCloseable {
     private external fun cadical_add(handle: Long, lit: Int)
     private external fun cadical_assume(handle: Long, lit: Int)
     private external fun cadical_add_clause(handle: Long, literals: IntArray)
-    private external fun cadical_add_assumption(handle: Long, literals: IntArray)
+    private external fun cadical_add_assumptions(handle: Long, literals: IntArray)
     private external fun cadical_solve(handle: Long): Int
     private external fun cadical_get_value(handle: Long, lit: Int): Boolean
     private external fun cadical_get_model(handle: Long): BooleanArray?
@@ -225,12 +179,13 @@ class JCadical : AutoCloseable {
     }
 }
 
+@Suppress("DuplicatedCode")
 private fun main() {
-    @Suppress("DuplicatedCode")
     JCadical().useWith {
-        val x = newVariable()
-        val y = newVariable()
-        val z = newVariable()
+        var counter = 0
+        val x = ++counter
+        val y = ++counter
+        val z = ++counter
 
         addClause(-x)
         addClause(-z)
@@ -245,7 +200,7 @@ private fun main() {
         check(solve(y))
         check(!solve(-y))
 
-        val t = newVariable()
+        val t = ++counter
         check(solve(t))
         check(solve(-t))
         println("Solving with assumptions: OK")

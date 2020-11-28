@@ -155,32 +155,15 @@ class JMiniSat : AutoCloseable {
     }
 
     @JvmOverloads
-    fun solve(lit: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        solvable = minisat_solve(handle, lit, do_simp, turn_off_simp)
-        return solvable
-    }
-
-    @JvmOverloads
-    fun solve(lit1: Int, lit2: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        solvable = minisat_solve(handle, lit1, lit2, do_simp, turn_off_simp)
-        return solvable
-    }
-
-    @JvmOverloads
-    fun solve(lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        solvable = minisat_solve(handle, lit1, lit2, lit3, do_simp, turn_off_simp)
-        return solvable
-    }
-
-    @JvmOverloads
-    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        return solve_(assumptions, do_simp, turn_off_simp)
-    }
-
-    @JvmOverloads
-    fun solve_(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = minisat_solve(handle, assumptions, do_simp, turn_off_simp)
         return solvable
+    }
+
+    @JvmOverloads
+    @JvmName("solveVararg")
+    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        return solve(assumptions, do_simp, turn_off_simp)
     }
 
     fun getValue(lit: Int): Boolean {
@@ -301,9 +284,9 @@ private fun main() {
         println("model = ${getModel().drop(1)}")
 
         println("Solving with assumptions...")
-        check(solve(x)); println("model = ${getModel().drop(1)}"); check(getValue(x))
-        check(solve(y)); println("model = ${getModel().drop(1)}"); check(getValue(y))
-        check(solve(z)); println("model = ${getModel().drop(1)}"); check(getValue(z))
+        check(this.solve(x)); println("model = ${getModel().drop(1)}"); check(getValue(x))
+        check(this.solve(y)); println("model = ${getModel().drop(1)}"); check(getValue(y))
+        check(this.solve(z)); println("model = ${getModel().drop(1)}"); check(getValue(z))
         println("Solving with assumptions: OK")
     }
 }

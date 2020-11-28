@@ -159,21 +159,6 @@ JNI_METHOD(jboolean, glucose_1solve__JZZ)
     return decode(handle)->solve(do_simp, turn_off_simp);
   }
 
-JNI_METHOD(jboolean, glucose_1solve__JIZZ)
-  (JNIEnv*, jobject, jlong handle, jint p, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve(convert(p), do_simp, turn_off_simp);
-  }
-
-JNI_METHOD(jboolean, glucose_1solve__JIIZZ)
-  (JNIEnv*, jobject, jlong handle, jint p, jint q, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve(convert(p), convert(q), do_simp, turn_off_simp);
-  }
-
-JNI_METHOD(jboolean, glucose_1solve__JIIIZZ)
-  (JNIEnv*, jobject, jlong handle, jint p, jint q, jint r, jboolean do_simp, jboolean turn_off_simp) {
-    return decode(handle)->solve(convert(p), convert(q), convert(r), do_simp, turn_off_simp);
-  }
-
 JNI_METHOD(jboolean, glucose_1solve__J_3IZZ)
   (JNIEnv* env, jobject, jlong handle, jintArray assumptions, jboolean do_simp, jboolean turn_off_simp) {
     jint len = env->GetArrayLength(assumptions);

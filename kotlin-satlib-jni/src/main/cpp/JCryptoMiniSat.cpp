@@ -38,36 +38,13 @@ static inline CMSat::Lit toLit(int lit) {
 
 static std::vector<CMSat::Lit> to_literals_vector(JNIEnv* env, jintArray literals) {
     jsize array_length = env->GetArrayLength(literals);
-    jint* array = env->GetIntArrayElements(literals, 0);
     std::vector<CMSat::Lit> clause;
+    clause.reserve(array_length);
+    jint* array = env->GetIntArrayElements(literals, 0);
     for (int i = 0; i < array_length; i++) {
         clause.push_back(toLit(array[i]));
     }
     env->ReleaseIntArrayElements(literals, array, 0);
-    std::sort(clause.begin(), clause.end());
-    return clause;
-}
-
-static std::vector<CMSat::Lit> to_literals_vector(jint lit) {
-    std::vector<CMSat::Lit> clause;
-    clause.push_back(toLit(lit));
-    std::sort(clause.begin(), clause.end());
-    return clause;
-}
-
-static std::vector<CMSat::Lit> to_literals_vector(jint lit1, jint lit2) {
-    std::vector<CMSat::Lit> clause;
-    clause.push_back(toLit(lit1));
-    clause.push_back(toLit(lit2));
-    std::sort(clause.begin(), clause.end());
-    return clause;
-}
-
-static std::vector<CMSat::Lit> to_literals_vector(jint lit1, jint lit2, jint lit3) {
-    std::vector<CMSat::Lit> clause;
-    clause.push_back(toLit(lit1));
-    clause.push_back(toLit(lit2));
-    clause.push_back(toLit(lit3));
     std::sort(clause.begin(), clause.end());
     return clause;
 }
@@ -87,55 +64,25 @@ JNI_METHOD(void, cms_1interrupt)
     decode(p)->interrupt_asap();
   }
 
-JNI_METHOD(void, cms_1new_1variable)
+JNI_METHOD(void, cms_1new_1var)
   (JNIEnv*, jobject, jlong p) {
     decode(p)->new_var();
   }
 
-JNI_METHOD(void, cms_1add_1clause__JI)
-  (JNIEnv*, jobject, jlong p, jint lit) {
-    auto lits = to_literals_vector(lit);
-    decode(p)->add_clause(lits);
+JNI_METHOD(jint, cms_1nvars)
+  (JNIEnv*, jobject, jlong p) {
+    return decode(p)->nVars();
   }
 
-JNI_METHOD(void, cms_1add_1clause__JII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2) {
-    auto lits = to_literals_vector(lit1, lit2);
-    decode(p)->add_clause(lits);
-  }
-
-JNI_METHOD(void, cms_1add_1clause__JIII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2, jint lit3) {
-    auto lits = to_literals_vector(lit1, lit2, lit3);
-    decode(p)->add_clause(lits);
-  }
-
-JNI_METHOD(void, cms_1add_1clause__J_3I)
+JNI_METHOD(void, cms_1add_1clause)
   (JNIEnv* env, jobject, jlong p, jintArray literals) {
-    decode(p)->add_clause(to_literals_vector(env, literals));
+    auto lits = to_literals_vector(env, literals);
+    decode(p)->add_clause(&lits);
   }
 
 JNI_METHOD(jint, cms_1solve__J)
   (JNIEnv*, jobject, jlong p) {
     return correctReturnValue(decode(p)->solve());
-  }
-
-JNI_METHOD(jint, cms_1solve__JI)
-  (JNIEnv*, jobject, jlong p, jint lit) {
-    auto lits = to_literals_vector(lit);
-    return correctReturnValue(decode(p)->solve(&lits));
-  }
-
-JNI_METHOD(jint, cms_1solve__JII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2) {
-    auto lits = to_literals_vector(lit1, lit2);
-    return correctReturnValue(decode(p)->solve(&lits));
-  }
-
-JNI_METHOD(jint, cms_1solve__JIII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2, jint lit3) {
-    auto lits = to_literals_vector(lit1, lit2, lit3);
-    return correctReturnValue(decode(p)->solve(&lits));
   }
 
 JNI_METHOD(jint, cms_1solve__J_3I)
@@ -147,24 +94,6 @@ JNI_METHOD(jint, cms_1solve__J_3I)
 JNI_METHOD(jint, cms_1simplify__J)
   (JNIEnv*, jobject, jlong p) {
     return correctReturnValue(decode(p)->simplify());
-  }
-
-JNI_METHOD(jint, cms_1simplify__JI)
-  (JNIEnv*, jobject, jlong p, jint lit) {
-    auto lits = to_literals_vector(lit);
-    return correctReturnValue(decode(p)->simplify(&lits));
-  }
-
-JNI_METHOD(jint, cms_1simplify__JII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2) {
-    auto lits = to_literals_vector(lit1, lit2);
-    return correctReturnValue(decode(p)->simplify(&lits));
-  }
-
-JNI_METHOD(jint, cms_1simplify__JIII)
-  (JNIEnv*, jobject, jlong p, jint lit1, jint lit2, jint lit3) {
-    auto lits = to_literals_vector(lit1, lit2, lit3);
-    return correctReturnValue(decode(p)->simplify(&lits));
   }
 
 JNI_METHOD(jint, cms_1simplify__J_3I)
@@ -182,14 +111,14 @@ JNI_METHOD(jbyte, cms_1get_1value)
 JNI_METHOD(jbooleanArray, cms_1get_1model)
   (JNIEnv* env, jobject, jlong p) {
     std::vector<CMSat::lbool> model = decode(p)->get_model();
-    int size = model.size() + 1;
+    int size = model.size();
     jbooleanArray result = env->NewBooleanArray(size);
     if (result == NULL) {
         return NULL;
     }
     jboolean* literals = new jboolean[size];
-    for (int i = 1; i < size; i++) {
-        literals[i] = model[i - 1] == CMSat::l_True;
+    for (int i = 0; i < size; i++) {
+        literals[i] = (model[i] == CMSat::l_True);
     }
     env->SetBooleanArrayRegion(result, 0, size, literals);
     delete[] literals;

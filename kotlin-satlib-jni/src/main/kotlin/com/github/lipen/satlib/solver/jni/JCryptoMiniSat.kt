@@ -12,10 +12,7 @@ import kotlin.math.absoluteValue
 class JCryptoMiniSat : AutoCloseable {
     private var handle: Long = 0
 
-    var numberOfVariables: Int = 0
-        private set
-    var numberOfClauses: Int = 0
-        private set
+    val numberOfVariables: Int get() = cms_nvars(handle)
 
     init {
         reset()
@@ -25,8 +22,6 @@ class JCryptoMiniSat : AutoCloseable {
         if (handle != 0L) cms_delete(handle)
         handle = cms_create()
         if (handle == 0L) throw OutOfMemoryError()
-        numberOfVariables = 0
-        numberOfClauses = 0
     }
 
     override fun close() {
@@ -36,9 +31,8 @@ class JCryptoMiniSat : AutoCloseable {
         }
     }
 
-    fun newVariable(): Int {
-        cms_new_variable(handle)
-        return ++numberOfVariables
+    fun newVariable() {
+        cms_new_var(handle)
     }
 
     // Note: returns one of {0,10,20}
@@ -46,20 +40,13 @@ class JCryptoMiniSat : AutoCloseable {
         return cms_simplify(handle)
     }
 
-    fun simplify(lit1: Int): Int {
-        return cms_simplify(handle, lit1)
-    }
-
-    fun simplify(lit1: Int, lit2: Int): Int {
-        return cms_simplify(handle, lit1, lit2)
-    }
-
-    fun simplify(lit1: Int, lit2: Int, lit3: Int): Int {
-        return cms_simplify(handle, lit1, lit2, lit3)
-    }
-
-    fun simplify(vararg literals: Int): Int {
+    fun simplify(literals: IntArray): Int {
         return cms_simplify(handle, literals)
+    }
+
+    @JvmName("simplifyVararg")
+    fun simplify(vararg literals: Int): Int {
+        return simplify(literals)
     }
 
     fun interrupt() {
@@ -79,31 +66,16 @@ class JCryptoMiniSat : AutoCloseable {
         ReplaceWith("addClause(...)")
     )
     fun addClause() {
-        ++numberOfClauses
+        error("Welcome to hell!")
     }
 
-    fun addClause(lit1: Int) {
-        ++numberOfClauses
-        cms_add_clause(handle, lit1)
-    }
-
-    fun addClause(lit1: Int, lit2: Int) {
-        ++numberOfClauses
-        cms_add_clause(handle, lit1, lit2)
-    }
-
-    fun addClause(lit1: Int, lit2: Int, lit3: Int) {
-        ++numberOfClauses
-        cms_add_clause(handle, lit1, lit2, lit3)
-    }
-
-    fun addClause(vararg literals: Int) {
-        addClause_(literals)
-    }
-
-    fun addClause_(literals: IntArray) {
-        ++numberOfClauses
+    fun addClause(literals: IntArray) {
         cms_add_clause(handle, literals)
+    }
+
+    @JvmName("addClauseVararg")
+    fun addClause(vararg literals: Int) {
+        addClause(literals)
     }
 
     private fun convertSolveResult(value: Int): Boolean {
@@ -119,24 +91,13 @@ class JCryptoMiniSat : AutoCloseable {
         return convertSolveResult(cms_solve(handle))
     }
 
-    fun solve(lit1: Int): Boolean {
-        return convertSolveResult(cms_solve(handle, lit1))
-    }
-
-    fun solve(lit1: Int, lit2: Int): Boolean {
-        return convertSolveResult(cms_solve(handle, lit1, lit2))
-    }
-
-    fun solve(lit1: Int, lit2: Int, lit3: Int): Boolean {
-        return convertSolveResult(cms_solve(handle, lit1, lit2, lit3))
-    }
-
-    fun solve(vararg literals: Int): Boolean {
-        return solve_(literals)
-    }
-
-    fun solve_(literals: IntArray): Boolean {
+    fun solve(literals: IntArray): Boolean {
         return convertSolveResult(cms_solve(handle, literals))
+    }
+
+    @JvmName("solveVararg")
+    fun solve(vararg literals: Int): Boolean {
+        return solve(literals)
     }
 
     fun getValue(lit: Int): Boolean {
@@ -149,7 +110,7 @@ class JCryptoMiniSat : AutoCloseable {
         } xor (lit < 0)
     }
 
-    /** Note: resulting array is 1-based. */
+    /** Note: resulting array is 0-based. */
     fun getModel(): BooleanArray {
         return cms_get_model(handle)
             ?: throw OutOfMemoryError("cms_get_model returned NULL")
@@ -183,20 +144,12 @@ class JCryptoMiniSat : AutoCloseable {
     private external fun cms_delete(handle: Long)
     private external fun cms_interrupt(handle: Long)
     private external fun cms_write_dimacs(handle: Long, path: String)
-    private external fun cms_new_variable(handle: Long)
-    private external fun cms_add_clause(handle: Long, lit1: Int)
-    private external fun cms_add_clause(handle: Long, lit1: Int, lit2: Int)
-    private external fun cms_add_clause(handle: Long, lit1: Int, lit2: Int, lit3: Int)
+    private external fun cms_new_var(handle: Long)
+    private external fun cms_nvars(handle: Long): Int
     private external fun cms_add_clause(handle: Long, literals: IntArray)
     private external fun cms_solve(handle: Long): Int
-    private external fun cms_solve(handle: Long, lit1: Int): Int
-    private external fun cms_solve(handle: Long, lit1: Int, lit2: Int): Int
-    private external fun cms_solve(handle: Long, lit1: Int, lit2: Int, lit3: Int): Int
     private external fun cms_solve(handle: Long, literals: IntArray): Int
     private external fun cms_simplify(handle: Long): Int
-    private external fun cms_simplify(handle: Long, lit1: Int): Int
-    private external fun cms_simplify(handle: Long, lit1: Int, lit2: Int): Int
-    private external fun cms_simplify(handle: Long, lit1: Int, lit2: Int, lit3: Int): Int
     private external fun cms_simplify(handle: Long, literals: IntArray): Int
     private external fun cms_get_value(handle: Long, lit: Int): Byte
     private external fun cms_get_model(handle: Long): BooleanArray?
@@ -221,9 +174,10 @@ class JCryptoMiniSat : AutoCloseable {
 private fun main() {
     @Suppress("DuplicatedCode")
     JCryptoMiniSat().useWith {
-        val x = newVariable()
-        val y = newVariable()
-        val z = newVariable()
+        var counter = 0
+        val x = ++counter
+        val y = ++counter
+        val z = ++counter
 
         addClause(-x)
         addClause(-z)
@@ -232,13 +186,13 @@ private fun main() {
         println("Solving...")
         check(solve()) { "Unexpected UNSAT" }
         println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-        println("model = ${getModel().drop(1)}")
+        println("model = ${getModel().asList()}")
 
         println("Solving with assumptions...")
         check(solve(y))
         check(!solve(-y))
 
-        val t = newVariable()
+        val t = ++counter
         check(solve(t))
         check(solve(-t))
         println("Solving with assumptions: OK")

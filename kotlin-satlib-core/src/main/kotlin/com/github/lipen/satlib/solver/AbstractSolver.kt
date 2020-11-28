@@ -4,6 +4,7 @@ import com.github.lipen.satlib.utils.Context
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.newContext
+import com.github.lipen.satlib.utils.toList_
 import com.github.lipen.satlib.utils.write
 import com.github.lipen.satlib.utils.writeln
 import okio.Buffer
@@ -15,13 +16,20 @@ import java.io.File
 @Suppress("FunctionName")
 abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
-    private val assumptions: MutableList<Lit> = mutableListOf()
+    private val _assumptions: MutableList<Lit> = mutableListOf()
 
-    final override var context: Context = newContext()
+    final override lateinit var context: Context
+    final override var numberOfVariables: Int = 0
+        private set
+    final override var numberOfClauses: Int = 0
+        private set
+    final override val assumptions: List<Lit> = _assumptions
 
     final override fun reset() {
         context = newContext()
-        assumptions.clear()
+        numberOfVariables = 0
+        numberOfClauses = 0
+        _assumptions.clear()
         buffer.clear()
         _reset()
     }
@@ -32,60 +40,72 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun comment(comment: String) {
-        for (line in comment.lineSequence())
+        for (line in comment.lineSequence()) {
             buffer.write("c ").writeln(line)
+        }
         _comment(comment)
+    }
+
+    final override fun newLiteral(): Lit {
+        val outerNumberOfVariables = ++numberOfVariables
+        return _newLiteral(outerNumberOfVariables)
+            .also { check(it == outerNumberOfVariables) { "newLiteral mismatch" } }
     }
 
     @Suppress("OverridingDeprecatedMember")
     final override fun addClause() {
+        ++numberOfClauses
         buffer.writeln("0")
         _addClause()
     }
 
     final override fun addClause(lit: Lit) {
+        ++numberOfClauses
         buffer.writeln("$lit 0")
         _addClause(lit)
     }
 
     final override fun addClause(lit1: Lit, lit2: Lit) {
+        ++numberOfClauses
         buffer.writeln("$lit1 $lit2 0")
         _addClause(lit1, lit2)
     }
 
     final override fun addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
+        ++numberOfClauses
         buffer.writeln("$lit1 $lit2 $lit3 0")
         _addClause(lit1, lit2, lit3)
     }
 
-    final override fun addClause(vararg literals: Lit): Unit = addClause_(literals)
-
-    final override fun addClause_(literals: LitArray) {
-        for (lit in literals)
+    final override fun addClause(literals: LitArray) {
+        ++numberOfClauses
+        for (lit in literals) {
             buffer.write(lit.toString()).write(" ")
+        }
         buffer.writeln("0")
         _addClause(literals)
     }
 
-    final override fun addClause(literals: List<Lit>) {
-        for (lit in literals)
+    final override fun addClause(literals: Iterable<Lit>) {
+        ++numberOfClauses
+        val pool = literals.toList_()
+        for (lit in pool) {
             buffer.write(lit.toString()).write(" ")
+        }
         buffer.writeln("0")
-        _addClause(literals)
+        _addClause(pool)
     }
 
-    final override fun assume(vararg literals: Lit): Unit = assume_(literals)
-
-    final override fun assume_(literals: LitArray) {
-        assumptions.addAll(literals.asIterable())
+    final override fun addAssumptions(literals: LitArray) {
+        addAssumptions(literals.asIterable())
     }
 
-    final override fun assume_(literals: List<Lit>) {
-        assumptions.addAll(literals)
+    final override fun addAssumptions(literals: Iterable<Lit>) {
+        _assumptions.addAll(literals)
     }
 
     final override fun clearAssumptions() {
-        assumptions.clear()
+        _assumptions.clear()
     }
 
     final override fun solve(): Boolean =
@@ -96,31 +116,15 @@ abstract class AbstractSolver : Solver {
             solve(assumptions)
         }
 
-    final override fun solve(lit: Lit): Boolean {
-        buffer.writeln("c solve $lit")
-        return _solve(lit)
-    }
-
-    final override fun solve(lit1: Lit, lit2: Lit): Boolean {
-        buffer.writeln("c solve $lit1 $lit2")
-        return _solve(lit1, lit2)
-    }
-
-    final override fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        buffer.writeln("c solve $lit1 $lit2 $lit3")
-        return _solve(lit1, lit2, lit3)
-    }
-
-    final override fun solve(vararg assumptions: Lit): Boolean = solve_(assumptions)
-
-    final override fun solve_(assumptions: LitArray): Boolean {
+    final override fun solve(assumptions: LitArray): Boolean {
         buffer.writeln("c solve ${assumptions.joinToString(" ")}")
         return _solve(assumptions)
     }
 
-    final override fun solve(assumptions: List<Lit>): Boolean {
-        buffer.writeln("c solve ${assumptions.joinToString(" ")}")
-        return _solve(assumptions)
+    final override fun solve(assumptions: Iterable<Lit>): Boolean {
+        val pool = assumptions.toList_()
+        buffer.writeln("c solve ${pool.joinToString(" ")}")
+        return _solve(pool)
     }
 
     final override fun dumpDimacs(sink: BufferedSink) {
@@ -140,19 +144,25 @@ abstract class AbstractSolver : Solver {
 
     protected abstract fun _reset()
     protected abstract fun _close()
+
     protected abstract fun _comment(comment: String)
+
+    protected open fun _newLiteral(outerNumberOfVariables: Int): Lit {
+        return outerNumberOfVariables
+    }
 
     protected abstract fun _addClause()
     protected abstract fun _addClause(lit: Lit)
     protected abstract fun _addClause(lit1: Lit, lit2: Lit)
     protected abstract fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit)
     protected abstract fun _addClause(literals: LitArray)
-    protected abstract fun _addClause(literals: List<Lit>)
+    protected open fun _addClause(literals: List<Lit>) {
+        _addClause(literals.toIntArray())
+    }
 
     protected abstract fun _solve(): Boolean
-    protected abstract fun _solve(lit: Lit): Boolean
-    protected abstract fun _solve(lit1: Lit, lit2: Lit): Boolean
-    protected abstract fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean
     protected abstract fun _solve(assumptions: LitArray): Boolean
-    protected abstract fun _solve(assumptions: List<Lit>): Boolean
+    protected open fun _solve(assumptions: List<Lit>): Boolean {
+        return _solve(assumptions.toIntArray())
+    }
 }

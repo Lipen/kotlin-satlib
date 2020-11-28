@@ -140,32 +140,15 @@ class JGlucose : AutoCloseable {
     }
 
     @JvmOverloads
-    fun solve(lit: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        solvable = glucose_solve(handle, lit, do_simp, turn_off_simp)
-        return solvable
-    }
-
-    @JvmOverloads
-    fun solve(lit1: Int, lit2: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        solvable = glucose_solve(handle, lit1, lit2, do_simp, turn_off_simp)
-        return solvable
-    }
-
-    @JvmOverloads
-    fun solve(lit1: Int, lit2: Int, lit3: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        solvable = glucose_solve(handle, lit1, lit2, lit3, do_simp, turn_off_simp)
-        return solvable
-    }
-
-    @JvmOverloads
-    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
-        return solve_(assumptions, do_simp, turn_off_simp)
-    }
-
-    @JvmOverloads
-    fun solve_(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+    fun solve(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
         solvable = glucose_solve(handle, assumptions, do_simp, turn_off_simp)
         return solvable
+    }
+
+    @JvmOverloads
+    @JvmName("solveVararg")
+    fun solve(vararg assumptions: Int, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean {
+        return solve(assumptions, do_simp, turn_off_simp)
     }
 
     fun getValue(lit: Int): Boolean {
@@ -211,30 +194,6 @@ class JGlucose : AutoCloseable {
 
     private external fun glucose_solve(
         handle: Long,
-        do_simp: Boolean,
-        turn_off_simp: Boolean,
-    ): Boolean
-
-    private external fun glucose_solve(
-        handle: Long,
-        lit: Int,
-        do_simp: Boolean,
-        turn_off_simp: Boolean,
-    ): Boolean
-
-    private external fun glucose_solve(
-        handle: Long,
-        lit1: Int,
-        lit2: Int,
-        do_simp: Boolean,
-        turn_off_simp: Boolean,
-    ): Boolean
-
-    private external fun glucose_solve(
-        handle: Long,
-        lit1: Int,
-        lit2: Int,
-        lit3: Int,
         do_simp: Boolean,
         turn_off_simp: Boolean,
     ): Boolean

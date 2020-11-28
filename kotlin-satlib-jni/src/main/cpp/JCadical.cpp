@@ -44,6 +44,11 @@ JNI_METHOD(jboolean, cadical_1set_1long_1option)
     return b;
   }
 
+JNI_METHOD(jint, cadical_1vars)
+  (JNIEnv*, jobject, jlong p) {
+    return decode(p)->vars();
+  }
+
 JNI_METHOD(jboolean, cadical_1frozen)
   (JNIEnv*, jobject, jlong p, jint lit) {
     return decode(p)->frozen(lit);
@@ -84,7 +89,7 @@ JNI_METHOD(void, cadical_1terminate)
     decode(p)->terminate();
   }
 
-JNI_METHOD(void, cadical_1to_1dimacs)
+JNI_METHOD(void, cadical_1write_1dimacs)
   (JNIEnv* env, jobject, jlong p, jstring arg) {
     const char* path = env->GetStringUTFChars(arg, 0);
     decode(p)->write_dimacs(path);
@@ -114,7 +119,7 @@ JNI_METHOD(void, cadical_1add_1clause)
     env->ReleaseIntArrayElements(literals, array, 0);
   }
 
-JNI_METHOD(void, cadical_1add_1assumption)
+JNI_METHOD(void, cadical_1add_1assumptions)
   (JNIEnv* env, jobject, jlong p, jintArray literals) {
     jsize array_length = env->GetArrayLength(literals);
     CaDiCaL::Solver* solver = decode(p);

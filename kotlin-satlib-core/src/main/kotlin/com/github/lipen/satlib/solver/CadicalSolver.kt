@@ -11,9 +11,6 @@ import com.github.lipen.satlib.utils.useWith
 class CadicalSolver @JvmOverloads constructor(
     val backend: JCadical = JCadical(),
 ) : AbstractSolver() {
-    override val numberOfVariables: Int get() = backend.numberOfVariables
-    override val numberOfClauses: Int get() = backend.numberOfClauses
-
     override fun _reset() {
         backend.reset()
     }
@@ -22,15 +19,9 @@ class CadicalSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun newLiteral(): Lit {
-        return backend.newVariable()
-    }
-
     override fun _comment(comment: String) {}
 
-    @Suppress("OverridingDeprecatedMember")
     override fun _addClause() {
-        @Suppress("deprecation")
         backend.addClause()
     }
 
@@ -47,35 +38,15 @@ class CadicalSolver @JvmOverloads constructor(
     }
 
     override fun _addClause(literals: IntArray) {
-        backend.addClause_(literals)
-    }
-
-    override fun _addClause(literals: List<Int>) {
-        _addClause(literals.toIntArray())
+        backend.addClause(literals)
     }
 
     override fun _solve(): Boolean {
         return backend.solve()
     }
 
-    override fun _solve(lit: Lit): Boolean {
-        return backend.solve(lit)
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
-        return backend.solve(lit1, lit2)
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        return backend.solve(lit1, lit2, lit3)
-    }
-
     override fun _solve(assumptions: LitArray): Boolean {
-        return backend.solve_(assumptions)
-    }
-
-    override fun _solve(assumptions: List<Lit>): Boolean {
-        return _solve(assumptions.toIntArray())
+        return backend.solve(assumptions)
     }
 
     override fun interrupt() {

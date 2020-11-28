@@ -4,16 +4,13 @@ import com.github.lipen.satlib.solver.jni.JCryptoMiniSat
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.Model1
+import com.github.lipen.satlib.utils.Model0
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CryptoMiniSatSolver @JvmOverloads constructor(
     val backend: JCryptoMiniSat = JCryptoMiniSat(),
 ) : AbstractSolver() {
-    override val numberOfVariables: Int get() = backend.numberOfVariables
-    override val numberOfClauses: Int get() = backend.numberOfClauses
-
     override fun _reset() {
         backend.reset()
     }
@@ -22,13 +19,15 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun newLiteral(): Lit {
-        return backend.newVariable()
-    }
-
     override fun _comment(comment: String) {}
 
-    @Suppress("OverridingDeprecatedMember")
+    // override fun _newLiteral(outerNumberOfVariables: Int): Lit {
+    //     // Note: Cryptominisat automatically calls `new_vars` in `add_clause` internally,
+    //     //   so we can skip calling `backend.newVariable()` here.
+    //     // backend.newVariable()
+    //     return outerNumberOfVariables
+    // }
+
     override fun _addClause() {
         @Suppress("deprecation")
         backend.addClause()
@@ -47,35 +46,15 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
     }
 
     override fun _addClause(literals: IntArray) {
-        backend.addClause_(literals)
-    }
-
-    override fun _addClause(literals: List<Int>) {
-        _addClause(literals.toIntArray())
+        backend.addClause(literals)
     }
 
     override fun _solve(): Boolean {
         return backend.solve()
     }
 
-    override fun _solve(lit: Lit): Boolean {
-        return backend.solve(lit)
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
-        return backend.solve(lit1, lit2)
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        return backend.solve(lit1, lit2, lit3)
-    }
-
     override fun _solve(assumptions: LitArray): Boolean {
-        return backend.solve_(assumptions)
-    }
-
-    override fun _solve(assumptions: List<Lit>): Boolean {
-        return _solve(assumptions.toIntArray())
+        return backend.solve(assumptions)
     }
 
     override fun interrupt() {
@@ -87,7 +66,7 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
     }
 
     override fun getModel(): Model {
-        return Model1(backend.getModel())
+        return Model0(backend.getModel())
     }
 }
 

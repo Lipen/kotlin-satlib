@@ -4,6 +4,7 @@ import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.newIntVar
 import com.github.lipen.satlib.utils.newIntVarArray
 import com.github.lipen.satlib.utils.DomainVar

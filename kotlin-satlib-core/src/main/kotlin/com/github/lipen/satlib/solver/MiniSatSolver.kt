@@ -4,7 +4,7 @@ import com.github.lipen.satlib.solver.jni.JMiniSat
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.Model1
+import com.github.lipen.satlib.utils.Model0
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
@@ -13,9 +13,6 @@ class MiniSatSolver @JvmOverloads constructor(
     val backend: JMiniSat = JMiniSat(),
 ) : AbstractSolver() {
     private var simplified = false
-
-    override val numberOfVariables: Int get() = backend.numberOfVariables
-    override val numberOfClauses: Int get() = backend.numberOfClauses
 
     init {
         reset_()
@@ -37,7 +34,7 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun newLiteral(): Lit {
+    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
         return backend.newVariable()
     }
 
@@ -65,10 +62,6 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.addClause_(literals)
     }
 
-    override fun _addClause(literals: List<Lit>) {
-        _addClause(literals.toIntArray())
-    }
-
     private fun <T> runMatchingSimpStrategy(block: (do_simp: Boolean, turn_off_simp: Boolean) -> T): T {
         return when (simpStrategy) {
             SimpStrategy.ONCE -> block(!simplified, !simplified).also { simplified = true }
@@ -83,32 +76,10 @@ class MiniSatSolver @JvmOverloads constructor(
         }
     }
 
-    override fun _solve(lit: Lit): Boolean {
-        return runMatchingSimpStrategy { do_simp, turn_off_simp ->
-            backend.solve(lit, do_simp, turn_off_simp)
-        }
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
-        return runMatchingSimpStrategy { do_simp, turn_off_simp ->
-            backend.solve(lit1, lit2, do_simp, turn_off_simp)
-        }
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        return runMatchingSimpStrategy { do_simp, turn_off_simp ->
-            backend.solve(lit1, lit2, lit3, do_simp, turn_off_simp)
-        }
-    }
-
     override fun _solve(assumptions: LitArray): Boolean {
         return runMatchingSimpStrategy { do_simp, turn_off_simp ->
-            backend.solve_(assumptions, do_simp, turn_off_simp)
+            backend.solve(assumptions, do_simp, turn_off_simp)
         }
-    }
-
-    override fun _solve(assumptions: List<Lit>): Boolean {
-        return _solve(assumptions.toIntArray())
     }
 
     override fun interrupt() {
@@ -120,7 +91,7 @@ class MiniSatSolver @JvmOverloads constructor(
     }
 
     override fun getModel(): Model {
-        return Model1(backend.getModel())
+        return Model0(backend.getModel())
     }
 
     companion object {

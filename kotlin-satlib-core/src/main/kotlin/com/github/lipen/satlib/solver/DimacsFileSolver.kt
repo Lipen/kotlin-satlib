@@ -16,48 +16,25 @@ class DimacsFileSolver @JvmOverloads constructor(
 ) : AbstractSolver() {
     private var _model: Model? = null
 
-    override var numberOfVariables: Int = 0
-        private set
-    override var numberOfClauses: Int = 0
-        private set
-
-    override fun _reset() {
-        numberOfVariables = 0
-        numberOfClauses = 0
-    }
+    override fun _reset() {}
 
     override fun _close() {}
 
-    override fun newLiteral(): Lit {
-        return ++numberOfVariables
-    }
-
     override fun _comment(comment: String) {}
 
-    @Suppress("OverridingDeprecatedMember")
-    override fun _addClause() {
-        ++numberOfClauses
-    }
+    override fun _addClause() {}
 
-    override fun _addClause(lit: Lit) {
-        ++numberOfClauses
-    }
+    override fun _addClause(lit: Lit) {}
 
-    override fun _addClause(lit1: Lit, lit2: Lit) {
-        ++numberOfClauses
-    }
+    override fun _addClause(lit1: Lit, lit2: Lit) {}
 
-    override fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
-        ++numberOfClauses
-    }
+    override fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit) {}
 
     override fun _addClause(literals: LitArray) {
-        _addClause(literals.toList())
+        _addClause(literals.asList())
     }
 
-    override fun _addClause(literals: List<Lit>) {
-        ++numberOfClauses
-    }
+    override fun _addClause(literals: List<Lit>) {}
 
     override fun _solve(): Boolean {
         dumpDimacs(file)
@@ -67,23 +44,7 @@ class DimacsFileSolver @JvmOverloads constructor(
         return _model != null
     }
 
-    override fun _solve(lit: Lit): Boolean {
-        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
-        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
-    }
-
     override fun _solve(assumptions: LitArray): Boolean {
-        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
-    }
-
-    override fun _solve(assumptions: List<Lit>): Boolean {
         throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
     }
 

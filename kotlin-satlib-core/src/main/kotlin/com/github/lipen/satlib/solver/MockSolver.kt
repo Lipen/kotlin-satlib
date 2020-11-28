@@ -6,17 +6,14 @@ import com.github.lipen.satlib.utils.Model
 
 class MockSolver(
     private val __comment: (String) -> Unit = {},
-    private val __newLiteral: () -> Lit = { TODO() },
+    private val __newLiteral: (outerNumberOfVariables: Int) -> Lit = { it },
     private val __addClause: (List<Lit>) -> Unit = {},
     private val __solve: () -> Boolean = { TODO() },
     private val __reset: () -> Unit = {},
     private val __close: () -> Unit = {},
+    private val __interrupt: () -> Unit = {},
+    private val __getModel: () -> Model = { TODO() },
 ) : AbstractSolver() {
-    override var numberOfVariables: Int = 0
-        private set
-    override var numberOfClauses: Int = 0
-        private set
-
     override fun _reset() {
         __reset()
     }
@@ -29,8 +26,8 @@ class MockSolver(
         __comment(comment)
     }
 
-    override fun newLiteral(): Lit {
-        return __newLiteral()
+    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
+        return __newLiteral(outerNumberOfVariables)
     }
 
     override fun _addClause() {
@@ -61,18 +58,6 @@ class MockSolver(
         return _solve(intArrayOf())
     }
 
-    override fun _solve(lit: Lit): Boolean {
-        return _solve(intArrayOf(lit))
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit): Boolean {
-        return _solve(intArrayOf(lit1, lit2))
-    }
-
-    override fun _solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean {
-        return _solve(intArrayOf(lit1, lit2, lit3))
-    }
-
     override fun _solve(assumptions: LitArray): Boolean {
         return _solve(assumptions.asList())
     }
@@ -82,14 +67,14 @@ class MockSolver(
     }
 
     override fun interrupt() {
-        TODO()
+        __interrupt()
     }
 
     override fun getValue(lit: Lit): Boolean {
-        TODO()
+        return getModel()[lit]
     }
 
     override fun getModel(): Model {
-        TODO()
+        return __getModel()
     }
 }

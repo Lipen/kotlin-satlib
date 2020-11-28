@@ -5,23 +5,22 @@ import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
 import com.github.lipen.satlib.utils.SequenceScopeLit
-import com.github.lipen.satlib.utils.toList_
 import okio.BufferedSink
 import java.io.File
 
 @Suppress("FunctionName")
 interface Solver : AutoCloseable {
     var context: Context
-
     val numberOfVariables: Int
     val numberOfClauses: Int
+    val assumptions: List<Lit>
 
     fun reset()
     override fun close()
 
-    fun newLiteral(): Lit
-
     fun comment(comment: String)
+
+    fun newLiteral(): Lit
 
     @Deprecated(
         "Clause must contain at least one literal!",
@@ -31,25 +30,19 @@ interface Solver : AutoCloseable {
     fun addClause(lit: Lit)
     fun addClause(lit1: Lit, lit2: Lit)
     fun addClause(lit1: Lit, lit2: Lit, lit3: Lit)
-    fun addClause(vararg literals: Lit): Unit = addClause_(literals)
-    fun addClause_(literals: LitArray)
-    fun addClause(literals: List<Lit>)
+    fun addClause(literals: LitArray)
+    fun addClause(literals: Iterable<Lit>)
 
-    fun assume(vararg literals: Lit): Unit = assume_(literals)
-    fun assume_(literals: LitArray)
-    fun assume_(literals: List<Lit>)
+    fun addAssumptions(literals: LitArray)
+    fun addAssumptions(literals: Iterable<Lit>)
     fun clearAssumptions()
 
     // Note:
-    //  - The `solve()` method must use the assumptions passed via the `assume` method.
-    //  - Other `solve(...)` methods must use *only* passed assumptions.
+    //  - `solve()` method must use assumptions passed via the `addAssumptions` method.
+    //  - `solve(assumptions)` methods must use *only* the passed `assumptions`.
     fun solve(): Boolean
-    fun solve(lit: Lit): Boolean
-    fun solve(lit1: Lit, lit2: Lit): Boolean
-    fun solve(lit1: Lit, lit2: Lit, lit3: Lit): Boolean
-    fun solve(vararg assumptions: Lit): Boolean = solve_(assumptions)
-    fun solve_(assumptions: LitArray): Boolean
-    fun solve(assumptions: List<Lit>): Boolean
+    fun solve(assumptions: LitArray): Boolean
+    fun solve(assumptions: Iterable<Lit>): Boolean
 
     fun interrupt()
 
@@ -72,8 +65,8 @@ inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
     this.context = oldContext
 }
 
-fun Solver.addClause(literals: Iterable<Lit>) {
-    addClause(literals.toList_())
+fun Solver.addClause(vararg literals: Lit) {
+    addClause(literals)
 }
 
 fun Solver.addClause(literals: Sequence<Lit>) {
@@ -84,6 +77,14 @@ fun Solver.addClause(block: SequenceScopeLit) {
     addClause(sequence(block).constrainOnce())
 }
 
-fun Solver.solve(assumptions: Iterable<Lit>): Boolean {
-    return solve(assumptions.toList_())
+fun Solver.solve(vararg assumptions: Lit): Boolean {
+    return solve(assumptions)
 }
+
+// fun Solver.solve(literals: Sequence<Lit>) {
+//     solve(literals.asIterable())
+// }
+//
+// fun Solver.solve(block: SequenceScopeLit) {
+//     solve(sequence(block).constrainOnce())
+// }
