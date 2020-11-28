@@ -27,7 +27,6 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
     }
 
     override fun _addClause() {
-        @Suppress("deprecation")
         backend.addClause()
     }
 

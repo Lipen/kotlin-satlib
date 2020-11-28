@@ -61,14 +61,6 @@ class JCryptoMiniSat : AutoCloseable {
         writeDimacs(file.path)
     }
 
-    @Deprecated(
-        "Clause must contain at least one literal!",
-        ReplaceWith("addClause(...)")
-    )
-    fun addClause() {
-        error("Welcome to hell!")
-    }
-
     fun addClause(literals: IntArray) {
         cms_add_clause(handle, literals)
     }
