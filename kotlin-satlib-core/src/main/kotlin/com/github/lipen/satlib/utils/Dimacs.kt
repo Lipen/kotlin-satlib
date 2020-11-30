@@ -20,9 +20,8 @@ internal fun parseDimacsOutput(source: BufferedSource): Model? {
                 .takeWhile { it != 0 }
                 .map { it > 0 }
                 .toList()
-                .toBooleanArray()
                 .also { check(it.isNotEmpty()) { "Model is empty" } }
-                .let { Model0(it) }
+                .let { Model.from(it, zerobased = true) }
         else -> error("Bad answer (neither SAT nor UNSAT) from solver: '$answer'")
     }
 }

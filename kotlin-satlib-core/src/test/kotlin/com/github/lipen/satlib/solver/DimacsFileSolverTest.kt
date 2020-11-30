@@ -23,6 +23,7 @@ class DimacsFileSolverTest {
         solve().`should be true`()
         getValue(x).`should be true`()
         getValue(y).`should be false`()
+        getModel().data `should be equal to` listOf(true, false)
     }
 
     @Test
@@ -43,7 +44,6 @@ class DimacsFileSolverTest {
 
         addClause(x)
 
-        solve().`should be true`()
         assertThrows<UnsupportedOperationException> { solve(-x) }
     }
 
@@ -67,6 +67,7 @@ class DimacsFileSolverTest {
             numberOfClauses `should be equal to` 1
             solve().`should be true`()
             getValue(x).`should be true`()
+            getModel().data `should be equal to` listOf(true)
         }
         solver.reset()
         with(solver) {
@@ -76,6 +77,7 @@ class DimacsFileSolverTest {
             numberOfClauses `should be equal to` 1
             solve().`should be true`()
             getValue(x).`should be false`()
+            getModel().data `should be equal to` listOf(false)
         }
     }
 }

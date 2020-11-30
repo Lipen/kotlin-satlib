@@ -8,31 +8,27 @@ import com.github.lipen.multiarray.mapToBoolean
 import com.github.lipen.multiarray.mapToInt
 import kotlin.math.absoluteValue
 
-interface Model {
-    operator fun get(v: Lit): Boolean // 1-based, as Lit
-}
-
-class Model0(private val data: BooleanArray) : Model {
-    override operator fun get(v: Lit): Boolean = when (v) {
-        // Solver.trueLiteral -> true
-        // Solver.falseLiteral -> false
-        else -> data[v.absoluteValue - 1] xor (v < 0)
+/** 0-based model. */
+class Model private constructor(
+    /** 0-based storage of values inside model. */
+    val data: List<Boolean>,
+) {
+    /** Retrieve the value of 1-based literal [v]. */
+    operator fun get(v: Lit): Boolean {
+        // Note: `v` is 1-based, but `data` is 0-based.
+        return data[v.absoluteValue - 1] xor (v < 0)
     }
 
     override fun toString(): String {
-        return data.asList().toString()
-    }
-}
-
-class Model1(private val data: BooleanArray) : Model {
-    override operator fun get(v: Lit): Boolean = when (v) {
-        // Solver.trueLiteral -> true
-        // Solver.falseLiteral -> false
-        else -> data[v.absoluteValue] xor (v < 0)
+        return data.toString()
     }
 
-    override fun toString(): String {
-        return data.drop(1).toString()
+    companion object {
+        fun from(data: List<Boolean>, zerobased: Boolean): Model =
+            if (zerobased) Model(data)
+            else Model(data.subList(1, data.size))
+
+        fun from(data: BooleanArray, zerobased: Boolean): Model = from(data.asList(), zerobased)
     }
 }
 

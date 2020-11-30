@@ -4,7 +4,6 @@ import com.github.lipen.satlib.solver.jni.JGlucose
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.Model1
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
@@ -91,7 +90,7 @@ class GlucoseSolver @JvmOverloads constructor(
     }
 
     override fun getModel(): Model {
-        return Model1(backend.getModel())
+        return Model.from(backend.getModel(), zerobased = false)
     }
 
     companion object {

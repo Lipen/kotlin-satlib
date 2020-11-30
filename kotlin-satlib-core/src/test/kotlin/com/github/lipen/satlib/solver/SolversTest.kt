@@ -2,6 +2,7 @@ package com.github.lipen.satlib.solver
 
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
+import org.amshove.kluent.`should be in`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.DisplayNameGeneration
 import org.junit.jupiter.api.TestInstance
@@ -23,6 +24,7 @@ class SolversTest {
         solve().`should be true`()
         getValue(x).`should be true`()
         getValue(y).`should be false`()
+        getModel().data `should be equal to` listOf(true, false)
     }
 
     @ParameterizedTest(name = "{displayName} [{0}]")
@@ -61,16 +63,24 @@ class SolversTest {
             numberOfClauses `should be equal to` 1
             solve().`should be true`()
             (getValue(x) or getValue(y)).`should be true`()
+            getModel().data `should be in` listOf(
+                listOf(true, true),
+                listOf(true, false),
+                listOf(false, true),
+            )
         }
         reset()
         run {
             val x = newLiteral()
             val y = newLiteral()
-            addClause(x, y)
+            addClause(-x)
+            addClause(-y)
             numberOfVariables `should be equal to` 2
-            numberOfClauses `should be equal to` 1
+            numberOfClauses `should be equal to` 2
             solve().`should be true`()
-            (getValue(x) or getValue(y)).`should be true`()
+            getValue(x).`should be false`()
+            getValue(y).`should be false`()
+            getModel().data `should be equal to` listOf(false, false)
         }
     }
 
