@@ -4,7 +4,7 @@ import com.github.lipen.satlib.solver.jni.JMiniSat
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
 import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.Model0
+import com.github.lipen.satlib.utils.Model1
 import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
@@ -91,7 +91,7 @@ class MiniSatSolver @JvmOverloads constructor(
     }
 
     override fun getModel(): Model {
-        return Model0(backend.getModel())
+        return Model1(backend.getModel())
     }
 
     companion object {
