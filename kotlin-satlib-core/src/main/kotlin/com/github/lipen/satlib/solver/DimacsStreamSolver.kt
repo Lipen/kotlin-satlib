@@ -11,7 +11,7 @@ import okio.source
 
 @Suppress("MemberVisibilityCanBePrivate")
 class DimacsStreamSolver(
-    val command: String,
+    val command: () -> String,
 ) : AbstractSolver() {
     private var _model: Model? = null
 
@@ -40,6 +40,7 @@ class DimacsStreamSolver(
     override fun _addClause(literals: List<Lit>) {}
 
     override fun _solve(): Boolean {
+        val command = command()
         val process = Runtime.getRuntime().exec(command)
         val processInput = process.outputStream.sink().buffer()
         dumpDimacs(processInput)
@@ -66,20 +67,16 @@ class DimacsStreamSolver(
         return _model ?: error("Model is null because the solver is not in the SAT state")
     }
 
-    override fun toString(): String {
-        return "${this::class.java.simpleName}(\"$command\")"
-    }
-
     companion object {
-        private val ASSUMPTIONS_NOT_SUPPORTED: String =
-            "${DimacsStreamSolver::class.java.simpleName} does not support solving with assumptions"
-        private val INTERRUPTION_NOT_SUPPORTED: String =
-            "${DimacsStreamSolver::class.java.simpleName} does not support interruption"
+        private const val ASSUMPTIONS_NOT_SUPPORTED: String =
+            "DimacsStreamSolver does not support solving with assumptions"
+        private const val INTERRUPTION_NOT_SUPPORTED: String =
+            "DimacsStreamSolver does not support interruption"
     }
 }
 
 private fun main() {
-    DimacsStreamSolver("cryptominisat5").useWith {
+    DimacsStreamSolver { "cryptominisat5" }.useWith {
         testSolverWithoutAssumptions()
     }
 }

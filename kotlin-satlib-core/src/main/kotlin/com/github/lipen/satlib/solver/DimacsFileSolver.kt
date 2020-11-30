@@ -11,8 +11,8 @@ import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate")
 class DimacsFileSolver @JvmOverloads constructor(
-    val command: String,
-    val file: File = createTempFile(),
+    val file: () -> File = { createTempFile() },
+    val command: (File) -> String,
 ) : AbstractSolver() {
     private var _model: Model? = null
 
@@ -41,8 +41,9 @@ class DimacsFileSolver @JvmOverloads constructor(
     override fun _addClause(literals: List<Lit>) {}
 
     override fun _solve(): Boolean {
+        val file = file()
         dumpDimacs(file)
-        val process = Runtime.getRuntime().exec(command.format(file))
+        val process = Runtime.getRuntime().exec(command(file))
         val processOutput = process.inputStream.source().buffer()
         _model = parseDimacsOutput(processOutput)
         return _model != null
@@ -64,20 +65,16 @@ class DimacsFileSolver @JvmOverloads constructor(
         return _model ?: error("Model is null because the solver is not in the SAT state")
     }
 
-    override fun toString(): String {
-        return "${this::class.java.simpleName}(\"$command\", \"$file\")"
-    }
-
     companion object {
-        private val ASSUMPTIONS_NOT_SUPPORTED: String =
-            "${DimacsFileSolver::class.java.simpleName} does not support solving with assumptions"
-        private val INTERRUPTION_NOT_SUPPORTED: String =
-            "${DimacsFileSolver::class.java.simpleName} does not support interruption"
+        private const val ASSUMPTIONS_NOT_SUPPORTED: String =
+            "DimacsFileSolver does not support solving with assumptions"
+        private const val INTERRUPTION_NOT_SUPPORTED: String =
+            "DimacsFileSolver does not support interruption"
     }
 }
 
 private fun main() {
-    DimacsFileSolver("cryptominisat5 %s", File("dimacs.cnf")).useWith {
+    DimacsFileSolver({ File("dimacs.cnf") }, { "cryptominisat5 $it" }).useWith {
         testSolverWithoutAssumptions()
     }
 }

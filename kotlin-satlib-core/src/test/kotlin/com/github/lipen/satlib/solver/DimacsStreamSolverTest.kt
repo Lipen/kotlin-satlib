@@ -10,7 +10,7 @@ import org.junit.jupiter.api.assertThrows
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class DimacsStreamSolverTest {
     private val solverCmd = "cryptominisat5"
-    private val solver: Solver = DimacsStreamSolver(solverCmd)
+    private val solver: Solver = DimacsStreamSolver { solverCmd }
 
     @Test
     fun `simple SAT`(): Unit = with(solver) {
