@@ -88,7 +88,6 @@ subprojects {
 
 dependencies {
     testImplementation(project(":core"))
-    testCompileOnly(project(":jni"))
     testImplementation(project(":utils"))
     testImplementation(Libs.Okio.okio)
     testImplementation(Libs.MultiArray.multiarray)
