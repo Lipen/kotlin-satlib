@@ -22,6 +22,10 @@ class DimacsFileSolver @JvmOverloads constructor(
 
     override fun _comment(comment: String) {}
 
+    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
+        return outerNumberOfVariables
+    }
+
     override fun _addClause() {}
 
     override fun _addClause(lit: Lit) {}

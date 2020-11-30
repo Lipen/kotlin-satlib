@@ -146,9 +146,7 @@ abstract class AbstractSolver : Solver {
 
     protected abstract fun _comment(comment: String)
 
-    protected open fun _newLiteral(outerNumberOfVariables: Int): Lit {
-        return outerNumberOfVariables
-    }
+    protected abstract fun _newLiteral(outerNumberOfVariables: Int): Lit
 
     protected abstract fun _addClause()
     protected abstract fun _addClause(lit: Lit)
