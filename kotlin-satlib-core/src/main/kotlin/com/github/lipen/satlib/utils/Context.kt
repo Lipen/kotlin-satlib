@@ -30,7 +30,7 @@ import kotlin.reflect.KProperty
 class Context internal constructor(
     val map: MutableMap<String, Any> = mutableMapOf(),
 ) {
-    operator fun <T> get(key: String): T {
+    operator fun <T : Any> get(key: String): T {
         @Suppress("UNCHECKED_CAST")
         return map.getValue(key) as T
     }
