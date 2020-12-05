@@ -39,6 +39,11 @@ class Context internal constructor(
         map[key] = value
     }
 
+    fun <T : Any> getOrNull(key: String): T? {
+        @Suppress("UNCHECKED_CAST")
+        return map[key]?.let { it as T }
+    }
+
     operator fun <T : Any> invoke(name: String, value: T): T {
         return value.also { this[name] = it }
     }
