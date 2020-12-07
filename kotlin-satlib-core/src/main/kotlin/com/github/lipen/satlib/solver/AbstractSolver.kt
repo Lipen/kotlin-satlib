@@ -14,6 +14,8 @@ import okio.buffer
 import okio.sink
 import java.io.File
 
+private val log = mu.KotlinLogging.logger {}
+
 @Suppress("FunctionName")
 abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
@@ -40,6 +42,7 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun comment(comment: String) {
+        log.debug { "// $comment" }
         for (line in comment.lineSequence()) {
             buffer.write("c ").writeln(line)
         }
@@ -53,30 +56,35 @@ abstract class AbstractSolver : Solver {
 
     @Suppress("OverridingDeprecatedMember")
     final override fun addClause() {
+        // log.debug { "addClause()" }
         ++numberOfClauses
         buffer.writeln("0")
         _addClause()
     }
 
     final override fun addClause(lit: Lit) {
+        // log.debug { "addClause($lit)" }
         ++numberOfClauses
         buffer.writeln("$lit 0")
         _addClause(lit)
     }
 
     final override fun addClause(lit1: Lit, lit2: Lit) {
+        // log.debug { "addClause($lit1, $lit2)" }
         ++numberOfClauses
         buffer.writeln("$lit1 $lit2 0")
         _addClause(lit1, lit2)
     }
 
     final override fun addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
+        // log.debug { "addClause($lit1, $lit2, $lit3)" }
         ++numberOfClauses
         buffer.writeln("$lit1 $lit2 $lit3 0")
         _addClause(lit1, lit2, lit3)
     }
 
     final override fun addClause(literals: LitArray) {
+        // log.debug { "addClause(${literals.asList()})" }
         ++numberOfClauses
         for (lit in literals) {
             buffer.write(lit.toString()).write(" ")
@@ -88,6 +96,7 @@ abstract class AbstractSolver : Solver {
     final override fun addClause(literals: Iterable<Lit>) {
         ++numberOfClauses
         val pool = literals.toList_()
+        // log.debug { "addClause($pool)" }
         for (lit in pool) {
             buffer.write(lit.toString()).write(" ")
         }
@@ -98,6 +107,7 @@ abstract class AbstractSolver : Solver {
     final override fun solve(): Boolean {
         val assumptions = assumptionsObservable.collect()
         return if (assumptions.isEmpty()) {
+            log.debug { "solve()" }
             buffer.writeln("c solve")
             _solve()
         } else {
@@ -106,12 +116,14 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun solve(assumptions: LitArray): Boolean {
+        log.debug { "solve(assumptions = ${assumptions.asList()})" }
         buffer.writeln("c solve ${assumptions.joinToString(" ")}")
         return _solve(assumptions)
     }
 
     final override fun solve(assumptions: Iterable<Lit>): Boolean {
         val pool = assumptions.toList_()
+        log.debug { "solve(assumptions = $pool)" }
         buffer.writeln("c solve ${pool.joinToString(" ")}")
         return _solve(pool)
     }
