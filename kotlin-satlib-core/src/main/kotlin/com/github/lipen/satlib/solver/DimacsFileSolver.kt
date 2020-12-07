@@ -16,7 +16,9 @@ class DimacsFileSolver @JvmOverloads constructor(
 ) : AbstractSolver() {
     private var _model: Model? = null
 
-    override fun _reset() {}
+    override fun _reset() {
+        _model = null
+    }
 
     override fun _close() {}
 
