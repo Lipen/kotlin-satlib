@@ -18,7 +18,7 @@ import java.io.File
 abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
 
-    final override lateinit var context: Context
+    final override var context: Context = newContext()
     final override var numberOfVariables: Int = 0
         private set
     final override var numberOfClauses: Int = 0
