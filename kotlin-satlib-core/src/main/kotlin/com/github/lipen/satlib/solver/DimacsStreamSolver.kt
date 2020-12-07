@@ -68,10 +68,11 @@ class DimacsStreamSolver(
     }
 
     companion object {
-        private const val ASSUMPTIONS_NOT_SUPPORTED: String =
-            "DimacsStreamSolver does not support solving with assumptions"
-        private const val INTERRUPTION_NOT_SUPPORTED: String =
-            "DimacsStreamSolver does not support interruption"
+        private const val NAME = "DimacsStreamSolver"
+        private const val ASSUMPTIONS_NOT_SUPPORTED =
+            "$NAME does not support solving with assumptions"
+        private const val INTERRUPTION_NOT_SUPPORTED =
+            "$NAME does not support interruption"
     }
 }
 

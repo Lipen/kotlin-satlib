@@ -68,10 +68,11 @@ class DimacsFileSolver @JvmOverloads constructor(
     }
 
     companion object {
-        private const val ASSUMPTIONS_NOT_SUPPORTED: String =
-            "DimacsFileSolver does not support solving with assumptions"
-        private const val INTERRUPTION_NOT_SUPPORTED: String =
-            "DimacsFileSolver does not support interruption"
+        private const val NAME = "DimacsFileSolver"
+        private const val ASSUMPTIONS_NOT_SUPPORTED =
+            "$NAME does not support solving with assumptions"
+        private const val INTERRUPTION_NOT_SUPPORTED =
+            "$NAME does not support interruption"
     }
 }
 
