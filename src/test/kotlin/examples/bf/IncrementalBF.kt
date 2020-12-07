@@ -1,5 +1,13 @@
 package examples.bf
 
+import com.github.lipen.satlib.core.DomainVarArray
+import com.github.lipen.satlib.core.IntVar
+import com.github.lipen.satlib.core.IntVarArray
+import com.github.lipen.satlib.core.newBoolVarArray
+import com.github.lipen.satlib.core.newDomainVar
+import com.github.lipen.satlib.core.newDomainVarArray
+import com.github.lipen.satlib.core.newIntVar
+import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.op.atMostOne
 import com.github.lipen.satlib.op.iff
 import com.github.lipen.satlib.op.imply
@@ -12,14 +20,6 @@ import com.github.lipen.satlib.op.implyImplyImply
 import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
-import com.github.lipen.satlib.utils.newBoolVarArray
-import com.github.lipen.satlib.utils.newDomainVar
-import com.github.lipen.satlib.utils.newDomainVarArray
-import com.github.lipen.satlib.utils.newIntVar
-import com.github.lipen.satlib.utils.DomainVarArray
-import com.github.lipen.satlib.utils.IntVar
-import com.github.lipen.satlib.utils.IntVarArray
-import com.github.lipen.satlib.utils.sign
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.PerformanceCounter
 import java.io.File

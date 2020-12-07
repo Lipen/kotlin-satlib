@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.utils
+package com.github.lipen.satlib.core
 
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadWriteProperty

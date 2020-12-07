@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.utils
 
+import com.github.lipen.satlib.core.Model
 import okio.BufferedSource
 
 internal fun parseDimacsOutput(source: BufferedSource): Model? {

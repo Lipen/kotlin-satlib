@@ -1,8 +1,8 @@
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.core.DomainVar
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.DomainVar
-import com.github.lipen.satlib.utils.Lit
 import kotlin.math.ceil
 import kotlin.math.log2
 

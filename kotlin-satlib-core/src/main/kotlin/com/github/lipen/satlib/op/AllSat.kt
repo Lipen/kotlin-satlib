@@ -1,9 +1,9 @@
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.Model
+import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.Lit
-import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.sign
 
 private val log = mu.KotlinLogging.logger {}
 

@@ -1,7 +1,7 @@
 package com.github.lipen.satlib.card
 
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.Lit
 import java.util.ArrayDeque
 import java.util.Deque
 

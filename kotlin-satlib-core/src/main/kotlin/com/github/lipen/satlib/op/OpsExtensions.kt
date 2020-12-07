@@ -2,10 +2,10 @@
 
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
+import com.github.lipen.satlib.core.SequenceScopeLit
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.Lit
-import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.SequenceScopeLit
 
 /** `AtLeastOne`([literals]) */
 fun Solver.atLeastOne_(literals: LitArray) {

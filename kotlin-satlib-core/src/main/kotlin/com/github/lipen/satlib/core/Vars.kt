@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.utils
+package com.github.lipen.satlib.core
 
 import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray

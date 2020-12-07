@@ -1,15 +1,15 @@
 package com.github.lipen.satlib.card
 
+import com.github.lipen.satlib.core.AssumptionsProvider
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
+import com.github.lipen.satlib.core.SequenceScopeLit
+import com.github.lipen.satlib.core.convert
+import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.op.allSolutions
 import com.github.lipen.satlib.op.imply
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.AssumptionsProvider
-import com.github.lipen.satlib.utils.Lit
-import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.SequenceScopeLit
-import com.github.lipen.satlib.utils.convert
-import com.github.lipen.satlib.utils.newBoolVarArray
 import com.github.lipen.satlib.utils.toList_
 import com.github.lipen.satlib.utils.useWith
 

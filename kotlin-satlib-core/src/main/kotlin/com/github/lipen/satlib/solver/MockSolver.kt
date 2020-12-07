@@ -1,8 +1,8 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.utils.Lit
-import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.Model
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
+import com.github.lipen.satlib.core.Model
 
 class MockSolver(
     private val __comment: (String) -> Unit = {},

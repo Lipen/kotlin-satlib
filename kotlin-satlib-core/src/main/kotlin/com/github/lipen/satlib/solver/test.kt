@@ -1,7 +1,7 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.op.exactlyOne
-import com.github.lipen.satlib.utils.Lit
 
 private fun Boolean.toInt(): Int = if (this) 1 else 0
 

@@ -1,15 +1,15 @@
 package examples.ph
 
 import com.github.lipen.multiarray.MultiArray
+import com.github.lipen.satlib.core.DomainVar
+import com.github.lipen.satlib.core.IntVarArray
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.newIntVar
+import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
-import com.github.lipen.satlib.utils.newIntVar
-import com.github.lipen.satlib.utils.newIntVarArray
-import com.github.lipen.satlib.utils.DomainVar
-import com.github.lipen.satlib.utils.IntVarArray
-import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult

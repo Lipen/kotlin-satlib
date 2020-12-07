@@ -1,4 +1,6 @@
-package com.github.lipen.satlib.utils
+package com.github.lipen.satlib.core
+
+import com.github.lipen.satlib.utils.Observable
 
 fun interface AssumptionsProvider : () -> List<Lit>
 

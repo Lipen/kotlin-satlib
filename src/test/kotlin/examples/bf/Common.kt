@@ -3,11 +3,11 @@ package examples.bf
 import com.github.lipen.multiarray.BooleanMultiArray
 import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray
-import com.github.lipen.satlib.utils.BoolVarArray
-import com.github.lipen.satlib.utils.DomainVarArray
-import com.github.lipen.satlib.utils.IntVarArray
-import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.convert
+import com.github.lipen.satlib.core.BoolVarArray
+import com.github.lipen.satlib.core.DomainVarArray
+import com.github.lipen.satlib.core.IntVarArray
+import com.github.lipen.satlib.core.Model
+import com.github.lipen.satlib.core.convert
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan

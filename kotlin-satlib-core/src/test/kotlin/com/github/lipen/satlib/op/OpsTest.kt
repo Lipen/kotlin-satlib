@@ -1,8 +1,8 @@
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.MockSolver
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.Lit
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

@@ -1,10 +1,10 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.utils.AssumptionsObservable
-import com.github.lipen.satlib.utils.Context
-import com.github.lipen.satlib.utils.Lit
-import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.newContext
+import com.github.lipen.satlib.core.AssumptionsObservable
+import com.github.lipen.satlib.core.Context
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
+import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.utils.toList_
 import com.github.lipen.satlib.utils.write
 import com.github.lipen.satlib.utils.writeln

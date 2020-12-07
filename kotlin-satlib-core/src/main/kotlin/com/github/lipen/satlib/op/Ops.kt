@@ -1,8 +1,8 @@
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
-import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.pairs
 import com.github.lipen.satlib.utils.toList_
 

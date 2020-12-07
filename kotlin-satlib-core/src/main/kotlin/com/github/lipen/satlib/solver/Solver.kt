@@ -1,11 +1,11 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.utils.AssumptionsObservable
-import com.github.lipen.satlib.utils.Context
-import com.github.lipen.satlib.utils.Lit
-import com.github.lipen.satlib.utils.LitArray
-import com.github.lipen.satlib.utils.Model
-import com.github.lipen.satlib.utils.SequenceScopeLit
+import com.github.lipen.satlib.core.AssumptionsObservable
+import com.github.lipen.satlib.core.Context
+import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.LitArray
+import com.github.lipen.satlib.core.Model
+import com.github.lipen.satlib.core.SequenceScopeLit
 import okio.BufferedSink
 import java.io.File
 

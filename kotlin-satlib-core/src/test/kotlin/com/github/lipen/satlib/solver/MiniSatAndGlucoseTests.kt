@@ -1,6 +1,6 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.utils.AssumptionsProvider
+import com.github.lipen.satlib.core.AssumptionsProvider
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.DisplayNameGeneration
