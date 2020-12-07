@@ -11,17 +11,6 @@ class GlucoseSolverTest {
     private val solver = GlucoseSolver()
 
     @Test
-    fun `assumptions are supported`(): Unit = with(solver) {
-        val x = newLiteral()
-
-        addClause(x)
-
-        solve().`should be true`()
-        solve(x).`should be true`()
-        solve(-x).`should be false`()
-    }
-
-    @Test
     fun `solving with timeout`(): Unit = with(solver) {
         declare_sgen_n120_sat()
         // The problem is satisfiable, but 1 millisecond is definitely not enough to solve it

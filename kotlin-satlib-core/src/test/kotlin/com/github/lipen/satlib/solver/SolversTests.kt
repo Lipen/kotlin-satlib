@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisplayNameGeneration(MyDisplayNameGenerator::class)
-class SolversTest {
+class SolversTests {
     @ParameterizedTest(name = "{displayName} [{0}]")
     @MethodSource("solvers")
     fun Solver.`simple SAT`() {
