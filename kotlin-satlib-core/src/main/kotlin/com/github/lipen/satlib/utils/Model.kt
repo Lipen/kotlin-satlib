@@ -8,7 +8,6 @@ import com.github.lipen.multiarray.mapToBoolean
 import com.github.lipen.multiarray.mapToInt
 import kotlin.math.absoluteValue
 
-/** 0-based model. */
 class Model private constructor(
     /** 0-based storage of values inside model. */
     val data: List<Boolean>,
