@@ -14,15 +14,17 @@ class MiniSatSolver @JvmOverloads constructor(
     private var simplified = false
 
     init {
-        reset_()
+        if (simpStrategy == SimpStrategy.NEVER) {
+            backend.eliminate(turn_off_elim = true)
+        }
     }
 
     private fun reset_() {
         backend.reset()
-        simplified = false
         if (simpStrategy == SimpStrategy.NEVER) {
             backend.eliminate(turn_off_elim = true)
         }
+        simplified = false
     }
 
     override fun _reset() {
