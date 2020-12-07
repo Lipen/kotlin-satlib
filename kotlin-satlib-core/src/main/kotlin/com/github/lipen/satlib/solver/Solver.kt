@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.utils.AssumptionsObservable
 import com.github.lipen.satlib.utils.Context
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
@@ -13,7 +14,7 @@ interface Solver : AutoCloseable {
     var context: Context
     val numberOfVariables: Int
     val numberOfClauses: Int
-    val assumptions: List<Lit>
+    val assumptionsObservable: AssumptionsObservable
 
     fun reset()
     override fun close()
@@ -32,10 +33,6 @@ interface Solver : AutoCloseable {
     fun addClause(lit1: Lit, lit2: Lit, lit3: Lit)
     fun addClause(literals: LitArray)
     fun addClause(literals: Iterable<Lit>)
-
-    fun addAssumptions(literals: LitArray)
-    fun addAssumptions(literals: Iterable<Lit>)
-    fun clearAssumptions()
 
     // Note:
     //  - `solve()` method must use assumptions passed via the `addAssumptions` method.

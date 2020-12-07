@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.utils.AssumptionsObservable
 import com.github.lipen.satlib.utils.Context
 import com.github.lipen.satlib.utils.Lit
 import com.github.lipen.satlib.utils.LitArray
@@ -16,20 +17,19 @@ import java.io.File
 @Suppress("FunctionName")
 abstract class AbstractSolver : Solver {
     private val buffer: Buffer = Buffer()
-    private val _assumptions: MutableList<Lit> = mutableListOf()
 
     final override lateinit var context: Context
     final override var numberOfVariables: Int = 0
         private set
     final override var numberOfClauses: Int = 0
         private set
-    final override val assumptions: List<Lit> = _assumptions
+    final override val assumptionsObservable: AssumptionsObservable = AssumptionsObservable()
 
     final override fun reset() {
         context = newContext()
         numberOfVariables = 0
         numberOfClauses = 0
-        _assumptions.clear()
+        assumptionsObservable.clear()
         buffer.clear()
         _reset()
     }
@@ -95,25 +95,15 @@ abstract class AbstractSolver : Solver {
         _addClause(pool)
     }
 
-    final override fun addAssumptions(literals: LitArray) {
-        addAssumptions(literals.asIterable())
-    }
-
-    final override fun addAssumptions(literals: Iterable<Lit>) {
-        _assumptions.addAll(literals)
-    }
-
-    final override fun clearAssumptions() {
-        _assumptions.clear()
-    }
-
-    final override fun solve(): Boolean =
-        if (assumptions.isEmpty()) {
+    final override fun solve(): Boolean {
+        val assumptions = assumptionsObservable.collect()
+        return if (assumptions.isEmpty()) {
             buffer.writeln("c solve")
             _solve()
         } else {
             solve(assumptions)
         }
+    }
 
     final override fun solve(assumptions: LitArray): Boolean {
         buffer.writeln("c solve ${assumptions.joinToString(" ")}")
