@@ -177,7 +177,7 @@ headers:
 
 classes:
 	@echo "=== Compiling classes..."
-	$(GRADLE) classes
+	$(GRADLE) :jni:classes
 	@echo "= Done compiling classes"
 
 clean:

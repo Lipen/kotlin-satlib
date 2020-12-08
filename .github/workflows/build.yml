@@ -24,16 +24,52 @@ jobs:
           arguments: :jni:classes
           dependencies-cache-enabled: true
 
+      - name: Build MiniSat
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/msoos/minisat minisat-src
+          cd minisat-src
+          make config prefix=install MINISAT_REL='-O3 -DNDEBUG -fpermissive'
+          make install
+
+      - name: Build Glucose
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/wadoon/glucose glucose-src
+          cd glucose-src
+          git apply -v ../patches/glucose-install.patch
+          cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j8
+          cmake --install build --prefix install
+
+      - name: Build Cadical
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 --branch rel-1.3.0 https://github.com/arminbiere/cadical cadical-src
+          cd cadical-src
+          git apply -v ../patches/cadical-shared-lib.patch
+          ./configure -j8 -fPIC CXXFLAGS="-s"
+          make lsh
+          install -m 644 src/cadical.hpp -Dt install/include/cadical
+          install -m 644 build/libcadical.so -Dt install/lib
+          strip -s install/lib/libcadical.so
+
+      - name: Build CryptoMiniSat
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 --branch 5.8.0 https://github.com/msoos/cryptominisat cms-src
+          cd cms-src
+          cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j8
+          cmake --install build --prefix install
+
+      - name: Set up ld cache
+        working-directory: kotlin-satlib-jni
+        run: sudo ldconfig $(realpath *-src/install/lib)
+
       - name: Make JNI headers
         working-directory: kotlin-satlib-jni
         run: make headers
-
-      - name: Download and unpack the distribution with solvers
-        working-directory: kotlin-satlib-jni
-        run: |
-          wget -O solvers.zip https://github.com/Lipen/kotlin-satlib/releases/download/0.10-dist/solvers-20201208.zip
-          unzip solvers.zip
-          sudo ldconfig $(realpath solvers/*-src/install/lib/)
 
       - name: Build JNI libs
         working-directory: kotlin-satlib-jni
