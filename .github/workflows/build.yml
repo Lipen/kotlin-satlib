@@ -18,11 +18,16 @@ jobs:
         with:
           java-version: 8
 
-      - name: Compile classes
-        uses: eskatos/gradle-command-action@v1
+      - name: Set up build cache
+        uses: actions/cache@v2
         with:
-          arguments: :jni:classes
-          dependencies-cache-enabled: true
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Compile classes
+        run: ./gradlew :jni:classes
 
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni
@@ -91,10 +96,7 @@ jobs:
           echo "$(realpath bin)" >> $GITHUB_PATH
 
       - name: Build using Gradle
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: build --stacktrace --scan
-          dependencies-cache-enabled: true
+        run: ./gradlew build --stacktrace --scan
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
