@@ -98,6 +98,15 @@ jobs:
       - name: Build using Gradle
         run: ./gradlew build --stacktrace --scan
 
+      - name: Copy solver libs to a separate folder
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p libs
+          cp kotlin-satlib-jni/solvers/minisat-src/install/lib/libminisat.so libs/
+          cp kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so libs/
+          cp kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so libs/
+          cp kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so libs/
+
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -110,7 +119,4 @@ jobs:
             kotlin-satlib-jni/build/lib/libjglucose.so
             kotlin-satlib-jni/build/lib/libjcadical.so
             kotlin-satlib-jni/build/lib/libjcms.so
-            kotlin-satlib-jni/solvers/minisat-src/install/lib/libminisat.so
-            kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so
-            kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so
-            kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so
+            libs/*.so
