@@ -24,6 +24,10 @@ jobs:
           arguments: :jni:classes
           dependencies-cache-enabled: true
 
+      - name: Create directory for solvers
+        working-directory: kotlin-satlib-jni
+        run: mkdir -p solvers
+
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni/solvers
         run: |
