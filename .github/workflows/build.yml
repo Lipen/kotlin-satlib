@@ -32,9 +32,8 @@ jobs:
       - name: Set up solvers cache
         id: cache-solvers
         uses: actions/cache@v2
-        working-directory: kotlin-satlib-jni
         with:
-          path: solvers
+          path: kotlin-satlib-jni/solvers
           key: ${{ runner.os }}-solvers-cache
 
       - name: Build MiniSat
