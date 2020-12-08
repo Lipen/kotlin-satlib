@@ -113,7 +113,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          fail_on_unmatched_files: true
           files: |
             kotlin-satlib-jni/build/lib/libjminisat.so
             kotlin-satlib-jni/build/lib/libjglucose.so
