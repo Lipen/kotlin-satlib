@@ -24,35 +24,34 @@ jobs:
           arguments: :jni:classes
           dependencies-cache-enabled: true
 
-      - name: Build JNI libs
+      - name: Make JNI headers
+        working-directory: kotlin-satlib-jni
+        run: make headers
+
+      - name: Download and unpack the distribution with solvers
         working-directory: kotlin-satlib-jni
         run: |
-          ## Make JNI headers
-          make headers
-
-          ## Download and unpack the distribution with solvers
           wget -O solvers.zip https://github.com/Lipen/kotlin-satlib/releases/download/0.10-dist/solvers-20201208.zip
           unzip solvers.zip
-
-          ## Actually build JNI libs
-          make libs \
-              MINISAT_INSTALL_DIR=solvers/minisat-src/install \
-              GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
-              CADICAL_INSTALL_DIR=solvers/cadical-src/install \
-              CMS_INSTALL_DIR=solvers/cms-src/install
-
-          ## Copy JNI libs to resources folder
-          make res
-
-          ## Add solver libs to ld cache
           sudo ldconfig $(realpath solvers/*-src/install/lib/)
+
+      - name: Build JNI libs
+        working-directory: kotlin-satlib-jni
+        run: make libs \
+          MINISAT_INSTALL_DIR=solvers/minisat-src/install \
+          GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+          CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+          CMS_INSTALL_DIR=solvers/cms-src/install
+
+      - name: Copy JNI libs to resources folder
+        working-directory: kotlin-satlib-jni
+        run: make res
 
       - name: Download Cryptominisat
         run: |
           mkdir -p bin
           wget -qO- https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz | zcat > bin/cryptominisat5
           chmod +x bin/cryptominisat5
-          ## Add bin/ to PATH
           echo "$(realpath bin)" >> $GITHUB_PATH
 
       - name: Build using Gradle
