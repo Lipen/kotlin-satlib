@@ -55,7 +55,7 @@ jobs:
           strip -s install/lib/libcadical.so
 
       - name: Build CryptoMiniSat
-        working-directory: kotlin-satlib-jni/solvers
+        working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 --branch 5.8.0 https://github.com/msoos/cryptominisat solvers/cms-src
           cd solvers/cms-src
