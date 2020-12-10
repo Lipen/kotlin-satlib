@@ -93,26 +93,28 @@ fun <T> Solver.newDomainVar(
 fun Solver.newIntVar(
     domain: Iterable<Int>,
     encodeOneHot: Boolean = true,
-    init: (Int) -> Lit = { newLiteral() },
-): IntVar = newDomainVar(domain, encodeOneHot, init)
+    initLit: (Int) -> Lit = { newLiteral() },
+): IntVar = newDomainVar(domain, encodeOneHot, initLit)
 
 fun <T> Solver.newDomainVarArray(
     vararg shape: Int,
     encodeOneHot: Boolean = true,
-    init: (T) -> Lit = { newLiteral() },
+    initLit: (T) -> Lit = { newLiteral() },
+    initVar: (IntArray) -> DomainVar<T> = { index ->
+        newDomainVar(domain(index), encodeOneHot, initLit)
+    },
     domain: (IntArray) -> Iterable<T>,
-): DomainVarArray<T> = DomainVarArray.create(shape) { index ->
-    newDomainVar(domain(index), encodeOneHot, init)
-}
+): DomainVarArray<T> = DomainVarArray.create(shape, initVar)
 
 fun Solver.newIntVarArray(
     vararg shape: Int,
     encodeOneHot: Boolean = true,
-    init: (Int) -> Lit = { newLiteral() },
+    initLit: (Int) -> Lit = { newLiteral() },
+    initVar: (IntArray) -> IntVar = { index ->
+        newIntVar(domain(index), encodeOneHot, initLit)
+    },
     domain: (IntArray) -> Iterable<Int>,
-): IntVarArray = IntVarArray.create(shape) { index ->
-    newIntVar(domain(index), encodeOneHot, init)
-}
+): IntVarArray = IntVarArray.create(shape, initVar)
 
 fun Solver.newBoolVarArray(
     vararg shape: Int,
