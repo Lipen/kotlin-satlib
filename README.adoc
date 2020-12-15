@@ -1,6 +1,158 @@
-= SAT-LIB for Kotlin
+= SAT solver wrappers for Kotlin
 
 image:https://github.com/Lipen/kotlin-satlib/workflows/Build/badge.svg?branch=master["Build",link="https://github.com/Lipen/kotlin-satlib/actions"]
 image:https://github.com/Lipen/kotlin-satlib/workflows/Build%20(Windows)/badge.svg?branch=master["Build (Windows)",link="https://github.com/Lipen/kotlin-satlib/actions"]
 image:https://jitpack.io/v/Lipen/kotlin-satlib.svg["JitPack",link="https://jitpack.io/p/Lipen/kotlin-satlib"]
 image:https://hitsofcode.com/github/Lipen/kotlin-satlib["Hits-of-Code",link="https://hitsofcode.com/view/github/Lipen/kotlin-satlib"]
+
+== Installation
+
+[source,kotlin]
+.build.gradle.kts
+----
+repositories {
+    maven(url = "https://jitpack.io")
+}
+dependencies {
+    implementation("com.github.Lipen.kotlin-satlib:core:${Versions.kotlin_jnisat}")
+}
+----
+
+== Library usage
+
+[source,kotlin]
+----
+with(MiniSatSolver()) {
+    val x = newLiteral()
+    val y = newLiteral()
+    val z = newLiteral()
+
+    println("Encoding exactlyOne(x, y, z)")
+    exactlyOne(x, y, z)
+
+    println("nVars = $numberOfVariables")
+    println("nClauses = $numberOfClauses")
+
+    println("Solving...")
+    check(solve())
+    println("model = ${getModel()}")
+    checkExactlyOne(x, y, z)
+
+    println("Solving with assumptions...")
+    check(solve(x)); println("model = ${getModel()}"); check(getValue(x))
+    check(solve(y)); println("model = ${getModel()}"); check(getValue(y))
+    check(solve(z)); println("model = ${getModel()}"); check(getValue(z))
+
+    println("Everything OK.")
+}
+----
+
+== Native libs
+
+In order to use wrappers for native SAT solvers (_e.g._, `MiniSatSolver`), you need two native libraries:
+
+1. Shared library for SAT solver (_e.g._, `libminisat.so`).
+
+2. Shared library for JNI wrapper (_e.g._, `libjminisat.so`).
+
+=== Manual build
+
+For manual build instructions, consult link:.github/workflows/build.yml[CI workflows].
+
+=== Prebuilt libs
+
+You can simply download prebuilt native libraries from link:https://github.com/Lipen/kotlin-satlib/releases[GitHub Releases page]. As an example, you can set up the following Gradle task in your project:
+
+[source,kotlin]
+.build.gradle.kts
+----
+import de.undercouch.gradle.tasks.download.DownloadAction
+
+plugins {
+    id("de.undercouch.download") version "4.1.1"
+}
+
+fun Task.download(action: DownloadAction.() -> Unit) =
+    download.configure(delegateClosureOf(action))
+
+val osArch: String = run {
+    val osName = System.getProperty("os.name")
+    val os = when {
+        osName.startsWith("Linux") -> "linux"
+        osName.startsWith("Windows") -> "win"
+        osName.startsWith("Mac OS X") || osName.startsWith("Darwin") -> "osx"
+        else -> return@run "unknown"
+    }
+    val arch = when (System.getProperty("os.arch")) {
+        "x86", "i386" -> "32"
+        "x86_64", "amd64" -> "64"
+        else -> return@run "unknown"
+    }
+    "$os$arch"
+}
+
+tasks.register("downloadLibs") {
+    doLast {
+        val urlTemplate = "https://github.com/Lipen/kotlin-satlib/releases/download/${Libs.Satlib.version}/%s"
+        val libResDir = projectDir.resolve("src/main/resources/lib/$osArch")
+
+        fun ensureDirExists(dir: File) {
+            if (!dir.exists()) {
+                check(dir.mkdirs()) { "Cannot create dirs for '$dir'" }
+            }
+            check(dir.exists()) { "'$dir' still does not exist" }
+        }
+
+        fun downloadLibs(names: List<String>, dest: File) {
+            ensureDirExists(dest)
+            download {
+                src(names.map { urlTemplate.format(it) })
+                dest(dest)
+                tempAndMove(true)
+            }
+        }
+
+        when (osArch) {
+            "linux64" -> {
+                val jLibs = listOf(
+                    "libjminisat.so",
+                    "libjglucose.so",
+                    "libjcms.so",
+                    "libjcadical.so"
+                )
+                downloadLibs(jLibs, libResDir)
+
+                val solverLibs = listOf(
+                    "libminisat.so",
+                    "libglucose.so",
+                    "libcryptominisat5.so",
+                    "libcadical.so"
+                )
+                val solverLibDir = rootDir.resolve("libs")
+                downloadLibs(solverLibs, solverLibDir)
+            }
+            "win64" -> {
+                val jLibs = listOf(
+                    "jminisat.dll",
+                    "jglucose.dll"
+                )
+                downloadLibs(jLibs, libResDir)
+
+                val solverLibs = listOf(
+                    "minisat.dll",
+                    "glucose.dll"
+                )
+                downloadLibs(solverLibs, rootDir)
+            }
+            else -> {
+                error("$osArch is not supported, sorry")
+            }
+        }
+    }
+}
+----
+
+After downloading shared solver libs, update ld cache:
+----
+sudo ldconfig $(realpath libs)
+----
