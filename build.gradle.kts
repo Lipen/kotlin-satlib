@@ -21,8 +21,8 @@ allprojects {
     apply(plugin = "maven-publish")
 
     repositories {
-        jcenter()
         maven(url = "https://jitpack.io")
+        jcenter()
     }
 
     dependencies {
