@@ -66,21 +66,24 @@ class BoolVarArray @PublishedApi internal constructor(
 ) : MultiArray<Lit> by backend {
     companion object {
         @JvmStatic
-        inline fun create(
+        @JvmName("newVararg")
+        inline fun new(
             vararg shape: Int,
+            zerobased: Boolean = false,
             init: (IntArray) -> Lit,
-        ): BoolVarArray = create_(shape, init)
+        ): BoolVarArray = new(shape, zerobased, init)
 
         @JvmStatic
         @Suppress("FunctionName")
-        inline fun create_(
+        inline fun new(
             shape: IntArray,
+            zerobased: Boolean = false,
             init: (IntArray) -> Lit,
-        ): BoolVarArray = BoolVarArray(IntMultiArray.create(shape, init))
+        ): BoolVarArray = BoolVarArray(IntMultiArray.new(shape, zerobased, init))
     }
 }
 
-fun <T> Solver.newDomainVar(
+inline fun <T> Solver.newDomainVar(
     domain: Iterable<T>,
     encodeOneHot: Boolean = true,
     init: (T) -> Lit = { newLiteral() },
@@ -90,33 +93,34 @@ fun <T> Solver.newDomainVar(
     return v
 }
 
-fun Solver.newIntVar(
+inline fun Solver.newIntVar(
     domain: Iterable<Int>,
     encodeOneHot: Boolean = true,
-    initLit: (Int) -> Lit = { newLiteral() },
-): IntVar = newDomainVar(domain, encodeOneHot, initLit)
+    init: (Int) -> Lit = { newLiteral() },
+): IntVar = newDomainVar(domain, encodeOneHot, init)
 
-fun <T> Solver.newDomainVarArray(
+inline fun <T> Solver.newDomainVarArray(
     vararg shape: Int,
+    zerobased: Boolean = false,
     encodeOneHot: Boolean = true,
-    initLit: (T) -> Lit = { newLiteral() },
-    initVar: (IntArray) -> DomainVar<T> = { index ->
-        newDomainVar(domain(index), encodeOneHot, initLit)
-    },
+    init: (T) -> Lit = { newLiteral() },
     domain: (IntArray) -> Iterable<T>,
-): DomainVarArray<T> = DomainVarArray.create(shape, initVar)
+): DomainVarArray<T> = DomainVarArray.new(shape, zerobased) { index ->
+    newDomainVar(domain(index), encodeOneHot, init)
+}
 
-fun Solver.newIntVarArray(
+inline fun Solver.newIntVarArray(
     vararg shape: Int,
+    zerobased: Boolean = false,
     encodeOneHot: Boolean = true,
-    initLit: (Int) -> Lit = { newLiteral() },
-    initVar: (IntArray) -> IntVar = { index ->
-        newIntVar(domain(index), encodeOneHot, initLit)
-    },
+    init: (Int) -> Lit = { newLiteral() },
     domain: (IntArray) -> Iterable<Int>,
-): IntVarArray = IntVarArray.create(shape, initVar)
+): IntVarArray = IntVarArray.new(shape, zerobased) { index ->
+    newIntVar(domain(index), encodeOneHot, init)
+}
 
-fun Solver.newBoolVarArray(
+inline fun Solver.newBoolVarArray(
     vararg shape: Int,
+    zerobased: Boolean = false,
     init: (IntArray) -> Lit = { newLiteral() },
-): BoolVarArray = BoolVarArray.create_(shape, init)
+): BoolVarArray = BoolVarArray.new(shape, zerobased, init)

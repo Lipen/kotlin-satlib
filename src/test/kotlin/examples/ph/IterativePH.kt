@@ -57,7 +57,7 @@ fun provePigeonholePrincipleIterative(maxP: Int): Boolean {
     return true
 }
 
-fun main() {
+private fun main() {
     val maxP = 10
     provePigeonholePrincipleIterative(maxP)
 }

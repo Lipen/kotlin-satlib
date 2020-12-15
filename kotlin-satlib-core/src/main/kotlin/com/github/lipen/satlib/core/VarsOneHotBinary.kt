@@ -46,28 +46,29 @@ typealias OneHotBinaryIntVar = OneHotBinaryDomainVar<Int>
 typealias OneHotBinaryIntVarArray = MultiArray<OneHotBinaryIntVar>
 typealias OneHotBinaryDomainVarArray<T> = MultiArray<OneHotBinaryDomainVar<T>>
 
-fun <T> Solver.newOneHotBinaryDomainVar(
+inline fun <T> Solver.newOneHotBinaryDomainVar(
     domain: Iterable<T>,
     init: (T) -> Lit = { newLiteral() },
 ): OneHotBinaryDomainVar<T> = OneHotBinaryDomainVar.new(domain, ::encodeOneHotBinary, init)
 
-fun Solver.newOneHotBinaryIntVar(
+inline fun Solver.newOneHotBinaryIntVar(
     domain: Iterable<Int>,
     init: (Int) -> Lit = { newLiteral() },
 ): OneHotBinaryIntVar = newOneHotBinaryDomainVar(domain, init)
 
-fun <T> Solver.newOneHotBinaryDomainVarArray(
+inline fun <T> Solver.newOneHotBinaryDomainVarArray(
     vararg shape: Int,
+    zerobased: Boolean = false,
     init: (T) -> Lit = { newLiteral() },
     domain: (IntArray) -> Iterable<T>,
-): OneHotBinaryDomainVarArray<T> = OneHotBinaryDomainVarArray.create(shape) { index ->
+): OneHotBinaryDomainVarArray<T> = OneHotBinaryDomainVarArray.new(shape, zerobased) { index ->
     newOneHotBinaryDomainVar(domain(index), init)
 }
 
-fun Solver.newOneHotBinaryIntVarArray(
+inline fun Solver.newOneHotBinaryIntVarArray(
     vararg shape: Int,
     init: (Int) -> Lit = { newLiteral() },
     domain: (IntArray) -> Iterable<Int>,
-): OneHotBinaryIntVarArray = OneHotBinaryIntVarArray.create(shape) { index ->
+): OneHotBinaryIntVarArray = OneHotBinaryIntVarArray.new(shape) { index ->
     newOneHotBinaryIntVar(domain(index), init)
 }

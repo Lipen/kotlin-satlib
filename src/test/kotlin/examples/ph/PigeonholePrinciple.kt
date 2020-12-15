@@ -17,7 +17,7 @@ object GlobalsPH {
     }
 }
 
-fun main() {
+private fun main() {
     val maxP = 11
     val timeStart = PerformanceCounter.reference
 

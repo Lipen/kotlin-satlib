@@ -32,9 +32,9 @@ private fun Solver.emptyBFVariables(tt: Map<Row, Boolean>): BFVariables =
         inputs = tt.keys.map { it.values },
         values = tt.values.toList(),
         nodeType = newDomainVarArray { NodeType.values().asIterable() },
-        nodeInputVariable = IntVarArray.create { IntVar.empty() },
-        nodeParent = IntVarArray.create { IntVar.empty() },
-        nodeChild = IntVarArray.create { IntVar.empty() },
+        nodeInputVariable = IntVarArray.new { IntVar.empty() },
+        nodeParent = IntVarArray.new { IntVar.empty() },
+        nodeChild = IntVarArray.new { IntVar.empty() },
         nodeValue = newBoolVarArray()
     )
 
@@ -44,24 +44,26 @@ private fun Solver.declareIncrementalVariables(P: Int, oldBF: BFVariables): BFVa
     val X = oldBF.X
     val U = oldBF.U
 
-    val nodeType = DomainVarArray.create(P) { (p) ->
+    val nodeType: DomainVarArray<NodeType> = DomainVarArray.new(P) { (p) ->
         if (p <= oldP) oldBF.nodeType[p]
         else newDomainVar(NodeType.values().asIterable())
     }
-    val nodeInputVariable = IntVarArray.create(P) { (p) ->
+    val nodeInputVariable: IntVarArray = IntVarArray.new(P) { (p) ->
         if (p <= oldP) oldBF.nodeInputVariable[p]
         else newIntVar(0..X)
     }
-    val nodeParent = IntVarArray.create(P) { (p) ->
+    val nodeParent: IntVarArray = IntVarArray.new(P) { (p) ->
         if (p <= oldP) oldBF.nodeParent[p]
         else newIntVar(domain = if (p == 1) listOf(0) else 1 until P)
     }
-    val nodeChild = IntVarArray.create(P) { (p) ->
+    val nodeChild: IntVarArray = IntVarArray.new(P) { (p) ->
         if (p <= oldP) {
             IntVar.new(((p + 1)..P) + 0) { c ->
                 if (c <= oldP) oldBF.nodeChild[p] eq c else newLiteral()
             }
-        } else newIntVar(((p + 1)..P) + 0, encodeOneHot = false)
+        } else {
+            newIntVar(((p + 1)..P) + 0, encodeOneHot = false)
+        }
     }
     val nodeValue = newBoolVarArray(P, U) { (p, u) ->
         if (p <= oldP) oldBF.nodeValue[p, u]

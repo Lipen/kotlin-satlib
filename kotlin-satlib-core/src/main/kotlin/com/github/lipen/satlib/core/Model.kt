@@ -4,8 +4,6 @@ import com.github.lipen.multiarray.BooleanMultiArray
 import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.multiarray.map
-import com.github.lipen.multiarray.mapToBoolean
-import com.github.lipen.multiarray.mapToInt
 import kotlin.math.absoluteValue
 
 class Model private constructor(
@@ -34,14 +32,17 @@ class Model private constructor(
 fun <T> DomainVar<T>.convert(model: Model): T? =
     storage.entries.firstOrNull { model[it.value] }?.key
 
+@JvmName("domainVarArrayConvert")
 inline fun <reified T> DomainVarArray<T>.convert(model: Model): MultiArray<T> =
     map { it.convert(model) ?: error("So sad :c") }
 
+@JvmName("intVarArrayConvert")
 fun IntVarArray.convert(model: Model): IntMultiArray =
-    mapToInt { it.convert(model) ?: error("So sad :c") }
+    map { it.convert(model) ?: error("So sad :c") }
 
+@JvmName("boolVarArrayConvert")
 fun BoolVarArray.convert(model: Model): BooleanMultiArray =
-    mapToBoolean { model[it] }
+    map { model[it] }
 
 @JvmName("multiArrayDomainVarArrayConvert")
 inline fun <reified T> MultiArray<DomainVarArray<T>>.convert(model: Model): MultiArray<MultiArray<T>> =

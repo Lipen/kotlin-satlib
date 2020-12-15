@@ -1,6 +1,5 @@
 package examples.ph
 
-import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.satlib.core.DomainVar
 import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.Lit
@@ -17,7 +16,7 @@ import okio.buffer
 import okio.sink
 import java.io.File
 
-inline fun <T> DomainVar<T>.changeDomain(
+private inline fun <T> DomainVar<T>.changeDomain(
     newDomain: Iterable<T>,
     init: (T) -> Lit,
 ): DomainVar<T> =
@@ -56,7 +55,7 @@ private fun Solver.generateNextTable(pigeonHole: IntVarArray): IntVarArray {
     val oldP = pigeonHole.shape[0]
     val newP = oldP + 1
     val newH = newP - 1
-    return MultiArray.create(newP) { (p) ->
+    return IntVarArray.new(newP) { (p) ->
         if (p <= oldP) pigeonHole[p].changeDomain(1..newH) { newLiteral() }
         else newIntVar(1..newH, encodeOneHot = false)
     }
@@ -101,7 +100,7 @@ fun provePigeonholePrincipleIncremental(maxP: Int): Boolean {
     return true
 }
 
-fun main() {
+private fun main() {
     val maxP = 10
     provePigeonholePrincipleIncremental(maxP)
 }
