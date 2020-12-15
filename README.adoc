@@ -14,7 +14,7 @@ repositories {
     maven(url = "https://jitpack.io")
 }
 dependencies {
-    implementation("com.github.Lipen.kotlin-satlib:core:${Versions.kotlin_jnisat}")
+    implementation("com.github.Lipen.kotlin-satlib:core:${Versions.kotlin_satlib}")
 }
 ----
 
