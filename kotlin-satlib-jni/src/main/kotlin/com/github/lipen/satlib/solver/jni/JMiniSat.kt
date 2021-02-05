@@ -99,6 +99,10 @@ class JMiniSat : AutoCloseable {
         return minisat_is_eliminated(handle, lit)
     }
 
+    fun setSeed(seed: Double) {
+        minisat_set_seed(handle, seed)
+    }
+
     fun interrupt() {
         minisat_interrupt(handle)
     }
@@ -198,6 +202,7 @@ class JMiniSat : AutoCloseable {
     private external fun minisat_simplify(handle: Long): Boolean
     private external fun minisat_eliminate(handle: Long, turn_off_elim: Boolean): Boolean
     private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
+    private external fun minisat_set_seed(handle: Long, seed: Double)
     private external fun minisat_interrupt(handle: Long)
     private external fun minisat_clear_interrupt(handle: Long)
     private external fun minisat_to_dimacs(handle: Long, path: String)

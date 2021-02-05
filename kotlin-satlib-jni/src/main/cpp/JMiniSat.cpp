@@ -123,6 +123,11 @@ JNI_METHOD(jboolean, minisat_1is_1eliminated)
     return decode(handle)->isEliminated(v);
   }
 
+JNI_METHOD(jboolean, minisat_1set_1seed)
+  (JNIEnv*, jobject, jlong handle, jdouble seed) {
+    return decode(handle)->random_seed = seed;
+  }
+
 JNI_METHOD(void, minisat_1interrupt)
   (JNIEnv*, jobject, jlong handle) {
     decode(handle)->interrupt();
