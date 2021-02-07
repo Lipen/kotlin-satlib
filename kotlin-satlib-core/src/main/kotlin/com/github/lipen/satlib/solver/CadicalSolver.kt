@@ -4,7 +4,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JCadical
-import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver @JvmOverloads constructor(
@@ -62,11 +61,5 @@ class CadicalSolver @JvmOverloads constructor(
 
     override fun getModel(): Model {
         return Model.from(backend.getModel(), zerobased = false)
-    }
-}
-
-private fun main() {
-    CadicalSolver().useWith {
-        testSolverWithAssumptions()
     }
 }

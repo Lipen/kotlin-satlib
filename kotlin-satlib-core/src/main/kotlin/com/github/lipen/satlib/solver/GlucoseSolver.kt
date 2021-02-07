@@ -4,7 +4,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JGlucose
-import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class GlucoseSolver @JvmOverloads constructor(
@@ -99,11 +98,5 @@ class GlucoseSolver @JvmOverloads constructor(
         enum class SimpStrategy {
             NEVER, ONCE, ALWAYS;
         }
-    }
-}
-
-private fun main() {
-    GlucoseSolver().useWith {
-        testSolverWithAssumptions()
     }
 }

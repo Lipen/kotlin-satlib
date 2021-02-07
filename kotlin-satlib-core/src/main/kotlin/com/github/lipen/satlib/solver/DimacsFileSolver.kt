@@ -4,7 +4,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.utils.parseDimacsOutput
-import com.github.lipen.satlib.utils.useWith
 import okio.buffer
 import okio.source
 import java.io.File
@@ -73,11 +72,5 @@ class DimacsFileSolver @JvmOverloads constructor(
             "$NAME does not support solving with assumptions"
         private const val INTERRUPTION_NOT_SUPPORTED =
             "$NAME does not support interruption"
-    }
-}
-
-private fun main() {
-    DimacsFileSolver({ File("dimacs.cnf") }, { "cryptominisat5 $it" }).useWith {
-        testSolverWithoutAssumptions()
     }
 }

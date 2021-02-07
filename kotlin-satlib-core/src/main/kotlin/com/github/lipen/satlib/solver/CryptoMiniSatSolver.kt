@@ -4,7 +4,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JCryptoMiniSat
-import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CryptoMiniSatSolver @JvmOverloads constructor(
@@ -63,11 +62,5 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
 
     override fun getModel(): Model {
         return Model.from(backend.getModel(), zerobased = true)
-    }
-}
-
-private fun main() {
-    CryptoMiniSatSolver().useWith {
-        testSolverWithAssumptions()
     }
 }

@@ -4,7 +4,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JMiniSat
-import com.github.lipen.satlib.utils.useWith
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class MiniSatSolver @JvmOverloads constructor(
@@ -99,11 +98,5 @@ class MiniSatSolver @JvmOverloads constructor(
         enum class SimpStrategy {
             NEVER, ONCE, ALWAYS;
         }
-    }
-}
-
-private fun main() {
-    MiniSatSolver().useWith {
-        testSolverWithAssumptions()
     }
 }

@@ -1,7 +1,68 @@
+@file:Suppress("ClassName")
+
 package com.github.lipen.satlib.solver
 
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.op.exactlyOne
+import com.github.lipen.satlib.utils.useWith
+import java.io.File
+
+private object test_MiniSatSolver {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        MiniSatSolver().useWith {
+            testSolverWithAssumptions()
+        }
+    }
+}
+
+private object test_GlucoseSolver {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        GlucoseSolver().useWith {
+            testSolverWithAssumptions()
+        }
+    }
+}
+
+private object test_CadicalSolver {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        CadicalSolver().useWith {
+            testSolverWithAssumptions()
+        }
+    }
+}
+
+private object test_CryptoMiniSatSolver {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        CryptoMiniSatSolver().useWith {
+            testSolverWithAssumptions()
+        }
+    }
+}
+
+private object test_DimacsFileSolver {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        DimacsFileSolver(
+            file = { File("dimacs.cnf") },
+            command = { "cryptominisat5 $it" }
+        ).useWith {
+            testSolverWithoutAssumptions()
+        }
+    }
+}
+
+private object test_DimacsStreamSolver {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        DimacsStreamSolver(command = { "cryptominisat5" }).useWith {
+            testSolverWithoutAssumptions()
+        }
+    }
+}
 
 private fun Boolean.toInt(): Int = if (this) 1 else 0
 
