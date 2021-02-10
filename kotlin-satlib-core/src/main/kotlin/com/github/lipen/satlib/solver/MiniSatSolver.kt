@@ -8,7 +8,8 @@ import com.github.lipen.satlib.solver.jni.JMiniSat
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class MiniSatSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
-    val backend: JMiniSat = JMiniSat(),
+    initialSeed: Double,
+    val backend: JMiniSat = JMiniSat(initialSeed),
 ) : AbstractSolver() {
     private var simplified = false
 
