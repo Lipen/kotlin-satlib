@@ -27,7 +27,9 @@ import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
 @Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
-class JMiniSat : AutoCloseable {
+class JMiniSat(
+    val initialSeed: Double = 42.0,
+) : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
 
@@ -43,6 +45,7 @@ class JMiniSat : AutoCloseable {
         if (handle != 0L) minisat_dtor(handle)
         handle = minisat_ctor()
         if (handle == 0L) throw OutOfMemoryError("minisat_ctor returned NULL")
+        setSeed(initialSeed)
         solvable = true
     }
 

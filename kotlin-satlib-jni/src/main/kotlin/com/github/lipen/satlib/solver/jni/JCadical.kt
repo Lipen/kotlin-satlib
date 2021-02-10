@@ -8,7 +8,9 @@ import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
 @Suppress("FunctionName", "MemberVisibilityCanBePrivate")
-class JCadical : AutoCloseable {
+class JCadical(
+    val initialSeed: Int = 42,
+) : AutoCloseable {
     private var handle: Long = 0
 
     val numberOfVariables: Int get() = cadical_vars(handle)
@@ -21,6 +23,7 @@ class JCadical : AutoCloseable {
         if (handle != 0L) cadical_delete(handle)
         handle = cadical_create()
         if (handle == 0L) throw OutOfMemoryError("cadical_create returned NULL")
+        setOption("seed", initialSeed)
     }
 
     override fun close() {
