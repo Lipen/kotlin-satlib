@@ -9,7 +9,7 @@ import java.io.File
 
 @Suppress("FunctionName", "MemberVisibilityCanBePrivate")
 class JCadical(
-    val initialSeed: Int = 42,
+    val initialSeed: Int? = null, // default is 0
 ) : AutoCloseable {
     private var handle: Long = 0
 
@@ -23,7 +23,7 @@ class JCadical(
         if (handle != 0L) cadical_delete(handle)
         handle = cadical_create()
         if (handle == 0L) throw OutOfMemoryError("cadical_create returned NULL")
-        setOption("seed", initialSeed)
+        if (initialSeed != null) setOption("seed", initialSeed)
     }
 
     override fun close() {

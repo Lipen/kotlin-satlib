@@ -8,10 +8,25 @@ import com.github.lipen.satlib.solver.jni.JMiniSat
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class MiniSatSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
-    initialSeed: Double = 42.0,
-    val backend: JMiniSat = JMiniSat(initialSeed),
+    val backend: JMiniSat = JMiniSat(),
 ) : AbstractSolver() {
     private var simplified = false
+
+    constructor(
+        simpStrategy: SimpStrategy = SimpStrategy.ONCE,
+        initialSeed: Double? = null,
+        initialRandomVarFreq: Double? = null,
+        initialRandomPolarities: Boolean = false,
+        initialRandomInitialActivities: Boolean = false,
+    ) : this(
+        simpStrategy = simpStrategy,
+        backend = JMiniSat(
+            initialSeed = initialSeed,
+            initialRandomVarFreq = initialRandomVarFreq,
+            initialRandomPolarities = initialRandomPolarities,
+            initialRandomInitialActivities = initialRandomInitialActivities
+        )
+    )
 
     init {
         if (simpStrategy == SimpStrategy.NEVER) {
@@ -19,16 +34,12 @@ class MiniSatSolver @JvmOverloads constructor(
         }
     }
 
-    private fun reset_() {
+    override fun _reset() {
         backend.reset()
         if (simpStrategy == SimpStrategy.NEVER) {
             backend.eliminate(turn_off_elim = true)
         }
         simplified = false
-    }
-
-    override fun _reset() {
-        reset_()
     }
 
     override fun _close() {

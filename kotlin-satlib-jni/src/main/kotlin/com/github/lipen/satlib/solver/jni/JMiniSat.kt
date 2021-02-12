@@ -28,7 +28,10 @@ import java.io.File
 
 @Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JMiniSat(
-    val initialSeed: Double = 42.0,
+    val initialSeed: Double? = null, // default is 91648253
+    val initialRandomVarFreq: Double? = null,
+    val initialRandomPolarities: Boolean = false,
+    val initialRandomInitialActivities: Boolean = false,
 ) : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
@@ -48,7 +51,10 @@ class JMiniSat(
         if (handle != 0L) minisat_dtor(handle)
         handle = minisat_ctor()
         if (handle == 0L) throw OutOfMemoryError("minisat_ctor returned NULL")
-        setSeed(initialSeed)
+        if (initialSeed != null) setRandomSeed(initialSeed)
+        if (initialRandomVarFreq != null) setRandomVarFreq(initialRandomVarFreq)
+        if (initialRandomPolarities) setRandomPolarities(true)
+        if (initialRandomInitialActivities) setRandomInitialActivities(true)
         solvable = true
     }
 
@@ -105,8 +111,20 @@ class JMiniSat(
         return minisat_is_eliminated(handle, lit)
     }
 
-    fun setSeed(seed: Double) {
-        minisat_set_seed(handle, seed)
+    fun setRandomSeed(random_seed: Double) {
+        minisat_set_random_seed(handle, random_seed)
+    }
+
+    fun setRandomVarFreq(random_var_freq: Double) {
+        minisat_set_random_var_freq(handle, random_var_freq)
+    }
+
+    fun setRandomPolarities(rnd_pol: Boolean) {
+        minisat_set_rnd_pol(handle, rnd_pol)
+    }
+
+    fun setRandomInitialActivities(rnd_init_act: Boolean) {
+        minisat_set_rnd_init_act(handle, rnd_init_act)
     }
 
     fun interrupt() {
@@ -211,7 +229,10 @@ class JMiniSat(
     private external fun minisat_simplify(handle: Long): Boolean
     private external fun minisat_eliminate(handle: Long, turn_off_elim: Boolean): Boolean
     private external fun minisat_is_eliminated(handle: Long, lit: Int): Boolean
-    private external fun minisat_set_seed(handle: Long, seed: Double)
+    private external fun minisat_set_random_seed(handle: Long, seed: Double)
+    private external fun minisat_set_random_var_freq(handle: Long, random_var_freq: Double)
+    private external fun minisat_set_rnd_pol(handle: Long, rnd_pol: Boolean)
+    private external fun minisat_set_rnd_init_act(handle: Long, rnd_init_act: Boolean)
     private external fun minisat_interrupt(handle: Long)
     private external fun minisat_clear_interrupt(handle: Long)
     private external fun minisat_to_dimacs(handle: Long, path: String)

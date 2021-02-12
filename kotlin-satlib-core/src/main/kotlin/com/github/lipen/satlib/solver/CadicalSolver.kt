@@ -6,10 +6,17 @@ import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JCadical
 
 @Suppress("MemberVisibilityCanBePrivate")
-class CadicalSolver @JvmOverloads constructor(
-    initialSeed: Int = 42,
-    val backend: JCadical = JCadical(initialSeed),
+class CadicalSolver(
+    val backend: JCadical,
 ) : AbstractSolver() {
+    constructor() : this(JCadical())
+
+    constructor(
+        initialSeed: Int? = null,
+    ) : this(
+        backend = JCadical(initialSeed)
+    )
+
     override fun _reset() {
         backend.reset()
     }

@@ -114,9 +114,24 @@ JNI_METHOD(jboolean, glucose_1is_1eliminated)
     return decode(handle)->isEliminated(lit2var(lit));
   }
 
-JNI_METHOD(void, glucose_1set_1seed)
-  (JNIEnv*, jobject, jlong handle, jdouble seed) {
-    decode(handle)->random_seed = seed;
+JNI_METHOD(void, glucose_1set_1random_1seed)
+  (JNIEnv*, jobject, jlong handle, jdouble random_seed) {
+    decode(handle)->random_seed = random_seed;
+  }
+
+JNI_METHOD(void, glucose_1set_1random_1var_1freq)
+  (JNIEnv*, jobject, jlong handle, jdouble random_var_freq) {
+    decode(handle)->random_var_freq = random_var_freq;
+  }
+
+JNI_METHOD(void, glucose_1set_1rnd_1pol)
+  (JNIEnv*, jobject, jlong handle, jboolean rnd_pol) {
+    decode(handle)->rnd_pol = rnd_pol;
+  }
+
+JNI_METHOD(void, glucose_1set_1rnd_1init_1act)
+  (JNIEnv*, jobject, jlong handle, jboolean rnd_init_act) {
+    decode(handle)->rnd_init_act = rnd_init_act;
   }
 
 JNI_METHOD(void, glucose_1interrupt)

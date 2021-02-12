@@ -9,7 +9,10 @@ import java.io.File
 
 @Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JGlucose(
-    val initialSeed: Double = 42.0,
+    val initialSeed: Double? = null, // default is 91648253
+    val initialRandomVarFreq: Double? = null,
+    val initialRandomPolarities: Boolean = false,
+    val initialRandomInitialActivities: Boolean = false,
 ) : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
@@ -29,7 +32,10 @@ class JGlucose(
         if (handle != 0L) glucose_dtor(handle)
         handle = glucose_ctor()
         if (handle == 0L) throw OutOfMemoryError("glucose_ctor returned NULL")
-        setSeed(initialSeed)
+        if (initialSeed != null) setRandomSeed(initialSeed)
+        if (initialRandomVarFreq != null) setRandomVarFreq(initialRandomVarFreq)
+        if (initialRandomPolarities) setRandomPolarities(true)
+        if (initialRandomInitialActivities) setRandomInitialActivities(true)
         solvable = true
     }
 
@@ -90,8 +96,20 @@ class JGlucose(
         return glucose_is_eliminated(handle, lit)
     }
 
-    fun setSeed(seed: Double) {
-        glucose_set_seed(handle, seed)
+    fun setRandomSeed(random_seed: Double) {
+        glucose_set_random_seed(handle, random_seed)
+    }
+
+    fun setRandomVarFreq(random_var_freq: Double) {
+        glucose_set_random_var_freq(handle, random_var_freq)
+    }
+
+    fun setRandomPolarities(rnd_pol: Boolean) {
+        glucose_set_rnd_pol(handle, rnd_pol)
+    }
+
+    fun setRandomInitialActivities(rnd_init_act: Boolean) {
+        glucose_set_rnd_init_act(handle, rnd_init_act)
     }
 
     fun interrupt() {
@@ -196,7 +214,10 @@ class JGlucose(
     private external fun glucose_simplify(handle: Long): Boolean
     private external fun glucose_eliminate(handle: Long, turn_off_elim: Boolean): Boolean
     private external fun glucose_is_eliminated(handle: Long, lit: Int): Boolean
-    private external fun glucose_set_seed(handle: Long, seed: Double)
+    private external fun glucose_set_random_seed(handle: Long, seed: Double)
+    private external fun glucose_set_random_var_freq(handle: Long, random_var_freq: Double)
+    private external fun glucose_set_rnd_pol(handle: Long, rnd_pol: Boolean)
+    private external fun glucose_set_rnd_init_act(handle: Long, rnd_init_act: Boolean)
     private external fun glucose_interrupt(handle: Long)
     private external fun glucose_clear_interrupt(handle: Long)
     private external fun glucose_to_dimacs(handle: Long, path: String)
