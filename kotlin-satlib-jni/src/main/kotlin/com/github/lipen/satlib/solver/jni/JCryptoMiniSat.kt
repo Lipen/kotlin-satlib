@@ -21,7 +21,7 @@ class JCryptoMiniSat : AutoCloseable {
     fun reset() {
         if (handle != 0L) cms_delete(handle)
         handle = cms_create()
-        if (handle == 0L) throw OutOfMemoryError()
+        if (handle == 0L) throw OutOfMemoryError("cms_create returned NULL")
     }
 
     override fun close() {
