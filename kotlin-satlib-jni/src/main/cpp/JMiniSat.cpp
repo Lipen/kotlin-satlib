@@ -72,6 +72,21 @@ JNI_METHOD(jint, minisat_1nlearnts)
     return decode(handle)->nLearnts();
 }
 
+JNI_METHOD(jint, minisat_1decisions)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->decisions;
+}
+
+JNI_METHOD(jint, minisat_1propagations)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->propagations;
+}
+
+JNI_METHOD(jint, minisat_1conflicts)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->conflicts;
+}
+
 JNI_METHOD(jint, minisat_1new_1var)
   (JNIEnv*, jobject, jlong handle, jbyte polarity, jboolean decision) {
     int v = decode(handle)->newVar(Minisat::lbool((uint8_t) polarity), decision);

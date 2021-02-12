@@ -8,7 +8,8 @@ import com.github.lipen.satlib.solver.jni.JGlucose
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class GlucoseSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
-    val backend: JGlucose = JGlucose(),
+    initialSeed: Double = 42.0,
+    val backend: JGlucose = JGlucose(initialSeed),
 ) : AbstractSolver() {
     private var simplified = false
 

@@ -8,13 +8,18 @@ import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
 @Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
-class JGlucose : AutoCloseable {
+class JGlucose(
+    val initialSeed: Double = 42.0,
+) : AutoCloseable {
     private var handle: Long = 0
     private var solvable: Boolean = false
 
     val numberOfVariables: Int get() = glucose_nvars(handle)
     val numberOfClauses: Int get() = glucose_nclauses(handle)
     val numberOfLearnts: Int get() = glucose_nlearnts(handle)
+    val numberOfDecisions: Int get() = glucose_decisions(handle)
+    val numberOfPropagations: Int get() = glucose_propagations(handle)
+    val numberOfConflicts: Int get() = glucose_conflicts(handle)
 
     init {
         reset()
@@ -24,6 +29,7 @@ class JGlucose : AutoCloseable {
         if (handle != 0L) glucose_dtor(handle)
         handle = glucose_ctor()
         if (handle == 0L) throw OutOfMemoryError("glucose_ctor returned NULL")
+        setSeed(initialSeed)
         solvable = true
     }
 
@@ -82,6 +88,10 @@ class JGlucose : AutoCloseable {
 
     fun isEliminated(lit: Int): Boolean {
         return glucose_is_eliminated(handle, lit)
+    }
+
+    fun setSeed(seed: Double) {
+        glucose_set_seed(handle, seed)
     }
 
     fun interrupt() {
@@ -176,6 +186,9 @@ class JGlucose : AutoCloseable {
     private external fun glucose_nvars(handle: Long): Int
     private external fun glucose_nclauses(handle: Long): Int
     private external fun glucose_nlearnts(handle: Long): Int
+    private external fun glucose_decisions(handle: Long): Int
+    private external fun glucose_propagations(handle: Long): Int
+    private external fun glucose_conflicts(handle: Long): Int
     private external fun glucose_new_var(handle: Long, polarity: Boolean, decision: Boolean): Int
     private external fun glucose_set_polarity(handle: Long, lit: Int, polarity: Boolean)
     private external fun glucose_set_decision(handle: Long, lit: Int, decision: Boolean)
@@ -183,6 +196,7 @@ class JGlucose : AutoCloseable {
     private external fun glucose_simplify(handle: Long): Boolean
     private external fun glucose_eliminate(handle: Long, turn_off_elim: Boolean): Boolean
     private external fun glucose_is_eliminated(handle: Long, lit: Int): Boolean
+    private external fun glucose_set_seed(handle: Long, seed: Double)
     private external fun glucose_interrupt(handle: Long)
     private external fun glucose_clear_interrupt(handle: Long)
     private external fun glucose_to_dimacs(handle: Long, path: String)

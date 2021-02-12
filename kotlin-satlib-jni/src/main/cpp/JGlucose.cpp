@@ -63,6 +63,21 @@ JNI_METHOD(jint, glucose_1nlearnts)
     return decode(handle)->nLearnts();
 }
 
+JNI_METHOD(jint, glucose_1decisions)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->decisions;
+}
+
+JNI_METHOD(jint, glucose_1propagations)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->propagations;
+}
+
+JNI_METHOD(jint, glucose_1conflicts)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->conflicts;
+}
+
 JNI_METHOD(jint, glucose_1new_1var)
   (JNIEnv*, jobject, jlong handle, jboolean polarity, jboolean decision) {
     int v = decode(handle)->newVar(polarity, decision);
@@ -97,6 +112,11 @@ JNI_METHOD(jboolean, glucose_1eliminate)
 JNI_METHOD(jboolean, glucose_1is_1eliminated)
   (JNIEnv*, jobject, jlong handle, jint lit) {
     return decode(handle)->isEliminated(lit2var(lit));
+  }
+
+JNI_METHOD(void, glucose_1set_1seed)
+  (JNIEnv*, jobject, jlong handle, jdouble seed) {
+    decode(handle)->random_seed = seed;
   }
 
 JNI_METHOD(void, glucose_1interrupt)
