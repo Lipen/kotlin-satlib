@@ -13,6 +13,8 @@ import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.toList_
 import com.github.lipen.satlib.utils.useWith
 
+private val log = mu.KotlinLogging.logger {}
+
 @Suppress("MemberVisibilityCanBePrivate")
 class Cardinality private constructor(
     private val solver: Solver,
@@ -68,7 +70,7 @@ class Cardinality private constructor(
 
     fun assumeUpperBoundLessThan(newUpperBound: Int?) {
         assumptionsUB = if (newUpperBound == null) {
-            println("De-assuming the upper bound (null)")
+            log.debug{"De-assuming the upper bound (null)"}
             emptyList()
         } else {
             require(newUpperBound <= totalizer.size) {
@@ -88,7 +90,7 @@ class Cardinality private constructor(
 
     fun assumeLowerBoundGreaterThanOrEqual(newLowerBound: Int?) {
         assumptionsLB = if (newLowerBound == null) {
-            println("De-assuming the upper bound (null)")
+            log.debug { "De-assuming the upper bound (null)" }
             emptyList()
         } else {
             require(newLowerBound >= 1) {
