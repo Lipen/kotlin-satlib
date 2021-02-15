@@ -49,6 +49,26 @@ JNI_METHOD(jint, cadical_1vars)
     return decode(p)->vars();
   }
 
+JNI_METHOD(jlong, cadical_1conflicts)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->conflicts();
+  }
+
+JNI_METHOD(jlong, cadical_1decisions)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->decisions();
+  }
+
+JNI_METHOD(jlong, cadical_1restarts)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->restarts();
+  }
+
+JNI_METHOD(jlong, cadical_1propagations)
+  (JNIEnv*, jobject, jlong handle) {
+    return decode(handle)->propagations();
+  }
+
 JNI_METHOD(jboolean, cadical_1frozen)
   (JNIEnv*, jobject, jlong p, jint lit) {
     return decode(p)->frozen(lit);

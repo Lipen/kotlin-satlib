@@ -63,6 +63,7 @@ jobs:
           git clone --depth=1 --branch rel-1.3.0 https://github.com/arminbiere/cadical solvers/cadical-src
           cd solvers/cadical-src
           git apply -v ../../patches/cadical-shared-lib.patch
+          patch -p0 < ../../patches/cadical-stats.patch
           ./configure -j8 -fPIC CXXFLAGS="-s"
           make lsh
           install -m 644 src/cadical.hpp -Dt install/include/cadical

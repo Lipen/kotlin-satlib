@@ -14,6 +14,10 @@ class JCadical(
     private var handle: Long = 0
 
     val numberOfVariables: Int get() = cadical_vars(handle)
+    val numberOfConflicts: Long get() = cadical_conflicts(handle)
+    val numberOfDecisions: Long get() = cadical_decisions(handle)
+    val numberOfRestarts: Long get() = cadical_restarts(handle)
+    val numberOfPropagations: Long get() = cadical_propagations(handle)
 
     init {
         reset()
@@ -158,6 +162,10 @@ class JCadical(
     private external fun cadical_set(handle: Long, name: String, value: Int): Boolean
     private external fun cadical_set_long_option(handle: Long, arg: String): Boolean
     private external fun cadical_vars(handle: Long): Int
+    private external fun cadical_conflicts(handle: Long): Long
+    private external fun cadical_decisions(handle: Long): Long
+    private external fun cadical_restarts(handle: Long): Long
+    private external fun cadical_propagations(handle: Long): Long
     private external fun cadical_frozen(handle: Long, lit: Int): Boolean
     private external fun cadical_freeze(handle: Long, lit: Int)
     private external fun cadical_melt(handle: Long, lit: Int)
