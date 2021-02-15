@@ -34,7 +34,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: kotlin-satlib-jni/solvers
-          key: ${{ runner.os }}-solvers-cache
+          key: ${{ runner.os }}-solvers-cache-1
 
       - name: Build MiniSat
         if: steps.cache-solvers.outputs.cache-hit != 'true'
