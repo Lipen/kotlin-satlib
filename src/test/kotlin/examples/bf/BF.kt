@@ -1,12 +1,14 @@
 package examples.bf
 
+import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.soywiz.klock.PerformanceCounter
 
 object GlobalsBF {
-    var solverProvider: () -> Solver = {
-        MiniSatSolver()
+    val solverProvider: () -> Solver = {
+        // MiniSatSolver()
+        GlucoseSolver()
         // CryptoMiniSatSolver()
         // CadicalSolver()
     }
@@ -16,7 +18,7 @@ object GlobalsBF {
     var timeout: Double = 30.0
 
     init {
-        solverProvider()
+        solverProvider().close()
     }
 }
 

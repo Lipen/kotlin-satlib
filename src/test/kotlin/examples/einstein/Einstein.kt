@@ -16,7 +16,7 @@ import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
 
 object GlobalsEinstein {
-    var solverProvider: () -> Solver = {
+    val solverProvider: () -> Solver = {
         // MiniSatSolver()
         GlucoseSolver()
         // CryptoMiniSatSolver()
