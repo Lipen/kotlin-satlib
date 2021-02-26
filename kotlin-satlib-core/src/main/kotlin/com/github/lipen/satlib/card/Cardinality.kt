@@ -70,7 +70,7 @@ class Cardinality private constructor(
 
     fun assumeUpperBoundLessThan(newUpperBound: Int?) {
         assumptionsUB = if (newUpperBound == null) {
-            log.debug{"De-assuming the upper bound (null)"}
+            log.debug { "De-assuming the upper bound (null)" }
             emptyList()
         } else {
             require(newUpperBound <= totalizer.size) {
