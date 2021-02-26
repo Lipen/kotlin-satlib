@@ -1,6 +1,7 @@
 package examples.ph
 
 import com.github.lipen.satlib.core.IntVarArray
+import com.github.lipen.satlib.core.eq
 import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne

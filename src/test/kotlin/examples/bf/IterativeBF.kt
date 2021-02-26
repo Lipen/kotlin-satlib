@@ -1,5 +1,7 @@
 package examples.bf
 
+import com.github.lipen.satlib.core.eq
+import com.github.lipen.satlib.core.neq
 import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.core.newDomainVarArray
 import com.github.lipen.satlib.core.newIntVarArray

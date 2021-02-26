@@ -16,9 +16,6 @@ interface DomainVar<T> {
     val domain: Set<T>
     val literals: Collection<Lit> // Note: proper order is *not* guaranteed
 
-    infix fun eq(value: T): Lit = storage.getValue(value)
-    infix fun neq(value: T): Lit = -eq(value)
-
     // infix fun safeEq(value: T): Lit
     // infix fun safeNeq(value: T): Lit = -safeEq(value)
 
@@ -33,17 +30,17 @@ interface DomainVar<T> {
     }
 }
 
+infix fun <T> DomainVar<T>.eq(value: T): Lit = storage.getValue(value)
+infix fun <T> DomainVar<T>.neq(value: T): Lit = -eq(value)
+
+// infix fun <T> DomainVar<T>.safeEq(value: T): Lit = storage[value] ?: Solver.falseLiteral
+// infix fun <T> DomainVar<T>.safeNeq(value: T): Lit = -safeEq(value)
+
 class DefaultDomainVar<T> @PublishedApi internal constructor(
     override val storage: Map<T, Lit>,
 ) : DomainVar<T> {
     override val domain: Set<T> = storage.keys
     override val literals: Collection<Lit> = storage.values
-
-    override infix fun eq(value: T): Lit = storage.getValue(value)
-    override infix fun neq(value: T): Lit = -eq(value)
-
-    // override fun safeEq(value: T): Lit = storage[value] ?: Solver.falseLiteral
-    // override fun safeNeq(value: T): Lit = -safeEq(value)
 
     override fun toString(): String {
         return "OneHotDomainVar(domain = $domain)"

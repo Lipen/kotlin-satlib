@@ -2,6 +2,7 @@ package com.github.lipen.satlib.op
 
 import com.github.lipen.satlib.core.DomainVar
 import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.eq
 import com.github.lipen.satlib.solver.Solver
 import kotlin.math.ceil
 import kotlin.math.log2
