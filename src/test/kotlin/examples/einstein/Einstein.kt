@@ -229,6 +229,8 @@ private fun Solver.declareConstraints() {
 }
 
 fun main() {
+    // https://en.wikipedia.org/wiki/Zebra_Puzzle
+
     GlobalsEinstein.solverProvider().useWith {
         declareVariables()
         declareConstraints()
