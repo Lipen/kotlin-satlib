@@ -55,3 +55,21 @@ fun MultiArray<IntVarArray>.convert(model: Model): MultiArray<IntMultiArray> =
 @JvmName("multiArrayBoolVarArrayConvert")
 fun MultiArray<BoolVarArray>.convert(model: Model): MultiArray<BooleanMultiArray> =
     map { it.convert(model) }
+
+fun Context.convertLiteral(name: String, model: Model): Boolean =
+    model[get(name)]
+
+fun <T : Any> Context.convertDomainVar(name: String, model: Model): T? =
+    get<DomainVar<T>>(name).convert(model)
+
+fun Context.convertIntVar(name: String, model: Model): Int? =
+    get<IntVar>(name).convert(model)
+
+inline fun <reified T> Context.convertDomainVarArray(name: String, model: Model): MultiArray<T> =
+    get<DomainVarArray<T>>(name).convert(model)
+
+fun Context.convertIntVarArray(name: String, model: Model): IntMultiArray =
+    get<IntVarArray>(name).convert(model)
+
+fun Context.convertBoolVarArray(name: String, model: Model): BooleanMultiArray =
+    get<BoolVarArray>(name).convert(model)
