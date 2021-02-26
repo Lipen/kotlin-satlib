@@ -16,9 +16,6 @@ interface DomainVar<T> {
     val domain: Set<T>
     val literals: Collection<Lit> // Note: proper order is *not* guaranteed
 
-    // infix fun safeEq(value: T): Lit
-    // infix fun safeNeq(value: T): Lit = -safeEq(value)
-
     companion object {
         @JvmStatic
         inline fun <T> new(
