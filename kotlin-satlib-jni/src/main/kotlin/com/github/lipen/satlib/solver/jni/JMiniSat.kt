@@ -135,12 +135,12 @@ class JMiniSat(
         minisat_clear_interrupt(handle)
     }
 
-    fun toDimacs(path: String) {
+    fun writeDimacs(path: String) {
         minisat_to_dimacs(handle, path)
     }
 
-    fun toDimacs(file: File) {
-        toDimacs(file.path)
+    fun writeDimacs(file: File) {
+        writeDimacs(file.path)
     }
 
     @Deprecated(

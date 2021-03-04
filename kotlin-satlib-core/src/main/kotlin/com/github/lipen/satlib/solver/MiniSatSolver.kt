@@ -4,6 +4,7 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JMiniSat
+import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class MiniSatSolver @JvmOverloads constructor(
@@ -46,11 +47,15 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
-    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
-        return backend.newVariable()
+    override fun _dumpDimacs(file: File) {
+        backend.writeDimacs(file)
     }
 
     override fun _comment(comment: String) {}
+
+    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
+        return backend.newVariable()
+    }
 
     @Suppress("OverridingDeprecatedMember")
     override fun _addClause() {

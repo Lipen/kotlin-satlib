@@ -4,6 +4,7 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JCryptoMiniSat
+import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CryptoMiniSatSolver @JvmOverloads constructor(
@@ -15,6 +16,10 @@ class CryptoMiniSatSolver @JvmOverloads constructor(
 
     override fun _close() {
         backend.close()
+    }
+
+    override fun _dumpDimacs(file: File) {
+        backend.writeDimacs(file)
     }
 
     override fun _comment(comment: String) {}

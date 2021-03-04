@@ -3,6 +3,7 @@ package com.github.lipen.satlib.solver
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
+import java.io.File
 
 class MockSolver(
     private val __comment: (String) -> Unit = {},
@@ -11,6 +12,7 @@ class MockSolver(
     private val __solve: () -> Boolean = { TODO() },
     private val __reset: () -> Unit = {},
     private val __close: () -> Unit = {},
+    private val __dumpDimacs: (File) -> Unit = {},
     private val __interrupt: () -> Unit = {},
     private val __getModel: () -> Model = { TODO() },
 ) : AbstractSolver() {
@@ -20,6 +22,10 @@ class MockSolver(
 
     override fun _close() {
         __close()
+    }
+
+    override fun _dumpDimacs(file: File) {
+        __dumpDimacs(file)
     }
 
     override fun _comment(comment: String) {

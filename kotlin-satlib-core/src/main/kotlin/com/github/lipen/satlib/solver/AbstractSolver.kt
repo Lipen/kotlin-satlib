@@ -6,20 +6,12 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.utils.toList_
-import com.github.lipen.satlib.utils.write
-import com.github.lipen.satlib.utils.writeln
-import okio.Buffer
-import okio.BufferedSink
-import okio.buffer
-import okio.sink
 import java.io.File
 
 private val log = mu.KotlinLogging.logger {}
 
 @Suppress("FunctionName")
 abstract class AbstractSolver : Solver {
-    private val buffer: Buffer = Buffer()
-
     final override var context: Context = newContext()
     final override var numberOfVariables: Int = 0
         private set
@@ -32,21 +24,21 @@ abstract class AbstractSolver : Solver {
         numberOfVariables = 0
         numberOfClauses = 0
         assumptionsObservable.clear()
-        buffer.clear()
         _reset()
     }
 
     final override fun close() {
-        buffer.close()
         _close()
     }
 
     final override fun comment(comment: String) {
-        log.debug { "// $comment" }
-        for (line in comment.lineSequence()) {
-            buffer.write("c ").writeln(line)
-        }
+        log.trace { "// $comment" }
         _comment(comment)
+    }
+
+    final override fun dumpDimacs(file: File) {
+        log.debug { "dumpDimacs(file = $file)" }
+        _dumpDimacs(file)
     }
 
     final override fun newLiteral(): Lit {
@@ -56,51 +48,39 @@ abstract class AbstractSolver : Solver {
 
     @Suppress("OverridingDeprecatedMember")
     final override fun addClause() {
-        // log.debug { "addClause()" }
+        // log.trace { "addClause()" }
         ++numberOfClauses
-        buffer.writeln("0")
         _addClause()
     }
 
     final override fun addClause(lit: Lit) {
-        // log.debug { "addClause($lit)" }
+        // log.trace { "addClause($lit)" }
         ++numberOfClauses
-        buffer.writeln("$lit 0")
         _addClause(lit)
     }
 
     final override fun addClause(lit1: Lit, lit2: Lit) {
-        // log.debug { "addClause($lit1, $lit2)" }
+        // log.trace { "addClause($lit1, $lit2)" }
         ++numberOfClauses
-        buffer.writeln("$lit1 $lit2 0")
         _addClause(lit1, lit2)
     }
 
     final override fun addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
-        // log.debug { "addClause($lit1, $lit2, $lit3)" }
+        // log.trace { "addClause($lit1, $lit2, $lit3)" }
         ++numberOfClauses
-        buffer.writeln("$lit1 $lit2 $lit3 0")
         _addClause(lit1, lit2, lit3)
     }
 
     final override fun addClause(literals: LitArray) {
-        // log.debug { "addClause(${literals.asList()})" }
+        // log.trace { "addClause(${literals.asList()})" }
         ++numberOfClauses
-        for (lit in literals) {
-            buffer.write(lit.toString()).write(" ")
-        }
-        buffer.writeln("0")
         _addClause(literals)
     }
 
     final override fun addClause(literals: Iterable<Lit>) {
         ++numberOfClauses
         val pool = literals.toList_()
-        // log.debug { "addClause($pool)" }
-        for (lit in pool) {
-            buffer.write(lit.toString()).write(" ")
-        }
-        buffer.writeln("0")
+        // log.trace { "addClause($pool)" }
         _addClause(pool)
     }
 
@@ -108,7 +88,6 @@ abstract class AbstractSolver : Solver {
         val assumptions = assumptionsObservable.collect()
         return if (assumptions.isEmpty()) {
             log.debug { "solve()" }
-            buffer.writeln("c solve")
             _solve()
         } else {
             solve(assumptions)
@@ -117,26 +96,13 @@ abstract class AbstractSolver : Solver {
 
     final override fun solve(assumptions: LitArray): Boolean {
         log.debug { "solve(assumptions = ${assumptions.asList()})" }
-        buffer.writeln("c solve ${assumptions.joinToString(" ")}")
         return _solve(assumptions)
     }
 
     final override fun solve(assumptions: Iterable<Lit>): Boolean {
         val pool = assumptions.toList_()
         log.debug { "solve(assumptions = $pool)" }
-        buffer.writeln("c solve ${pool.joinToString(" ")}")
         return _solve(pool)
-    }
-
-    final override fun dumpDimacs(sink: BufferedSink) {
-        sink.writeln("p cnf $numberOfVariables $numberOfClauses")
-        buffer.copyTo(sink.buffer)
-    }
-
-    final override fun dumpDimacs(file: File) {
-        file.sink().buffer().use {
-            dumpDimacs(it)
-        }
     }
 
     override fun toString(): String {
@@ -145,6 +111,7 @@ abstract class AbstractSolver : Solver {
 
     protected abstract fun _reset()
     protected abstract fun _close()
+    protected abstract fun _dumpDimacs(file: File)
 
     protected abstract fun _comment(comment: String)
 

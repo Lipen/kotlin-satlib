@@ -4,6 +4,7 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.solver.jni.JCadical
+import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver(
@@ -23,6 +24,10 @@ class CadicalSolver(
 
     override fun _close() {
         backend.close()
+    }
+
+    override fun _dumpDimacs(file: File) {
+        backend.writeDimacs(file)
     }
 
     override fun _comment(comment: String) {}

@@ -6,7 +6,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.SequenceScopeLit
-import okio.BufferedSink
 import java.io.File
 
 @Suppress("FunctionName")
@@ -18,6 +17,7 @@ interface Solver : AutoCloseable {
 
     fun reset()
     override fun close()
+    fun dumpDimacs(file: File)
 
     fun comment(comment: String)
 
@@ -45,9 +45,6 @@ interface Solver : AutoCloseable {
 
     fun getValue(lit: Lit): Boolean
     fun getModel(): Model
-
-    fun dumpDimacs(sink: BufferedSink)
-    fun dumpDimacs(file: File)
 
     // companion object {
     //     const val trueLiteral: Lit = Int.MAX_VALUE
