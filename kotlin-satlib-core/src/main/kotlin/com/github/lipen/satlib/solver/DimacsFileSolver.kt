@@ -44,7 +44,9 @@ class DimacsFileSolver @JvmOverloads constructor(
         return outerNumberOfVariables
     }
 
-    override fun _addClause() {}
+    override fun _addClause() {
+        buffer.writeln("0")
+    }
 
     override fun _addClause(lit: Lit) {
         buffer.writeln("$lit 0")
