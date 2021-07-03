@@ -10,11 +10,12 @@ private val log = mu.KotlinLogging.logger {}
 fun Solver.allSolutions(
     essentialLiterals: List<Lit>? = null,
 ): Sequence<Model> = sequence {
+    val essential = essentialLiterals ?: (1..numberOfVariables)
+
     while (solve()) {
         val model = getModel()
         yield(model)
 
-        val essential = essentialLiterals ?: (1..numberOfVariables)
         val refutation = essential.map { i -> i sign !model[i] }
         log.debug { "refutation = $refutation" }
         addClause(refutation)
