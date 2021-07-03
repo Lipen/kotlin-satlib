@@ -1,21 +1,21 @@
 @file:Suppress("PublicApiImplicitType", "MemberVisibilityCanBePrivate", "unused")
 
 object Versions {
-    const val gradle_versions = "0.33.0"
+    const val gradle_versions = "0.39.0"
     const val jgitver = "0.9.1"
     const val jmh = "1.23"
-    const val jmh_gradle_plugin = "0.5.0"
+    const val jmh_gradle_plugin = "0.5.3"
     const val junit = "5.7.0"
-    const val klock = "1.12.1"
-    const val kluent = "1.63"
-    const val kotlin = "1.4.20"
-    const val kotlin_logging = "2.0.3"
-    const val kotlinter = "3.2.0"
-    const val kotlinx_coroutines = "1.4.1"
-    const val log4j = "2.14.0"
+    const val klock = "2.2.0"
+    const val kluent = "1.67"
+    const val kotlin = "1.5.20"
+    const val kotlin_logging = "2.0.8"
+    const val kotlinter = "3.4.5"
+    const val kotlinx_coroutines = "1.5.0"
+    const val log4j = "2.14.1"
     const val multiarray = "0.10.0"
     const val okio = "2.9.0"
-    const val shadow = "5.2.0"
+    const val shadow = "7.0.0"
 }
 
 object Libs {
