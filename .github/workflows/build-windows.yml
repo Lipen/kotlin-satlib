@@ -56,7 +56,7 @@ jobs:
           git apply -v ../../patches/cadical-shared.patch
           patch -p0 <../../patches/cadical-stats.patch
           ./configure -fPIC
-          make -j16 dll
+          make -j16 dll  2>/dev/null
           mkdir -p install/include/cadical install/lib
           cp src/cadical.hpp install/include/cadical
           cp build/cadical.dll install/lib
