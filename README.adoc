@@ -1,9 +1,19 @@
 = SAT solver wrappers for Kotlin
 
+ifdef::env-github[]
+:important-caption: :heavy_exclamation_mark:
+:note-caption: :memo:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+:toc: macro
+
 image:https://github.com/Lipen/kotlin-satlib/workflows/Build/badge.svg?branch=master["Build",link="https://github.com/Lipen/kotlin-satlib/actions"]
 image:https://github.com/Lipen/kotlin-satlib/workflows/Build%20(Windows)/badge.svg?branch=master["Build (Windows)",link="https://github.com/Lipen/kotlin-satlib/actions"]
 image:https://jitpack.io/v/Lipen/kotlin-satlib.svg["JitPack",link="https://jitpack.io/p/Lipen/kotlin-satlib"]
 image:https://hitsofcode.com/github/Lipen/kotlin-satlib["Hits-of-Code",link="https://hitsofcode.com/view/github/Lipen/kotlin-satlib"]
+
+toc::[]
 
 == Installation
 
@@ -36,12 +46,21 @@ with(MiniSatSolver()) {
     println("Solving...")
     check(solve())
     println("model = ${getModel()}")
-    checkExactlyOne(x, y, z)
 
-    println("Solving with assumptions...")
-    check(solve(x)); println("model = ${getModel()}"); check(getValue(x))
-    check(solve(y)); println("model = ${getModel()}"); check(getValue(y))
-    check(solve(z)); println("model = ${getModel()}"); check(getValue(z))
+    println("Solving with assumption x=true...")
+    check(solve(x))
+    println("model = ${getModel()}")
+    check(getValue(x))
+
+    println("Solving with assumption y=true...")
+    check(solve(y))
+    println("model = ${getModel()}")
+    check(getValue(y))
+
+    println("Solving with assumption z=true...")
+    check(solve(z))
+    println("model = ${getModel()}")
+    check(getValue(z))
 
     println("Everything OK.")
 }
@@ -59,10 +78,235 @@ In order to use wrappers for native SAT solvers (_e.g._, `MiniSatSolver`), you n
 
 For manual build instructions, consult link:.github/workflows/build.yml[CI workflows].
 
+==== Build SAT solvers
+
+Each supported SAT solver has its own build instructions.
+For some solvers, we provide patches which either add the ability to create a shared library or add some internal functionality, for example, solving statistics.
+
+.Build MiniSat
+[%collapsible]
+====
+----
+cd kotlin-satlib-jni
+
+## Clone MiniSat
+git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+cd solvers/minisat-src
+
+## Do not apply any patches! They are for Windows only (see below).
+
+## Build and install MiniSat
+make config prefix=install MINISAT_REL="-O3 -DNDEBUG -fpermissive"
+make install
+----
+
+[NOTE]
+=====
+.On Windows with MinGW
+[%collapsible]
+======
+As always, building stuff on Windows wasn't meant to be done properly, so prepare to suffer.
+
+Here, we don't use M.Soos's repo of minisat, because it only produces static dll (.dll.a), which seems to be unusable in the following pipeline.
+Hence, we use the original minisat repo, build using CMake (it does the job of automatically finding zlib), and then install the produced minisat.dll in 'install' folder to be used later.
+
+Note that we do not modify the core source code of MiniSat (aside of fixing some MinGW-specific infrastructure issues), so generally you can build MiniSat however you want.
+This is also true for Glucose and CryptoMiniSat, but not for Cadical -- in the later we patched in some additional functionality.
+
+----
+cd kotlin-satlib-jni
+
+## Clone MiniSat
+git clone --depth=1 https://github.com/niklasso/minisat solvers/minisat-src
+cd solvers/minisat-src
+
+## Apply patches
+git apply -v ../patches/minisat-fpermissive.patch
+git apply -v ../patches/minisat-make-dll.patch
+git apply -v ../patches/minisat-memUsedPeak.patch
+git apply -v ../patches/minisat-mingw-lib-prefix.patch
+
+## Build MiniSat shared lib
+cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target minisat-lib-shared
+mkdir -p install/lib
+cp build/cadical.dll install/lib/
+----
+======
+=====
+====
+
+.Build Glucose
+[%collapsible]
+====
+----
+cd kotlin-satlib-jni
+
+## Clone Glucose
+git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+cd solvers/glucose-src
+
+## Apply patches
+git apply -v ../../patches/glucose-install.patch
+
+## Build and install Glucose
+cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+cmake --install build --prefix install
+----
+
+[NOTE]
+=====
+.On Windows with MinGW
+[%collapsible]
+======
+
+* Apply additional MinGW-specific patches.
+* Add `-G"MinGW Makefiles"` when configuring using CMake.
+* Build only `glucose` target, do not build `glucose-simp` binary, because it depends on `sys/resource.h` which is not available under Windows.
+
+----
+## Apply patches
+git apply -v ../../patches/glucose-install.patch
+
+## Apply MinGW-specific patches
+git apply -v ../../patches/glucose-mingw-lib-prefix.patch
+git apply -v ../../patches/glucose-mingw-sys-time.patch
+
+## Build and install Glucose shared lib on Windows
+cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -G"MinGW Makefiles"
+cmake --build build --target glucose
+cmake --install build --prefix install
+----
+======
+=====
+====
+
+.Build Cadical
+[%collapsible]
+====
+----
+cd kotlin-satlib-jni
+
+## Clone Cadical
+git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
+cd solver/cadical-src
+
+## Apply patches
+git apply -v ../../patches/cadical-shared.patch
+patch -p0 <../../patches/cadical-stats.patch
+
+## Build and install Cadical
+./configure -fPIC
+make -j16 shared
+install -m 644 src/cadical.hpp -Dt install/include/cadical
+install -m 644 build/libcadical.so -Dt install/lib
+----
+
+[NOTE]
+=====
+On Windows, build and install as follows:
+
+----
+sh configure -fPIC
+make -j16 dll
+mkdir -p install/include/cadical install/lib
+cp src/cadical.hpp install/include/cadical
+cp build/cadical.dll install/lib
+----
+=====
+====
+
+.Build CryptoMiniSat
+[%collapsible]
+====
+----
+cd kotlin-satlib-jni
+
+## Clone CryptoMiniSat
+git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+cd solvers/cms-src
+
+## Build and install CryptoMiniSat
+## Note: on Windows with MinGW, add -G"MinGW Makefiles"
+cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build -- -j16
+cmake --install build --prefix install
+----
+
+NOTE: On Windows with MinGW, add `-G"MinGW Makefiles"` when configuring using CMake.
+====
+
+TIP: After building SAT solvers, update ld cache:
+
+----
+sudo ldconfig -n kotlin-satlib-jni/solvers/*-src/install/lib
+----
+
+NOTE: If you are on Windows, the only reliable way to ensure that the SAT solver DLLs would be found in runtime, is to place them in `C:/Windows` or `C:/Windows/System32`.
+Surprisingly, placing dlls "in the current folder" or "in 'resources' folder" does not help.
+If you happen to know any better (and reliably working) solution, please contact me!
+
+==== Build JNI wrappers
+
+Use the provided link:kotlin-satlib-jni/Makefile[Makefile].
+
+IMPORTANT: Make sure to use JDK 8 (or less), where `javah` is still available.
+
+TIP: Use `make headers JAVAH=/path/to/jdk8/bin/javah` if you do not want to change your global JDK, but have JDK8 installed separately.
+
+.Unix
+[%collapsible]
+====
+----
+cd kotlin-satlib-jni
+make classes
+make headers
+make libs \
+    MINISAT_INSTALL_DIR=solvers/minisat-src/install \
+    GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+    CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+    CMS_INSTALL_DIR=solvers/cms-src/install
+make res
+----
+====
+
+.Windows (MinGW)
+[%collapsible]
+====
+----
+cd kotlin-satlib-jni
+make classes
+make headers
+make libs \
+    JDK_INCLUDE_SUBDIR=win32 \
+    JCMS_LDLIBS=-lcryptominisat5win \
+    MINISAT_INSTALL_DIR=solvers/minisat-src/install \
+    MINISAT_INCLUDE_DIR=solvers/minisat-src \
+    GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+    CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+    CMS_INSTALL_DIR=solvers/cms-src/install
+mkdir -p src/main/resources/lib/win64
+cp build/lib/libjminisat.so src/main/resources/lib/win64/jminisat.dll
+cp build/lib/libjglucose.so src/main/resources/lib/win64/jglucose.dll
+cp build/lib/libjcadical.so src/main/resources/lib/win64/jcadical.dll
+cp build/lib/libjcms.so src/main/resources/lib/win64/jcms.dll
+----
+
+NOTE: MiniSat and Glucose require zlib.
+On Windows, CMake is able to find it automagically, but here we compile libs manually, so the compilation might fail.
+If you receive an error "zlib.h: No such file or directory", try to copy zlib headers (`zlib.h` and `zconf.h`) into `build/headers` where they will be found and used by our Makefile.
+If you are using GnuWin32 distribution, these headers can be found in `/path/to/GnuWin32/include` folder.
+====
+
 === Prebuilt libs
 
-You can simply download prebuilt native libraries from link:https://github.com/Lipen/kotlin-satlib/releases[GitHub Releases page]. As an example, you can set up the following Gradle task in your project:
+You can simply download prebuilt native libraries from link:https://github.com/Lipen/kotlin-satlib/releases[GitHub Releases page].
+As an example, you can set up the following Gradle task in your project:
 
+.Example Gradle task which downloads shared libs:
+[%collapsible]
+====
 [source,kotlin]
 .build.gradle.kts
 ----
@@ -151,8 +395,10 @@ tasks.register("downloadLibs") {
     }
 }
 ----
+====
 
-After downloading shared solver libs, update ld cache:
+After downloading solver shared libs, update ld cache:
+
 ----
 sudo ldconfig $(realpath libs)
 ----

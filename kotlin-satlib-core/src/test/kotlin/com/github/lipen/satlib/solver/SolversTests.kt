@@ -86,21 +86,12 @@ class SolversTests {
 
     @Suppress("unused")
     private fun solvers(): List<Solver> =
-        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
-            listOf(
-                MiniSatSolver(),
-                GlucoseSolver(),
-                DimacsFileSolver { "cryptominisat5 $it" },
-                DimacsStreamSolver { "cryptominisat5" },
-            )
-        } else {
-            listOf(
-                MiniSatSolver(),
-                GlucoseSolver(),
-                CadicalSolver(),
-                CryptoMiniSatSolver(),
-                DimacsFileSolver { "cryptominisat5 $it" },
-                DimacsStreamSolver { "cryptominisat5" },
-            )
-        }
+        listOf(
+            MiniSatSolver(),
+            GlucoseSolver(),
+            CadicalSolver(),
+            CryptoMiniSatSolver(),
+            DimacsFileSolver { "cryptominisat5 $it" },
+            DimacsStreamSolver { "cryptominisat5" },
+        )
 }

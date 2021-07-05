@@ -7,8 +7,8 @@ index 375dbc8..ddfb174 100644
  endif()
  
 +if(MINGW)
-+    set(CMAKE_SHARED_LIBRARY_PREFIX "")
-+    set(CMAKE_STATIC_LIBRARY_PREFIX "")
++  set(CMAKE_SHARED_LIBRARY_PREFIX "")
++  set(CMAKE_STATIC_LIBRARY_PREFIX "")
 +endif()
  
  include_directories(

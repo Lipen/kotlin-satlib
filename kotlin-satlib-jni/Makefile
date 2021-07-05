@@ -87,13 +87,15 @@ DOCKER_CMS_DIR = /cms
 ## Java
 JAVA_HOME ?= $(patsubst %/bin/javac,%,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
+JDK_INCLUDE_SUBDIR = linux
+JAVAH = javah
 
 ## Compile/link
 GRADLE = ../gradlew# Best choice is 'gw', but not everyone uses it
 CXX = g++
-CXXFLAGS = -Wall -O3 -fPIC -fpermissive
-CPPFLAGS = -I$(JAVA_INCLUDE) -I$(JAVA_INCLUDE)/linux -I$(HEADERS_DIR)
-LDFLAGS = -shared -s
+CXXFLAGS += -Wall -O3 -fPIC
+CPPFLAGS += -I"$(JAVA_INCLUDE)" -I"$(JAVA_INCLUDE)/$(JDK_INCLUDE_SUBDIR)" -I"$(HEADERS_DIR)"
+LDFLAGS += -shared -s
 LDLIBS =
 
 .PHONY: help all all-docker libs libs-docker libjminisat libjglucose libjcadical libjcms res headers classes clean vars
@@ -172,7 +174,7 @@ res:
 
 headers:
 	@echo "=== Generating headers..."
-	javah -d $(HEADERS_DIR) -classpath $(CLASSPATH) $(CLASSNAMES)
+	$(JAVAH) -d $(HEADERS_DIR) -classpath $(CLASSPATH) $(CLASSNAMES)
 	@echo "= Done generating headers"
 
 classes:
