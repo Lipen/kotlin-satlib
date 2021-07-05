@@ -71,7 +71,7 @@ jobs:
           cmake --install build --prefix install
 
       - name: Compile classes
-        run: ./gradlew classes --stacktrace
+        run: ./gradlew :jni:classes --stacktrace
 
       - name: Make JNI headers
         working-directory: kotlin-satlib-jni
