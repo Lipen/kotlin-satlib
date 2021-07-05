@@ -35,7 +35,10 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/niklasso/minisat solvers/minisat-src
           cd solvers/minisat-src
-          git apply -v ../../patches/minisat-*.patch
+          git apply -v ../../patches/minisat-fpermissive.patch
+          git apply -v ../../patches/minisat-make-dll.patch
+          git apply -v ../../patches/minisat-memUsedPeak.patch
+          git apply -v ../../patches/minisat-mingw-lib-prefix.patch
           cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target minisat-lib-shared
 
@@ -44,9 +47,12 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
           cd solvers/glucose-src
-          git apply -v ../../patches/glucose-*.patch
+          git apply -v ../../patches/glucose-install.patch
+          git apply -v ../../patches/glucose-mingw-lib-prefix.patch
+          git apply -v ../../patches/glucose-mingw-sys-time.patch
           cmake -B build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target glucose
+          cmake --install build --prefix install
 
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
