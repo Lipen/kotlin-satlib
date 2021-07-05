@@ -27,6 +27,8 @@ dependencies {
 
 == Library usage
 
+Examples can be found link:src/test/kotlin/examples[here].
+
 [source,kotlin]
 ----
 with(MiniSatSolver()) {
