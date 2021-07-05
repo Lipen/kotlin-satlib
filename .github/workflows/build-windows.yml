@@ -30,25 +30,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build minisat.dll
+      - name: Build MiniSat
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/niklasso/minisat minisat-src
-          cd minisat-src
-          git apply -v ../patches/minisat-*.patch
+          git clone --depth=1 https://github.com/niklasso/minisat solvers/minisat-src
+          cd solvers/minisat-src
+          git apply -v ../../patches/minisat-*.patch
           cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target minisat-lib-shared
 
-      - name: Build glucose.dll
+      - name: Build Glucose
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/wadoon/glucose glucose-src
-          cd glucose-src
-          git apply -v ../patches/glucose-*.patch
+          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+          cd solvers/glucose-src
+          git apply -v ../../patches/glucose-*.patch
           cmake -B build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target glucose
 
-      - name: Build cadical.dll
+      - name: Build Cadical
         working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
@@ -61,7 +61,7 @@ jobs:
           cp src/cadical.hpp install/include/cadical
           cp build/cadical.dll install/lib
 
-      - name: Build cryptominisat5.dll
+      - name: Build CryptoMiniSat
         working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
@@ -79,14 +79,15 @@ jobs:
 
       - name: Build JNI libs
         working-directory: kotlin-satlib-jni
-        run: make libs \
-          JDK_INCLUDE_SUBDIR=win32 \
-          MINISAT_INCLUDE_DIR=solvers/minisat-src \
-          MINISAT_LIB_DIR=solvers/minisat-src/build \
-          GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
-          CADICAL_INSTALL_DIR=solvers/cadical-src/install \
-          CMS_INSTALL_DIR=solvers/cms-src/install \
-          JCMS_LDLIBS=-lcryptominisat5win
+        run: |
+          make libs \
+            JDK_INCLUDE_SUBDIR=win32 \
+            MINISAT_INCLUDE_DIR=solvers/minisat-src \
+            MINISAT_LIB_DIR=solvers/minisat-src/build \
+            GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+            CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+            CMS_INSTALL_DIR=solvers/cms-src/install \
+            JCMS_LDLIBS=-lcryptominisat5win
 
       - name: Copy JNI libs to resources folder
         working-directory: kotlin-satlib-jni
@@ -111,7 +112,7 @@ jobs:
             kotlin-satlib-jni/build/lib/jglucose.dll
             kotlin-satlib-jni/build/lib/jcadical.dll
             kotlin-satlib-jni/build/lib/jcms.dll
-            kotlin-satlib-jni/minisat-src/build/minisat.dll
-            kotlin-satlib-jni/glucose-src/install/lib/glucose.dll
-            kotlin-satlib-jni/cadical-src/install/lib/cadical.dll
-            kotlin-satlib-jni/cms-src/install/bin/libcryptominisat5.dll
+            kotlin-satlib-jni/solvers/minisat-src/build/minisat.dll
+            kotlin-satlib-jni/solvers/glucose-src/install/lib/glucose.dll
+            kotlin-satlib-jni/solvers/cadical-src/install/lib/cadical.dll
+            kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5.dll
