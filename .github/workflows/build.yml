@@ -29,21 +29,15 @@ jobs:
       - name: Compile classes
         run: ./gradlew :jni:classes
 
-      - name: Set up solvers cache
-        id: cache-solvers
-        uses: actions/cache@v2
-        with:
-          path: kotlin-satlib-jni/solvers
-          key: ${{ runner.os }}-solvers-cache-1
-
       - name: Build MiniSat
         if: steps.cache-solvers.outputs.cache-hit != 'true'
         working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
           cd solvers/minisat-src
-          make config prefix=install MINISAT_REL='-O3 -DNDEBUG -fpermissive'
-          make install
+          make config prefix=install MINISAT_REL="-O3 -DNDEBUG -fpermissive"
+          make -j8 install
+          strip -s install/lib/libminisat.so
 
       - name: Build Glucose
         if: steps.cache-solvers.outputs.cache-hit != 'true'
@@ -55,6 +49,7 @@ jobs:
           cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
           cmake --install build --prefix install
+          strip -s install/lib/libglucose.so
 
       - name: Build Cadical
         if: steps.cache-solvers.outputs.cache-hit != 'true'
@@ -79,6 +74,7 @@ jobs:
           cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
           cmake --install build --prefix install
+          strip -s install/lib/libcryptominisat5.so
 
       - name: Set up ld cache
         working-directory: kotlin-satlib-jni
@@ -110,15 +106,6 @@ jobs:
       - name: Build using Gradle
         run: ./gradlew build --stacktrace --scan
 
-      - name: Copy solver libs to a separate folder
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          mkdir -p libs
-          cp kotlin-satlib-jni/solvers/minisat-src/install/lib/libminisat.so libs/
-          cp kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so libs/
-          cp kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so libs/
-          cp kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so libs/
-
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -130,4 +117,7 @@ jobs:
             kotlin-satlib-jni/build/lib/libjglucose.so
             kotlin-satlib-jni/build/lib/libjcadical.so
             kotlin-satlib-jni/build/lib/libjcms.so
-            libs/*.so
+            kotlin-satlib-jni/solvers/minisat-src/install/lib/libminisat.so
+            kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so
+            kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so
+            kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so
