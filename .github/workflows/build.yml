@@ -64,8 +64,8 @@ jobs:
           cd solvers/cadical-src
           git apply -v ../../patches/cadical-shared.patch
           patch -p0 < ../../patches/cadical-stats.patch
-          ./configure -j8 -fPIC
-          make shared
+          ./configure -fPIC
+          make -j8 shared
           install -m 644 src/cadical.hpp -Dt install/include/cadical
           install -m 644 build/libcadical.so -Dt install/lib
           strip -s install/lib/libcadical.so
