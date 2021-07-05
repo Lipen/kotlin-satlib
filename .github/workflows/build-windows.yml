@@ -84,6 +84,7 @@ jobs:
             JDK_INCLUDE_SUBDIR=win32 \
             MINISAT_INCLUDE_DIR=solvers/minisat-src \
             MINISAT_LIB_DIR=solvers/minisat-src/build \
+            JMINISAT_CXXFLAGS="-D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS" \
             GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
             CADICAL_INSTALL_DIR=solvers/cadical-src/install \
             CMS_INSTALL_DIR=solvers/cms-src/install \
