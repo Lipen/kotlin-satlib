@@ -48,26 +48,57 @@ jobs:
           cmake -B build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target glucose
 
+      - name: Build cadical.dll
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
+          cd solver/cadical-src
+          git apply -v ../../patches/cadical-shared.patch
+          patch -p0 <../../patches/cadical-stats.patch
+          ./configure -fPIC
+          make -j16 dll
+          mkdir -p install/include/cadical install/lib
+          cp src/cadical.hpp install/include/cadical
+          cp build/cadical.dll install/lib
+
+      - name: Build cryptominisat5.dll
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+          cd solvers/cms-src
+          cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
+          cmake --build build -- -j8
+          cmake --install build --prefix install
+
       - name: Compile classes
         run: ./gradlew classes --stacktrace
 
-      - name: Build jminisat.dll
+      - name: Make JNI headers
         working-directory: kotlin-satlib-jni
-        run: |
-          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JMiniSat
-          mkdir -p build/lib
-          g++ -Wall -O3 -fPIC -shared -s -D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iminisat-src -Lminisat-src/build src/main/cpp/JMiniSat.cpp -lminisat -o build/lib/jminisat.dll
+        run: make headers
 
-      - name: Build jglucose.dll
+      - name: Build JNI libs
+        working-directory: kotlin-satlib-jni
+        run: make libs \
+          JDK_INCLUDE_SUBDIR=win32 \
+          MINISAT_INCLUDE_DIR=solvers/minisat-src \
+          MINISAT_LIB_DIR=solvers/minisat-src/build \
+          GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+          CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+          CMS_INSTALL_DIR=solvers/cms-src/install \
+          JCMS_LDLIBS=-lcryptominisat5win
+
+      - name: Copy JNI libs to resources folder
         working-directory: kotlin-satlib-jni
         run: |
-          javah -d build/headers -classpath build/classes/kotlin/main com.github.lipen.satlib.solver.jni.JGlucose
-          mkdir -p build/lib
-          ln -s glucose-src glucose
-          g++ -Wall -O3 -fPIC -shared -s -I${JAVA_HOME}/include -I${JAVA_HOME}/include/win32 -Ibuild/headers -Iglucose-src -I. -Lglucose-src/build src/main/cpp/JGlucose.cpp -lglucose -o build/lib/jglucose.dll
+          mkdir -p src/main/resources/lib/win64
+          cp build/lib/libjminisat.so src/main/resources/lib/win64/jminisat.dll
+          cp build/lib/libjglucose.so src/main/resources/lib/win64/jglucose.dll
+          cp build/lib/libjcadical.so src/main/resources/lib/win64/jcadical.dll
+          cp build/lib/libjcms.so src/main/resources/lib/win64/jcms.dll
 
       - name: Build package using Gradle wrapper
-        run: ./gradlew build -x test --stacktrace
+        run: ./gradlew build --stacktrace --scan
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
@@ -78,5 +109,9 @@ jobs:
           files: |
             kotlin-satlib-jni/build/lib/jminisat.dll
             kotlin-satlib-jni/build/lib/jglucose.dll
+            kotlin-satlib-jni/build/lib/jcadical.dll
+            kotlin-satlib-jni/build/lib/jcms.dll
             kotlin-satlib-jni/minisat-src/build/minisat.dll
-            kotlin-satlib-jni/glucose-src/build/glucose.dll
+            kotlin-satlib-jni/glucose-src/install/lib/glucose.dll
+            kotlin-satlib-jni/cadical-src/install/lib/cadical.dll
+            kotlin-satlib-jni/cms-src/install/bin/libcryptominisat5.dll
