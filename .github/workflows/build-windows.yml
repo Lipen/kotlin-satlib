@@ -52,7 +52,7 @@ jobs:
         working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
-          cd solver/cadical-src
+          cd solvers/cadical-src
           git apply -v ../../patches/cadical-shared.patch
           patch -p0 <../../patches/cadical-stats.patch
           ./configure -fPIC
