@@ -82,7 +82,7 @@ jobs:
           cp solvers/minisat-src/build/minisat.dll C:/Windows/
           cp solvers/glucose-src/install/lib/glucose.dll C:/Windows/
           cp solvers/cadical-src/install/lib/cadical.dll C:/Windows/
-          cp solvers/cms-src/install/bin/libcryptominisat5.dll C:/Windows/
+          cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
 
       - name: Compile classes
         run: ./gradlew :jni:classes --stacktrace
@@ -130,4 +130,4 @@ jobs:
             kotlin-satlib-jni/solvers/minisat-src/build/minisat.dll
             kotlin-satlib-jni/solvers/glucose-src/install/lib/glucose.dll
             kotlin-satlib-jni/solvers/cadical-src/install/lib/cadical.dll
-            kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5.dll
+            kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
