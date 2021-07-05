@@ -123,7 +123,7 @@ make install
 ======
 As always, building stuff on Windows wasn't meant to be done properly, so prepare to suffer.
 
-Here, we don't use M.Soos's repo of minisat, because it only produces static dll (.dll.a), which seems to be unusable in the following pipeline.
+Here, we don't use msoos's repo of minisat, because it only produces "static dll" (.dll.a), which seems to be unusable in the following pipeline.
 Hence, we use the original minisat repo, build using CMake (it does the job of automatically finding zlib), and then install the produced minisat.dll in 'install' folder to be used later.
 
 Note that we do not modify the core source code of MiniSat (aside of fixing some MinGW-specific infrastructure issues), so generally you can build MiniSat however you want.
@@ -297,7 +297,7 @@ make headers
 make libs \
     JDK_INCLUDE_SUBDIR=win32 \
     JCMS_LDLIBS=-lcryptominisat5win \
-    MINISAT_INSTALL_DIR=solvers/minisat-src/install \
+    MINISAT_LIB_DIR=solvers/minisat-src/install \
     MINISAT_INCLUDE_DIR=solvers/minisat-src \
     GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
     CADICAL_INSTALL_DIR=solvers/cadical-src/install \
