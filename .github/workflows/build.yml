@@ -55,8 +55,8 @@ jobs:
         run: |
           git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical cadical-src
           cd cadical-src
-          git apply -v ../../patches/cadical-shared.patch
-          patch -p0 < ../../patches/cadical-stats.patch
+          git apply -v ../patches/cadical-shared.patch
+          patch -p0 < ../patches/cadical-stats.patch
           ./configure -fPIC
           make -j8 shared
           install -m 644 src/cadical.hpp -Dt install/include/cadical
