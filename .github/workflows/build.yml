@@ -32,8 +32,8 @@ jobs:
       - name: Build MiniSat
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/msoos/minisat minisat-src
-          cd minisat-src
+          git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+          cd solvers/minisat-src
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
           cmake --install build --prefix install
@@ -42,9 +42,9 @@ jobs:
       - name: Build Glucose
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/wadoon/glucose glucose-src
-          cd glucose-src
-          git apply -v ../patches/glucose-install.patch
+          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+          cd solvers/glucose-src
+          git apply -v ../../patches/glucose-install.patch
           cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
           cmake --install build --prefix install
@@ -53,10 +53,10 @@ jobs:
       - name: Build Cadical
         working-directory: jni
         run: |
-          git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical cadical-src
-          cd cadical-src
-          git apply -v ../patches/cadical-shared.patch
-          patch -p0 < ../patches/cadical-stats.patch
+          git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical solvers/cadical-src
+          cd solvers/cadical-src
+          git apply -v ../../patches/cadical-shared.patch
+          patch -p0 < ../../patches/cadical-stats.patch
           ./configure -fPIC
           make -j8 shared
           install -m 644 src/cadical.hpp -Dt install/include/cadical
@@ -66,8 +66,8 @@ jobs:
       - name: Build CryptoMiniSat
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/msoos/cryptominisat cms-src
-          cd cms-src
+          git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+          cd solvers/cms-src
           cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
           cmake --install build --prefix install
@@ -75,15 +75,15 @@ jobs:
 
       - name: Set up ld cache
         working-directory: jni
-        run: sudo ldconfig $(realpath *-src/install/lib)
+        run: sudo ldconfig $(realpath solvers/*-src/install/lib)
 
       - name: Build JNI libs
         working-directory: jni
         run: make libs \
-          MINISAT_INSTALL_DIR=minisat-src/install \
-          GLUCOSE_INSTALL_DIR=glucose-src/install \
-          CADICAL_INSTALL_DIR=cadical-src/install \
-          CMS_INSTALL_DIR=cms-src/install
+          MINISAT_INSTALL_DIR=solvers/minisat-src/install \
+          GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+          CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+          CMS_INSTALL_DIR=solvers/cms-src/install
 
       - name: Copy JNI libs to resources folder
         working-directory: jni
@@ -110,7 +110,7 @@ jobs:
             jni/build/lib/libjglucose.so
             jni/build/lib/libjcadical.so
             jni/build/lib/libjcms.so
-            jni/minisat-src/install/lib/libminisat.so
-            jni/glucose-src/install/lib/libglucose.so
-            jni/cadical-src/install/lib/libcadical.so
-            jni/cms-src/install/lib/libcryptominisat5.so
+            jni/solvers/minisat-src/install/lib/libminisat.so
+            jni/solvers/glucose-src/install/lib/libglucose.so
+            jni/solvers/cadical-src/install/lib/libcadical.so
+            jni/solvers/cms-src/install/lib/libcryptominisat5.so

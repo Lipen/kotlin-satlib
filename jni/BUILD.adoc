@@ -8,8 +8,8 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 💾 Clone MiniSat:
 
- git clone --depth=1 https://github.com/msoos/minisat minisat-src
- cd minisat-src
+ git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+ cd solvers/minisat-src
 
 * 🐧 Build and install on Unix:
 
@@ -27,11 +27,11 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 🐧 On Linux (`libjminisat.so`):
 
- make jminisat MINISAT_INSTALL_DIR=minisat-src/install
+ make jminisat MINISAT_INSTALL_DIR=solvers/minisat-src/install
 
 * 🎭 On Windows (`jminisat.dll`):
 
- make jminisat MINISAT_INSTALL_DIR=minisat-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
+ make jminisat MINISAT_INSTALL_DIR=solvers/minisat-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
 
 == Glucose
 
@@ -39,8 +39,8 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 💾 Clone Glucose:
 
- git clone --depth=1 https://github.com/wadoon/glucose glucose-src
- cd glucose-src
+ git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+ cd solvers/glucose-src
 
 * 🐧 Build and install on Unix:
 
@@ -62,11 +62,11 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 🐧 On Linux (`libjglucose.so`):
 
- make jglucose GLUCOSE_INSTALL_DIR=glucose-src/install
+ make jglucose GLUCOSE_INSTALL_DIR=solvers/glucose-src/install
 
 * 🎭 On Windows (`jglucose.dll`):
 
- make jglucose GLUCOSE_INSTALL_DIR=glucose-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
+ make jglucose GLUCOSE_INSTALL_DIR=solvers/glucose-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
 
 == Cadical
 
@@ -74,13 +74,13 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 💾 Clone Cadical:
 
- git clone --depth=1 https://github.com/arminbiere/cadical cadical-src
- cd cadical-src
+ git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
+ cd solvers/cadical-src
 
 * ✨ Apply patches:
 
  git apply -v ../patches/cadical-shared.patch
- patch -p0 <../patches/cadical-stats.patch
+ patch -p0 < ../patches/cadical-stats.patch
 
 * 🐧 Build and install on Unix:
 
@@ -100,11 +100,11 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 🐧 On Linux (`libjcadical.so`):
 
- make jcadical CADICAL_INSTALL_DIR=cadical-src/install
+ make jcadical CADICAL_INSTALL_DIR=solvers/cadical-src/install
 
 * 🎭 On Windows (`jcadical.dll`):
 
- make jcadical CADICAL_INSTALL_DIR=cadical-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
+ make jcadical CADICAL_INSTALL_DIR=solvers/cadical-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
 
 == CryptoMiniSat
 
@@ -112,8 +112,8 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 💾 Clone CryptoMiniSat:
 
- git clone --depth=1 https://github.com/msoos/cryptominisat cms-src
- cd cms-src
+ git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+ cd solvers/cms-src
 
 * 🔨 Build and install using CMake:
 
@@ -129,11 +129,11 @@ NOTE: On Windows, the produced DLL is located at `install/bin` (not `install/lib
 
 * 🐧 On Linux (`libjcms.so`):
 
- make jcms CMS_INSTALL_DIR=cms-src/install
+ make jcms CMS_INSTALL_DIR=solvers/cms-src/install
 
 * 🎭 On Windows (`jcms.dll`):
 
- make jcms JCMS_LDLIBS=-lcryptominisat5win CMS_INSTALL_DIR=cms-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
+ make jcms JCMS_LDLIBS=-lcryptominisat5win CMS_INSTALL_DIR=solvers/cms-src/install JAVA_INCLUDE_SUBDIR=win32 LIB_PREFIX= LIB_EXT=dll
 
 == Possible errors
 
