@@ -104,7 +104,7 @@ jobs:
       - name: Download Cryptominisat
         run: |
           mkdir -p bin
-          wget -qO- https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz | zcat > bin/cryptominisat5
+          C:/msys64/usr/bin/wget.exe -qO- https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz | zcat > bin/cryptominisat5
           chmod +x bin/cryptominisat5
           echo "$(realpath bin)" >> $GITHUB_PATH
 
