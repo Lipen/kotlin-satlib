@@ -102,11 +102,16 @@ jobs:
         run: |
           make res LIB_PREFIX= LIB_EXT=dll RES_LIB_SUBDIR=win64
 
-      - name: Download Cryptominisat
+      - name: Download CryptoMiniSat
+        uses: wei/wget@v1
+        with:
+          args: -O cms.gz https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz
+
+      - name: Add CryptoMiniSat to PATH
         run: |
           mkdir -p bin
-          C:/msys64/usr/bin/wget.exe -qO- https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz | zcat > bin/cryptominisat5
-          chmod +x bin/cryptominisat5
+          zcat cms.gz > bin/cryptominisat5
+          rm -f cms.gz
           echo "$(realpath bin)" >> $GITHUB_PATH
 
       - name: Run tests
