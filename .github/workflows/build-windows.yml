@@ -105,6 +105,7 @@ jobs:
       - name: Add Cryptominisat to PATH
         working-directory: jni
         run: |
+          cp solvers/cms-src/install/bin/cryptominisat5_simple.exe solvers/cms-src/install/bin/cryptominisat5.exe
           echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
 
       - name: Run tests
