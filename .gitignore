@@ -26,5 +26,4 @@ logs/
 *.log
 
 # Solvers sources
-/kotlin-satlib-jni/minisat-src/
-/kotlin-satlib-jni/glucose-src/
+/jni/solvers
