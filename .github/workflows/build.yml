@@ -43,7 +43,7 @@ jobs:
         working-directory: jni
         run: |
           git clone --depth=1 https://github.com/wadoon/glucose glucose-src
-          cd solvers/glucose-src
+          cd glucose-src
           git apply -v ../patches/glucose-install.patch
           cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
@@ -53,8 +53,8 @@ jobs:
       - name: Build Cadical
         working-directory: jni
         run: |
-          git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical solvers/cadical-src
-          cd solvers/cadical-src
+          git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical cadical-src
+          cd cadical-src
           git apply -v ../../patches/cadical-shared.patch
           patch -p0 < ../../patches/cadical-stats.patch
           ./configure -fPIC
@@ -67,7 +67,7 @@ jobs:
         working-directory: jni
         run: |
           git clone --depth=1 https://github.com/msoos/cryptominisat cms-src
-          cd solvers/cms-src
+          cd cms-src
           cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j8
           cmake --install build --prefix install
@@ -75,7 +75,7 @@ jobs:
 
       - name: Set up ld cache
         working-directory: jni
-        run: sudo ldconfig $(realpath solvers/*-src/install/lib)
+        run: sudo ldconfig $(realpath *-src/install/lib)
 
       - name: Build JNI libs
         working-directory: jni
