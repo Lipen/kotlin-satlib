@@ -89,12 +89,10 @@ jobs:
         working-directory: jni
         run: make res
 
-      - name: Download Cryptominisat
+      - name: Add Cryptominisat to PATH
+        working-directory: jni
         run: |
-          mkdir -p bin
-          wget -qO- https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz | zcat > bin/cryptominisat5
-          chmod +x bin/cryptominisat5
-          echo "$(realpath bin)" >> $GITHUB_PATH
+          echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
 
       - name: Run tests
         run: ./gradlew test --stacktrace
