@@ -2,9 +2,6 @@ package com.github.lipen.satlib.jni
 
 private val log = mu.KotlinLogging.logger {}
 
-// TODO: move Loader to .../satlib/jni
-// TODO: move all JNI solvers to .../satlib/jni/solver
-
 /**
  * Native library loader.
  */
