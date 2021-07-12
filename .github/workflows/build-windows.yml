@@ -88,7 +88,7 @@ jobs:
         working-directory: jni
         run: |
           make libs \
-            LIB_PREFIX= LIB_EXT=dll
+            LIB_PREFIX= LIB_EXT=dll \
             JAVA_INCLUDE_SUBDIR=win32 \
             MINISAT_INSTALL_DIR=minisat-src/install \
             JMINISAT_CXXFLAGS="-D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS" \
