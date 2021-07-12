@@ -36,8 +36,8 @@ jobs:
       - name: Build MiniSat
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/msoos/minisat minisat-src
-          cd minisat-src
+          git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+          cd solvers/minisat-src
           cmake -B build -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
           cmake --build build
           cmake --install build --prefix install
@@ -45,11 +45,11 @@ jobs:
       - name: Build Glucose
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/wadoon/glucose glucose-src
-          cd glucose-src
-          git apply -v ../patches/glucose-install.patch
-          git apply -v ../patches/glucose-mingw-lib-prefix.patch
-          git apply -v ../patches/glucose-mingw-sys-time.patch
+          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+          cd solvers/glucose-src
+          git apply -v ../../patches/glucose-install.patch
+          git apply -v ../../patches/glucose-mingw-lib-prefix.patch
+          git apply -v ../../patches/glucose-mingw-sys-time.patch
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -G "MinGW Makefiles"
           cmake --build build --target glucose
           cmake --install build --prefix install
@@ -57,21 +57,20 @@ jobs:
       - name: Build Cadical
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/arminbiere/cadical cadical-src
-          cd cadical-src
-          git apply -v ../patches/cadical-shared.patch
-          patch -p0 <../patches/cadical-stats.patch
+          git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
+          cd solvers/cadical-src
+          git apply -v ../../patches/cadical-shared.patch
+          patch -p0 < ../../patches/cadical-stats.patch
           ./configure -fPIC
-          make -j8 dll  2>/dev/null
-          mkdir -p install/include/cadical install/lib
-          cp src/cadical.hpp install/include/cadical
-          cp build/cadical.dll install/lib
+          make -j8 dll  2>&1
+          install src/cadical.hpp -Dt install/include/cadical
+          install build/cadical.dll -Dt install/lib
 
       - name: Build CryptoMiniSat
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/msoos/cryptominisat cms-src
-          cd cms-src
+          git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+          cd solvers/cms-src
           cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
           cmake --build build -- -j8
           cmake --install build --prefix install
@@ -79,10 +78,10 @@ jobs:
       - name: Copy solver libs to C:/Windows
         working-directory: jni
         run: |
-          cp minisat-src/install/bin/libminisat.dll C:/Windows/
-          cp glucose-src/install/lib/glucose.dll C:/Windows/
-          cp cadical-src/install/lib/cadical.dll C:/Windows/
-          cp cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
+          cp solvers/minisat-src/install/bin/libminisat.dll C:/Windows/
+          cp solvers/glucose-src/install/lib/glucose.dll C:/Windows/
+          cp solvers/cadical-src/install/lib/cadical.dll C:/Windows/
+          cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
 
       - name: Build JNI libs
         working-directory: jni
@@ -90,11 +89,11 @@ jobs:
           make libs \
             LIB_PREFIX= LIB_EXT=dll \
             JAVA_INCLUDE_SUBDIR=win32 \
-            MINISAT_INSTALL_DIR=minisat-src/install \
+            MINISAT_INSTALL_DIR=solvers/minisat-src/install \
             JMINISAT_CXXFLAGS="-D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS" \
-            GLUCOSE_INSTALL_DIR=glucose-src/install \
-            CADICAL_INSTALL_DIR=cadical-src/install \
-            CMS_INSTALL_DIR=cms-src/install \
+            GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+            CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+            CMS_INSTALL_DIR=solvers/cms-src/install \
             JCMS_LDLIBS=-lcryptominisat5win
 
       - name: Copy JNI libs to resources folder
@@ -122,7 +121,7 @@ jobs:
             jni/build/lib/jglucose.dll
             jni/build/lib/jcadical.dll
             jni/build/lib/jcms.dll
-            jni/minisat-src/install/bin/libminisat.dll
-            jni/glucose-src/install/lib/glucose.dll
-            jni/cadical-src/install/lib/cadical.dll
-            jni/cms-src/install/bin/libcryptominisat5win.dll
+            jni/solvers/minisat-src/install/bin/libminisat.dll
+            jni/solvers/glucose-src/install/lib/glucose.dll
+            jni/solvers/cadical-src/install/lib/cadical.dll
+            jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
