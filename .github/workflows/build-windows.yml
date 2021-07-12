@@ -36,14 +36,11 @@ jobs:
       - name: Build MiniSat
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/niklasso/minisat minisat-src
+          git clone --depth=1 https://github.com/msoos/minisat minisat-src
           cd minisat-src
-          git apply -v ../patches/minisat-fpermissive.patch
-          git apply -v ../patches/minisat-make-dll.patch
-          git apply -v ../patches/minisat-memUsedPeak.patch
-          git apply -v ../patches/minisat-mingw-lib-prefix.patch
-          cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --target minisat-lib-shared
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
+          cmake --build build
+          cmake --install build --prefix install
 
       - name: Build Glucose
         working-directory: jni
