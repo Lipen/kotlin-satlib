@@ -25,7 +25,7 @@ jobs:
       - name: Setup build cache
         uses: pat-s/always-upload-cache@v2
         with:
-          path: $HOME/.gradle/caches
+          path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
