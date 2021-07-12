@@ -30,91 +30,90 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Build project using Gradle
+        run: ./gradlew build -x test --stacktrace --scan
+
       - name: Build MiniSat
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/niklasso/minisat solvers/minisat-src
-          cd solvers/minisat-src
-          git apply -v ../../patches/minisat-fpermissive.patch
-          git apply -v ../../patches/minisat-make-dll.patch
-          git apply -v ../../patches/minisat-memUsedPeak.patch
-          git apply -v ../../patches/minisat-mingw-lib-prefix.patch
+          git clone --depth=1 https://github.com/niklasso/minisat minisat-src
+          cd minisat-src
+          git apply -v ../patches/minisat-fpermissive.patch
+          git apply -v ../patches/minisat-make-dll.patch
+          git apply -v ../patches/minisat-memUsedPeak.patch
+          git apply -v ../patches/minisat-mingw-lib-prefix.patch
           cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
           cmake --build build --target minisat-lib-shared
 
       - name: Build Glucose
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
-          cd solvers/glucose-src
-          git apply -v ../../patches/glucose-install.patch
-          git apply -v ../../patches/glucose-mingw-lib-prefix.patch
-          git apply -v ../../patches/glucose-mingw-sys-time.patch
-          cmake -B build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          git clone --depth=1 https://github.com/wadoon/glucose glucose-src
+          cd glucose-src
+          git apply -v ../patches/glucose-install.patch
+          git apply -v ../patches/glucose-mingw-lib-prefix.patch
+          git apply -v ../patches/glucose-mingw-sys-time.patch
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -G "MinGW Makefiles"
           cmake --build build --target glucose
           cmake --install build --prefix install
 
       - name: Build Cadical
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
-          cd solvers/cadical-src
-          git apply -v ../../patches/cadical-shared.patch
-          patch -p0 <../../patches/cadical-stats.patch
+          git clone --depth=1 https://github.com/arminbiere/cadical cadical-src
+          cd cadical-src
+          git apply -v ../patches/cadical-shared.patch
+          patch -p0 <../patches/cadical-stats.patch
           ./configure -fPIC
-          make -j16 dll  2>/dev/null
+          make -j8 dll  2>/dev/null
           mkdir -p install/include/cadical install/lib
           cp src/cadical.hpp install/include/cadical
           cp build/cadical.dll install/lib
 
       - name: Build CryptoMiniSat
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
-          cd solvers/cms-src
+          git clone --depth=1 https://github.com/msoos/cryptominisat cms-src
+          cd cms-src
           cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
           cmake --build build -- -j8
           cmake --install build --prefix install
 
       - name: Copy solver libs to C:/Windows
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
-          cp solvers/minisat-src/build/minisat.dll C:/Windows/
-          cp solvers/glucose-src/install/lib/glucose.dll C:/Windows/
-          cp solvers/cadical-src/install/lib/cadical.dll C:/Windows/
-          cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
-
-      - name: Compile classes
-        run: ./gradlew :jni:classes --stacktrace
-
-      - name: Make JNI headers
-        working-directory: kotlin-satlib-jni
-        run: make headers
+          cp minisat-src/install/bin/libminisat.dll C:/Windows/
+          cp glucose-src/install/lib/glucose.dll C:/Windows/
+          cp cadical-src/install/lib/cadical.dll C:/Windows/
+          cp cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
 
       - name: Build JNI libs
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
           make libs \
-            JDK_INCLUDE_SUBDIR=win32 \
-            MINISAT_INCLUDE_DIR=solvers/minisat-src \
-            MINISAT_LIB_DIR=solvers/minisat-src/build \
+            LIB_PREFIX= LIB_EXT=dll
+            JAVA_INCLUDE_SUBDIR=win32 \
+            MINISAT_INSTALL_DIR=minisat-src/install \
             JMINISAT_CXXFLAGS="-D__STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS" \
-            GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
-            CADICAL_INSTALL_DIR=solvers/cadical-src/install \
-            CMS_INSTALL_DIR=solvers/cms-src/install \
+            GLUCOSE_INSTALL_DIR=glucose-src/install \
+            CADICAL_INSTALL_DIR=cadical-src/install \
+            CMS_INSTALL_DIR=cms-src/install \
             JCMS_LDLIBS=-lcryptominisat5win
 
       - name: Copy JNI libs to resources folder
-        working-directory: kotlin-satlib-jni
+        working-directory: jni
         run: |
-          mkdir -p src/main/resources/lib/win64
-          cp build/lib/libjminisat.so src/main/resources/lib/win64/jminisat.dll
-          cp build/lib/libjglucose.so src/main/resources/lib/win64/jglucose.dll
-          cp build/lib/libjcadical.so src/main/resources/lib/win64/jcadical.dll
-          cp build/lib/libjcms.so src/main/resources/lib/win64/jcms.dll
+          make res LIB_PREFIX= LIB_EXT=dll RES_LIB_SUBDIR=win64
 
-      - name: Build package using Gradle wrapper
-        run: ./gradlew build --stacktrace --scan
+      - name: Download Cryptominisat
+        run: |
+          mkdir -p bin
+          wget -qO- https://github.com/msoos/cryptominisat/releases/download/5.8.0/cryptominisat5_amd64_linux_static.gz | zcat > bin/cryptominisat5
+          chmod +x bin/cryptominisat5
+          echo "$(realpath bin)" >> $GITHUB_PATH
+
+      - name: Run tests
+        run: ./gradlew test --stacktrace
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
@@ -123,11 +122,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            kotlin-satlib-jni/build/lib/jminisat.dll
-            kotlin-satlib-jni/build/lib/jglucose.dll
-            kotlin-satlib-jni/build/lib/jcadical.dll
-            kotlin-satlib-jni/build/lib/jcms.dll
-            kotlin-satlib-jni/solvers/minisat-src/build/minisat.dll
-            kotlin-satlib-jni/solvers/glucose-src/install/lib/glucose.dll
-            kotlin-satlib-jni/solvers/cadical-src/install/lib/cadical.dll
-            kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
+            jni/build/lib/jminisat.dll
+            jni/build/lib/jglucose.dll
+            jni/build/lib/jcadical.dll
+            jni/build/lib/jcms.dll
+            jni/minisat-src/install/bin/libminisat.dll
+            jni/glucose-src/install/lib/glucose.dll
+            jni/cadical-src/install/lib/cadical.dll
+            jni/cms-src/install/bin/libcryptominisat5win.dll

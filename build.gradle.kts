@@ -63,9 +63,7 @@ allprojects {
     }
 
     java {
-        @Suppress("UnstableApiUsage")
         withSourcesJar()
-        // @Suppress("UnstableApiUsage")
         // withJavadocJar()
     }
 
@@ -84,14 +82,6 @@ allprojects {
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
     version = rootProject.version
-}
-
-dependencies {
-    testImplementation(project(":core"))
-    testImplementation(project(":utils"))
-    testImplementation(Libs.Okio.okio)
-    testImplementation(Libs.MultiArray.multiarray)
-    testImplementation(Libs.Klock.klock_jvm)
 }
 
 idea {

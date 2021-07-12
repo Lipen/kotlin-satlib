@@ -1,7 +1,7 @@
 rootProject.name = "kotlin-satlib"
 
 plugins {
-    id("com.gradle.enterprise") version "3.4.1"
+    id("com.gradle.enterprise") version "3.6.3"
 }
 
 gradleEnterprise {
@@ -11,11 +11,6 @@ gradleEnterprise {
     }
 }
 
-fun myInclude(name:String) {
-    include(name)
-    project(":$name").projectDir = file("${rootProject.name}-$name")
-}
-
-myInclude("core")
-myInclude("utils")
-myInclude("jni")
+include("lib")
+include("jni")
+include("utils")
