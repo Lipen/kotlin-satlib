@@ -44,16 +44,16 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * 🐧 Build and install on Unix:
 
- git apply -v ../patches/glucose-install.patch
+ git apply -v ../../patches/glucose-install.patch
  cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
  cmake --build build
  cmake --install build --prefix install
 
 * 🎭 Build and install on Windows:
 
- git apply -v ../patches/glucose-install.patch
- git apply -v ../patches/glucose-mingw-lib-prefix.patch
- git apply -v ../patches/glucose-mingw-sys-time.patch
+ git apply -v ../../patches/glucose-install.patch
+ git apply -v ../../patches/glucose-mingw-lib-prefix.patch
+ git apply -v ../../patches/glucose-mingw-sys-time.patch
  cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -G"MinGW Makefiles"
  cmake --build build --target glucose
  cmake --install build --prefix install
@@ -79,8 +79,8 @@ Built instructions below assume that you begin each build in `/path/to/kotlin-sa
 
 * ✨ Apply patches:
 
- git apply -v ../patches/cadical-shared.patch
- patch -p0 < ../patches/cadical-stats.patch
+ git apply -v ../../patches/cadical-shared.patch
+ patch -p0 < ../../patches/cadical-stats.patch
 
 * 🐧 Build and install on Unix:
 
