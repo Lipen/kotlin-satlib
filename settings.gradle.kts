@@ -11,6 +11,6 @@ gradleEnterprise {
     }
 }
 
-include("lib")
+include("core")
 include("jni")
 include("utils")

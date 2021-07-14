@@ -31,7 +31,7 @@ dependencies {
 
 == Library usage
 
-Examples can be found link:lib/src/test/kotlin/examples[here].
+Examples can be found link:core/src/test/kotlin/examples[here].
 
 [source,kotlin]
 ----
