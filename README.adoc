@@ -173,15 +173,20 @@ tasks.register("downloadLibs") {
             "win64" -> {
                 val jLibs = listOf(
                     "jminisat.dll",
-                    "jglucose.dll"
+                    "jglucose.dll",
+                    "jcadical.dll",
+                    "jcms.dll"
                 )
                 downloadLibs(jLibs, libResDir)
 
                 val solverLibs = listOf(
-                    "minisat.dll",
-                    "glucose.dll"
+                    "libminisat.dll",
+                    "glucose.dll",
+                    "cadical.dll",
+                    "libcryptominisat5win.dll"
                 )
-                downloadLibs(solverLibs, rootDir)
+                val solverLibDir = rootDir.resolve("libs")
+                downloadLibs(solverLibs, solverLibDir)
             }
             else -> {
                 error("$osArch is not supported, sorry")
