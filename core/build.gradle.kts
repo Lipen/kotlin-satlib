@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(":jni"))
+    api(project(":jni"))
     implementation(project(":utils"))
 
     implementation(Libs.KotlinLogging.kotlin_logging)
