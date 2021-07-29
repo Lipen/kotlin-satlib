@@ -16,7 +16,7 @@ import com.github.lipen.satlib.utils.useWith
 private val log = mu.KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Cardinality private constructor(
+class Cardinality(
     private val solver: Solver,
     val totalizer: List<Lit>, // "output variables"
 ) {
