@@ -25,5 +25,8 @@ build/
 logs/
 *.log
 
+# Other
+*.txt
+
 # Solvers sources
 /jni/solvers
