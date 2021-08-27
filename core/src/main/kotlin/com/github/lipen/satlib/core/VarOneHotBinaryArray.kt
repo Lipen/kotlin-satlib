@@ -1,3 +1,5 @@
+package com.github.lipen.satlib.core
+
 import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.OneHotBinaryDomainVar
