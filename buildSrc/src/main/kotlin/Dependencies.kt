@@ -13,7 +13,7 @@ object Versions {
     const val kotlinter = "3.4.5"
     const val kotlinx_coroutines = "1.5.0"
     const val log4j = "2.14.1"
-    const val multiarray = "0.10.0"
+    const val multiarray = "0.12.0"
     const val okio = "2.9.0"
     const val shadow = "7.0.0"
 }
