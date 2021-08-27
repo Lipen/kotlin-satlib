@@ -41,7 +41,7 @@ class DefaultDomainVar<T> @PublishedApi internal constructor(
         inline operator fun <T> invoke(
             domain: Iterable<T>,
             init: (T) -> Lit,
-        ): DefaultDomainVar<T> = DefaultDomainVar(domain.associateWith { init(it) })
+        ): DefaultDomainVar<T> = DefaultDomainVar(domain.associateWith(init))
     }
 }
 
