@@ -1,11 +1,6 @@
 package com.github.lipen.satlib.core
 
 import com.github.lipen.multiarray.MultiArray
-import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.core.OneHotBinaryDomainVar
-import com.github.lipen.satlib.core.OneHotBinaryIntVar
-import com.github.lipen.satlib.core.newOneHotBinaryDomainVar
-import com.github.lipen.satlib.core.newOneHotBinaryIntVar
 import com.github.lipen.satlib.solver.Solver
 
 typealias OneHotBinaryIntVarArray = MultiArray<OneHotBinaryIntVar>
