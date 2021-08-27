@@ -2,11 +2,9 @@ package com.github.lipen.satlib.card
 
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.Solver
-import java.util.ArrayDeque
-import java.util.Deque
 
 fun Solver.declareTotalizer(variables: Iterable<Lit>): List<Lit> {
-    val queue: Deque<List<Lit>> = ArrayDeque()
+    val queue = ArrayDeque<List<Lit>>()
 
     for (e in variables) {
         queue.addLast(listOf(e))
