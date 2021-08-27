@@ -110,6 +110,9 @@ jobs:
       - name: Run tests
         run: ./gradlew test --stacktrace
 
+      - name: Stop Gradle daemon
+        run: ./gradlew --stop
+
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
