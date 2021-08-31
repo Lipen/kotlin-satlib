@@ -1,6 +1,6 @@
 = JNI wrappers for SAT solvers
 
-Built instructions below assume that you begin each build in `/path/to/kotlin-satlib/jni` folder.
+The instructions below assume that you start each build in `/path/to/kotlin-satlib/jni` folder.
 
 == MiniSat
 
