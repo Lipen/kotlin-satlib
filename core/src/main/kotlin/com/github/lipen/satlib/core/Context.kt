@@ -45,7 +45,8 @@ class Context internal constructor(
     }
 
     operator fun <T : Any> invoke(name: String, value: T): T {
-        return value.also { this[name] = it }
+        this[name] = value
+        return value
     }
 
     inline operator fun <T : Any> invoke(name: String, init: () -> T): T {
