@@ -73,6 +73,11 @@ jobs:
           cmake --install build --prefix install
           strip -s install/lib/libcryptominisat5.so
 
+      - name: Show built libs
+        working-directory: jni
+        run: |
+          ls -al --group-directories-first solvers/*-src/install/lib
+
       - name: Set up ld cache
         working-directory: jni
         run: sudo ldconfig $(realpath solvers/*-src/install/lib)
