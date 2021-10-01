@@ -103,7 +103,7 @@ jobs:
           echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
 
       - name: Run tests
-        run: ./gradlew cleanTest test --stacktrace
+        run: ./gradlew cleanTest test --no-build-cache --stacktrace
 
       - name: Upload to GH Releases
         uses: softprops/action-gh-release@v1
