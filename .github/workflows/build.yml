@@ -77,7 +77,7 @@ jobs:
         working-directory: jni
         run: |
           ls -al --group-directories-first solvers/*-src/install/lib
-          cp --remove-destination $(readlink solvers/minisat-src/install/lib/minisat.so) solvers/minisat-src/install/lib/minisat.so
+          cp --remove-destination $(readlink solvers/minisat-src/install/lib/libminisat.so) solvers/minisat-src/install/lib/libminisat.so
           cp --remove-destination $(readlink solvers/cms-src/install/lib/libcryptominisat5.so) solvers/cms-src/install/lib/libcryptominisat5.so
 
       - name: Set up ld cache
