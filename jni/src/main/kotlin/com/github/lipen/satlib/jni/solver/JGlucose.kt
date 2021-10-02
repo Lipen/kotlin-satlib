@@ -21,9 +21,9 @@ class JGlucose(
     val numberOfVariables: Int get() = glucose_nvars(handle)
     val numberOfClauses: Int get() = glucose_nclauses(handle)
     val numberOfLearnts: Int get() = glucose_nlearnts(handle)
-    val numberOfDecisions: Int get() = glucose_decisions(handle)
-    val numberOfPropagations: Int get() = glucose_propagations(handle)
-    val numberOfConflicts: Int get() = glucose_conflicts(handle)
+    val numberOfDecisions: Long get() = glucose_decisions(handle)
+    val numberOfPropagations: Long get() = glucose_propagations(handle)
+    val numberOfConflicts: Long get() = glucose_conflicts(handle)
 
     init {
         reset()
@@ -205,9 +205,9 @@ class JGlucose(
     private external fun glucose_nvars(handle: Long): Int
     private external fun glucose_nclauses(handle: Long): Int
     private external fun glucose_nlearnts(handle: Long): Int
-    private external fun glucose_decisions(handle: Long): Int
-    private external fun glucose_propagations(handle: Long): Int
-    private external fun glucose_conflicts(handle: Long): Int
+    private external fun glucose_decisions(handle: Long): Long
+    private external fun glucose_propagations(handle: Long): Long
+    private external fun glucose_conflicts(handle: Long): Long
     private external fun glucose_new_var(handle: Long, polarity: Boolean, decision: Boolean): Int
     private external fun glucose_set_polarity(handle: Long, lit: Int, polarity: Boolean)
     private external fun glucose_set_decision(handle: Long, lit: Int, decision: Boolean)

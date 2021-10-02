@@ -75,17 +75,17 @@ JNI_METHOD(jint, minisat_1nlearnts)
     return decode(handle)->nLearnts();
 }
 
-JNI_METHOD(jint, minisat_1decisions)
+JNI_METHOD(jlong, minisat_1decisions)
   (JNIEnv*, jobject, jlong handle) {
     return decode(handle)->decisions;
 }
 
-JNI_METHOD(jint, minisat_1propagations)
+JNI_METHOD(jlong, minisat_1propagations)
   (JNIEnv*, jobject, jlong handle) {
     return decode(handle)->propagations;
 }
 
-JNI_METHOD(jint, minisat_1conflicts)
+JNI_METHOD(jlong, minisat_1conflicts)
   (JNIEnv*, jobject, jlong handle) {
     return decode(handle)->conflicts;
 }

@@ -40,9 +40,9 @@ class JMiniSat(
     val numberOfVariables: Int get() = minisat_nvars(handle)
     val numberOfClauses: Int get() = minisat_nclauses(handle)
     val numberOfLearnts: Int get() = minisat_nlearnts(handle)
-    val numberOfDecisions: Int get() = minisat_decisions(handle)
-    val numberOfPropagations: Int get() = minisat_propagations(handle)
-    val numberOfConflicts: Int get() = minisat_conflicts(handle)
+    val numberOfDecisions: Long get() = minisat_decisions(handle)
+    val numberOfPropagations: Long get() = minisat_propagations(handle)
+    val numberOfConflicts: Long get() = minisat_conflicts(handle)
 
     init {
         reset()
@@ -218,9 +218,9 @@ class JMiniSat(
     private external fun minisat_nvars(handle: Long): Int
     private external fun minisat_nclauses(handle: Long): Int
     private external fun minisat_nlearnts(handle: Long): Int
-    private external fun minisat_decisions(handle: Long): Int
-    private external fun minisat_propagations(handle: Long): Int
-    private external fun minisat_conflicts(handle: Long): Int
+    private external fun minisat_decisions(handle: Long): Long
+    private external fun minisat_propagations(handle: Long): Long
+    private external fun minisat_conflicts(handle: Long): Long
     private external fun minisat_new_var(handle: Long, polarity: Byte, decision: Boolean): Int
     private external fun minisat_set_polarity(handle: Long, lit: Int, polarity: Byte)
     private external fun minisat_set_decision(handle: Long, lit: Int, decision: Boolean)
