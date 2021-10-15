@@ -10,7 +10,9 @@ import java.io.File
 import kotlin.math.absoluteValue
 
 @Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused")
-class JCryptoMiniSat : AutoCloseable {
+class JCryptoMiniSat(
+    val numberOfThreads: Int = 1,
+) : AutoCloseable {
     private var handle: Long = 0
 
     val numberOfVariables: Int get() = cms_nvars(handle)
@@ -23,6 +25,7 @@ class JCryptoMiniSat : AutoCloseable {
         if (handle != 0L) cms_delete(handle)
         handle = cms_create()
         if (handle == 0L) throw OutOfMemoryError("cms_create returned NULL")
+        setThreadNumber(numberOfThreads)
     }
 
     override fun close() {
