@@ -6,7 +6,7 @@ import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.jni.solver.JGlucose
 import java.io.File
 
-@Suppress("MemberVisibilityCanBePrivate", "FunctionName")
+@Suppress("MemberVisibilityCanBePrivate")
 class GlucoseSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
     val backend: JGlucose = JGlucose(),
