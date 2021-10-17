@@ -8,15 +8,9 @@ import java.io.File
 
 @Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver(
-    val backend: JCadical,
+    val backend: JCadical = JCadical(),
 ) : AbstractSolver() {
-    constructor() : this(JCadical())
-
-    constructor(
-        initialSeed: Int? = null,
-    ) : this(
-        backend = JCadical(initialSeed)
-    )
+    constructor(initialSeed: Int?) : this(backend = JCadical(initialSeed))
 
     override fun _reset() {
         backend.reset()
