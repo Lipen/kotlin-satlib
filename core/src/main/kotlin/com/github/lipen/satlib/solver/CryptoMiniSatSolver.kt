@@ -10,6 +10,8 @@ import java.io.File
 class CryptoMiniSatSolver @JvmOverloads constructor(
     val backend: JCryptoMiniSat = JCryptoMiniSat(),
 ) : AbstractSolver() {
+    constructor(numberOfThreads: Int) : this(backend = JCryptoMiniSat(numberOfThreads))
+
     override fun _reset() {
         backend.reset()
     }
