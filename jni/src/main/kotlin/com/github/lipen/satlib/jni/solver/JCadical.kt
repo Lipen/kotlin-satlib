@@ -10,7 +10,7 @@ import java.io.File
 
 @Suppress("FunctionName", "MemberVisibilityCanBePrivate")
 class JCadical(
-    val initialSeed: Int? = null, // default is 0
+    val initialSeed: Int? = null, // internal default is 0
 ) : AutoCloseable {
     private var handle: Long = 0
 
