@@ -2,7 +2,8 @@ package examples.bf
 
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
-import com.soywiz.klock.PerformanceCounter
+import examples.utils.secondsSince
+import examples.utils.timeNow
 
 object GlobalsBF {
     val solverProvider: () -> Solver = {
@@ -23,7 +24,7 @@ object GlobalsBF {
 
 @Suppress("LocalVariableName")
 fun main() {
-    val timeStart = PerformanceCounter.reference
+    val timeStart = timeNow()
 
     // solveAllIterative(X = 3)
     // solveAllIncremental(X = 3)
@@ -90,5 +91,5 @@ fun main() {
     // solveIteratively(tt)
 
     println()
-    println("All done in %.3f s".format(timeSince(timeStart).seconds))
+    println("All done in %.3f s".format(secondsSince(timeStart)))
 }

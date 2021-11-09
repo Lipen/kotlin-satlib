@@ -17,7 +17,9 @@ import com.github.lipen.satlib.op.implyImplyImply
 import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
-import com.soywiz.klock.PerformanceCounter
+import examples.utils.secondsSince
+import examples.utils.timeNow
+import examples.utils.timeSince
 
 @Suppress("LocalVariableName")
 private fun Solver.declareVariables(P: Int, truthTable: Map<Row, Boolean>): BFVariables {
@@ -241,7 +243,7 @@ fun solveFor(P: Int, tt: Map<Row, Boolean>, timeout: Double = 0.0): BFAssignment
     // DimacsFileSolver("python run_minisat.py %s result-P$P", File("cnf-P$P")).useWith {
     // CryptoMiniSatSolver().useWith {
     GlobalsBF.solverProvider().useWith {
-        val timeStart = PerformanceCounter.reference
+        val timeStart = timeNow()
         val nvarStart = numberOfVariables
         val nconStart = numberOfClauses
 
@@ -252,7 +254,7 @@ fun solveFor(P: Int, tt: Map<Row, Boolean>, timeout: Double = 0.0): BFAssignment
         val nconDiff = numberOfClauses - nconStart
         println(
             "Done declaring variables ($nvarDiff) and constraints ($nconDiff) in %.3f s."
-                .format(timeSince(timeStart).seconds)
+                .format(secondsSince(timeStart))
         )
 
         with(vars) {
@@ -282,7 +284,7 @@ fun solveFor(P: Int, tt: Map<Row, Boolean>, timeout: Double = 0.0): BFAssignment
         // }
 
         println("Solving...")
-        val timeStartSolving = PerformanceCounter.reference
+        val timeStartSolving = timeNow()
         val isSat = if (timeout > 0) runWithTimeout((timeout * 1000).toLong()) { solve() } else solve()
         val timeSolving = timeSince(timeStartSolving)
 
@@ -312,13 +314,13 @@ fun solveIteratively(
     quite: Boolean = false,
 ): BFAssignment? {
     println("Searching BF by Iterative strategy for the truth table '${ttToBinaryString(tt)}'...")
-    val timeStart = PerformanceCounter.reference
+    val timeStart = timeNow()
     for (P in 1..Pmax) {
         println("\nTrying P = $P")
-        val assignment = solveFor(P, tt, timeout = timeout - timeSince(timeStart).seconds)
+        val assignment = solveFor(P, tt, timeout = timeout - secondsSince(timeStart))
         if (assignment != null) {
             if (!quite) {
-                println("Solution found in %.3f s!".format(timeSince(timeStart).seconds))
+                println("Solution found in %.3f s!".format(secondsSince(timeStart)))
                 println("P = $P, X = ${assignment.X}, U = ${assignment.U}")
                 println("nodeType = ${assignment.nodeType}")
                 println("nodeInputVariable = ${assignment.nodeInputVariable}")
@@ -342,7 +344,7 @@ fun solveIteratively(
             }
             return assignment
         }
-        if (timeSince(timeStart).seconds >= timeout) {
+        if (secondsSince(timeStart) >= timeout) {
             return null
         }
     }

@@ -13,6 +13,8 @@ import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
+import examples.utils.secondsSince
+import examples.utils.timeNow
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -87,11 +89,11 @@ fun provePigeonholePrincipleIncremental(maxP: Int): Boolean {
                 csv.writeln("$P,${time.seconds}").flush()
                 if (isSat) {
                     println("!!!")
-                    println("P = $P: Ooops")
+                    println("P = $P: Ooops in %.3fs".format(time.seconds))
                     println("model = ${getModel()}")
                     println("!!!")
                 } else {
-                    println("P = $P: OK in %.3f s".format(time.seconds))
+                    println("P = $P: OK in %.3fs".format(time.seconds))
                 }
 
                 addClause(-activation)
@@ -102,6 +104,11 @@ fun provePigeonholePrincipleIncremental(maxP: Int): Boolean {
 }
 
 private fun main() {
+    val timeStart = timeNow()
     val maxP = 10
+
     provePigeonholePrincipleIncremental(maxP)
+
+    println()
+    println("All done in %.3f s!".format(secondsSince(timeStart)))
 }

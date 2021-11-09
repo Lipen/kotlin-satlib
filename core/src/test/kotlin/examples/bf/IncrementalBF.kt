@@ -23,7 +23,9 @@ import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
-import com.soywiz.klock.PerformanceCounter
+import examples.utils.secondsSince
+import examples.utils.timeNow
+import examples.utils.timeSince
 import java.io.File
 
 private fun Solver.emptyBFVariables(tt: Map<Row, Boolean>): BFVariables =
@@ -303,7 +305,7 @@ private fun Solver.makeInductionStep(
     old: BFVariables?,
 ): Pair<BFAssignment?, Pair<Int, BFVariables>?> {
     require(P >= 1)
-    val timeStart = PerformanceCounter.reference
+    val timeStart = timeNow()
     val nvarStart = numberOfVariables
     val nconStart = numberOfClauses
 
@@ -321,7 +323,7 @@ private fun Solver.makeInductionStep(
     val nconDiff = numberOfClauses - nconStart
     println(
         "Done declaring variables ($nvarDiff) and constraints ($nconDiff) in %.3f s."
-            .format(timeSince(timeStart).seconds)
+            .format(secondsSince(timeStart))
     )
 
     // with(vars) {
@@ -348,7 +350,7 @@ private fun Solver.makeInductionStep(
     cnf.appendText("$activation 0\n")
 
     println("Solving...")
-    val timeStartSolving = PerformanceCounter.reference
+    val timeStartSolving = timeNow()
     val isSat =
         if (timeout > 0) runWithTimeout((timeout * 1000).toLong()) { solve(activation) }
         else solve(activation)
@@ -381,7 +383,7 @@ fun solveIncrementally(
     timeout: Double = GlobalsBF.timeout,
     quite: Boolean = false,
 ): BFAssignment? {
-    val timeStart = PerformanceCounter.reference
+    val timeStart = timeNow()
     var result: Pair<BFAssignment?, Pair<Int, BFVariables>?>
     var prevStep: Pair<Int?, BFVariables?> = Pair(null, null)
     println("Searching BF by Incremental strategy for the truth table '${ttToBinaryString(tt)}'...")
@@ -391,7 +393,7 @@ fun solveIncrementally(
             result = makeInductionStep(
                 P = P,
                 tt = tt,
-                timeout = timeout - timeSince(timeStart).seconds,
+                timeout = timeout - secondsSince(timeStart),
                 previousAssumption = prevStep.first,
                 old = prevStep.second
             )
@@ -422,7 +424,7 @@ fun solveIncrementally(
                 }
                 return assignment
             }
-            if (timeSince(timeStart).seconds >= timeout) {
+            if (secondsSince(timeStart) >= timeout) {
                 return null
             }
             prevStep = result.second!!

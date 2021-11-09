@@ -2,8 +2,8 @@ package examples.ph
 
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
-import com.soywiz.klock.PerformanceCounter
-import examples.bf.timeSince
+import examples.utils.secondsSince
+import examples.utils.timeNow
 
 object GlobalsPH {
     var solverProvider: () -> Solver = {
@@ -18,12 +18,12 @@ object GlobalsPH {
 }
 
 private fun main() {
+    val timeStart = timeNow()
     val maxP = 11
-    val timeStart = PerformanceCounter.reference
 
     provePigeonholePrincipleIterative(maxP)
     provePigeonholePrincipleIncremental(maxP)
 
     println()
-    println("All done in %.3f s".format(timeSince(timeStart).seconds))
+    println("All done in %.3f s!".format(secondsSince(timeStart)))
 }

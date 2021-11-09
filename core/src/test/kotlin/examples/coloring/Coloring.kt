@@ -11,6 +11,8 @@ import com.github.lipen.satlib.op.imply
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
+import examples.utils.secondsSince
+import examples.utils.timeNow
 
 object GlobalsColoring {
     val solverProvider: () -> Solver = {
@@ -66,6 +68,8 @@ private fun Solver.declareConstraints() {
 }
 
 fun main() {
+    val timeStart = timeNow()
+
     val V = 10 // number of vertices
     val k = 3 // number of colors
     val edges: List<Pair<Int, Int>> = listOf(
@@ -92,14 +96,17 @@ fun main() {
 
         println("Solving...")
         if (solve()) {
-            println("SAT for k = $k")
+            println("SAT for k = $k in %.3fs".format(secondsSince(timeStart)))
 
             val model = getModel()
             val color = context.convertIntVarArray("color", model)
 
             println("Graph Coloring: ${(1..V).map { v -> color[v] }}")
         } else {
-            println("UNSAT for k = $k")
+            println("UNSAT for k = $k in %.3fs".format(secondsSince(timeStart)))
         }
     }
+
+    println()
+    println("All done in %.3f s!".format(secondsSince(timeStart)))
 }

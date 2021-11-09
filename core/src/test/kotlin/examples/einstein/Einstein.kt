@@ -14,6 +14,8 @@ import com.github.lipen.satlib.op.implyOr
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
+import examples.utils.secondsSince
+import examples.utils.timeNow
 
 object GlobalsEinstein {
     val solverProvider: () -> Solver = {
@@ -231,14 +233,19 @@ private fun Solver.declareConstraints() {
 fun main() {
     // https://en.wikipedia.org/wiki/Zebra_Puzzle
 
+    val timeStart = timeNow()
+
     GlobalsEinstein.solverProvider().useWith {
         declareVariables()
         declareConstraints()
-        println("Variables: $numberOfVariables, clauses: $numberOfClauses")
+        println(
+            "Declared $numberOfVariables variables and $numberOfClauses clauses in %.3fs"
+                .format(secondsSince(timeStart))
+        )
 
         println("Solving...")
         if (solve()) {
-            println("SAT")
+            println("SAT in %.3fs".format(secondsSince(timeStart)))
             val model = getModel()
 
             val color: MultiArray<Color> = context.convertDomainVarArray("color", model)
@@ -253,7 +260,10 @@ fun main() {
             println("smoke: ${smoke.values}")
             println("pet: ${pet.values}")
         } else {
-            error("Unexpected UNSAT")
+            println("Unexpected UNSAT in %.3fs".format(secondsSince(timeStart)))
         }
     }
+
+    println()
+    println("All done in %.3f s!".format(secondsSince(timeStart)))
 }

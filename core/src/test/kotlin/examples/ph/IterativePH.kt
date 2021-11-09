@@ -9,6 +9,8 @@ import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
+import examples.utils.secondsSince
+import examples.utils.timeNow
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -47,9 +49,9 @@ fun provePigeonholePrincipleIterative(maxP: Int): Boolean {
 
                 val (isSat, time) = measureTimeWithResult { solve() }
                 if (isSat) {
-                    println("P = $P: Ooops")
+                    println("P = $P: Ooops in %.3fs".format(time.seconds))
                 } else {
-                    println("P = $P: OK in %.3f s".format(time.seconds))
+                    println("P = $P: OK in %.3fs".format(time.seconds))
                 }
                 csv.writeln("$P,${time.seconds}").flush()
             }
@@ -59,6 +61,11 @@ fun provePigeonholePrincipleIterative(maxP: Int): Boolean {
 }
 
 private fun main() {
+    val timeStart = timeNow()
     val maxP = 10
+
     provePigeonholePrincipleIterative(maxP)
+
+    println()
+    println("All done in %.3f s!".format(secondsSince(timeStart)))
 }
