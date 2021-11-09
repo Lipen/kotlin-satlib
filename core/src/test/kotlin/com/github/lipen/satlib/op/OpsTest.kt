@@ -1,6 +1,9 @@
 package com.github.lipen.satlib.op
 
 import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.eq
+import com.github.lipen.satlib.core.neq
+import com.github.lipen.satlib.core.newDomainVar
 import com.github.lipen.satlib.solver.MockSolver
 import com.github.lipen.satlib.solver.Solver
 import org.amshove.kluent.shouldBeEqualTo
@@ -97,5 +100,17 @@ class OpsTest {
             listOf(-1, 5, -30),
             listOf(-1, -5, 10, 20, 30)
         )
+    }
+
+    @Test
+    fun neqv() {
+        val domain = 1..5
+        val a = solver.newDomainVar(domain, encodeOneHot = false)
+        val b = solver.newDomainVar(domain, encodeOneHot = false)
+        solver.neqv(a, b)
+        clauses.map { clause -> clause.sortedBy { it.absoluteValue } } shouldBeEqualTo
+            domain.map { x ->
+                listOf(-(a eq x), b neq x)
+            }
     }
 }
