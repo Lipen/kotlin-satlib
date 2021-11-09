@@ -8,17 +8,31 @@ import com.github.lipen.satlib.solver.Solver
 private val log = mu.KotlinLogging.logger {}
 
 fun Solver.allSolutions(
-    essentialLiterals: List<Lit>? = null,
+    essential: List<Lit>? = null,
 ): Sequence<Model> = sequence {
-    val essential = essentialLiterals ?: (1..numberOfVariables)
+    val essentialLits = essential ?: (1..numberOfVariables)
 
     while (solve()) {
         val model = getModel()
         yield(model)
 
-        val refutation = essential.map { i -> i sign !model[i] }
-        log.debug { "refutation = $refutation" }
-        addClause(refutation)
+        val refutationLits = essentialLits.map { i -> i sign !model[i] }
+        log.trace { "refutationLits = ${refutationLits.toList()}" }
+        addClause(refutationLits)
     }
-    log.debug { "No more solutions" }
+    log.trace { "No more solutions" }
+}
+
+fun Solver.allSolutions(
+    refutation: (Model) -> Iterable<Lit>,
+): Sequence<Model> = sequence {
+    while (solve()) {
+        val model = getModel()
+        yield(model)
+
+        val refutationLits = refutation(model)
+        log.trace { "refutationLits = ${refutationLits.toList()}" }
+        addClause(refutationLits)
+    }
+    log.trace { "No more solutions" }
 }
