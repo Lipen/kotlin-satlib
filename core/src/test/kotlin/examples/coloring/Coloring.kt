@@ -5,9 +5,8 @@ package examples.coloring
 import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.convertIntVarArray
 import com.github.lipen.satlib.core.eq
-import com.github.lipen.satlib.core.neq
 import com.github.lipen.satlib.core.newIntVarArray
-import com.github.lipen.satlib.op.imply
+import com.github.lipen.satlib.op.neqv
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
@@ -57,9 +56,7 @@ private fun Solver.declareConstraints() {
 
     // (color[a] = c) -> (color[b] != c)
     for ((a, b) in edges) {
-        for (c in 1..k) {
-            imply(color[a] eq c, color[b] neq c)
-        }
+        neqv(color[a], color[b])
     }
 
     // [aux]

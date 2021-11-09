@@ -1,6 +1,9 @@
 package com.github.lipen.satlib.op
 
+import com.github.lipen.satlib.core.DomainVar
 import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.core.eq
+import com.github.lipen.satlib.core.neq
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.utils.pairs
@@ -235,4 +238,9 @@ fun Solver.iffIte(lhs: Lit, cond: Lit, a: Lit, b: Lit) {
     implyIte(lhs, cond, a, b)
     implyImply(cond, a, lhs)
     implyImply(-cond, b, lhs)
+}
+
+fun <T> Solver.neqv(a: DomainVar<T>, b: DomainVar<T>) {
+    for (x in a.domain)
+        imply(a eq x, b neq x)
 }
