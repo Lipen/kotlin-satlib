@@ -241,6 +241,9 @@ fun Solver.iffIte(lhs: Lit, cond: Lit, a: Lit, b: Lit) {
 }
 
 fun <T> Solver.neqv(a: DomainVar<T>, b: DomainVar<T>) {
+    require(a.domain == b.domain) {
+        "Variables have different domains (a = $a, b = $b)"
+    }
     for (x in a.domain)
         imply(a eq x, b neq x)
 }
