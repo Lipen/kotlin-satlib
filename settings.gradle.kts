@@ -1,7 +1,11 @@
 rootProject.name = "kotlin-satlib"
 
+include("core")
+include("jni")
+include("utils")
+
 plugins {
-    id("com.gradle.enterprise") version "3.6.3"
+    `gradle-enterprise`
 }
 
 gradleEnterprise {
@@ -10,7 +14,3 @@ gradleEnterprise {
         termsOfServiceAgree = "yes"
     }
 }
-
-include("core")
-include("jni")
-include("utils")
