@@ -15,7 +15,7 @@ plugins {
     `maven-publish`
 }
 
-allprojects {
+fun Project.configureKotlinConventions() {
     apply(plugin = "kotlin")
     apply(plugin = Plugins.Kotlinter.id)
     apply(plugin = "maven-publish")
@@ -28,6 +28,7 @@ allprojects {
     dependencies {
         implementation(platform(kotlin("bom")))
         implementation(kotlin("stdlib-jdk8"))
+
         implementation(Libs.KotlinLogging.kotlin_logging)
 
         testImplementation(Libs.JUnit.jupiter_api)
@@ -64,7 +65,9 @@ allprojects {
 
     java {
         withSourcesJar()
-        // withJavadocJar()
+        withJavadocJar()
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     publishing {
@@ -79,9 +82,15 @@ allprojects {
     }
 }
 
+allprojects {
+    // configureKotlinConventions()
+}
+
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
     version = rootProject.version
+
+    configureKotlinConventions()
 }
 
 idea {
@@ -100,7 +109,7 @@ tasks.shadowJar {
 }
 
 tasks.wrapper {
-    gradleVersion = "7.2"
+    gradleVersion = "7.3"
     distributionType = Wrapper.DistributionType.ALL
 }
 
