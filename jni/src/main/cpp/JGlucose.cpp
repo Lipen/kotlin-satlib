@@ -137,6 +137,21 @@ JNI_METHOD(void, glucose_1set_1rnd_1init_1act)
     decode(handle)->rnd_init_act = rnd_init_act;
   }
 
+JNI_METHOD(void, glucose_1set_1conf_1budget)
+  (JNIEnv*, jobject, jlong handle, jlong x) {
+    decode(handle)->setConfBudget(x);
+  }
+
+JNI_METHOD(void, glucose_1set_1prop_1budget)
+  (JNIEnv*, jobject, jlong handle, jlong x) {
+    decode(handle)->setPropBudget(x);
+  }
+
+JNI_METHOD(void, glucose_1budget_1off)
+  (JNIEnv*, jobject, jlong handle) {
+    decode(handle)->budgetOff();
+  }
+
 JNI_METHOD(void, glucose_1interrupt)
   (JNIEnv*, jobject, jlong handle) {
     decode(handle)->interrupt();
@@ -209,6 +224,20 @@ JNI_METHOD(jboolean, glucose_1solve__J_3IZZ)
     env->ReleasePrimitiveArrayCritical(assumptions, p, 0);
 
     return decode(handle)->solve(vec, do_simp, turn_off_simp);
+  }
+
+JNI_METHOD(jbyte, glucose_1solve_1limited)
+  (JNIEnv* env, jobject, jlong handle, jintArray assumptions, jboolean do_simp, jboolean turn_off_simp) {
+    jint len = env->GetArrayLength(assumptions);
+    Glucose::vec<Glucose::Lit> vec(len);
+
+    jint* p = (jint*) env->GetPrimitiveArrayCritical(assumptions, 0);
+    for (jint i = 0; i < len; i++) {
+        vec[i] = convert(p[i]);
+    }
+    env->ReleasePrimitiveArrayCritical(assumptions, p, 0);
+
+    return (jbyte) Glucose::toInt(decode(handle)->solveLimited(vec, do_simp, turn_off_simp));
   }
 
 JNI_METHOD(jbyte, glucose_1get_1value)

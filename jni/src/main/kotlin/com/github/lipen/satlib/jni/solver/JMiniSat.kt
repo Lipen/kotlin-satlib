@@ -128,6 +128,18 @@ class JMiniSat(
         minisat_set_rnd_init_act(handle, rnd_init_act)
     }
 
+    fun setConfBudget(x: Long) {
+        minisat_set_conf_budget(handle, x)
+    }
+
+    fun setPropBudget(x: Long) {
+        minisat_set_prop_budget(handle, x)
+    }
+
+    fun budgetOff() {
+        minisat_budget_off(handle)
+    }
+
     fun interrupt() {
         minisat_interrupt(handle)
     }
@@ -195,6 +207,16 @@ class JMiniSat(
         return solve(assumptions, do_simp, turn_off_simp)
     }
 
+    @JvmOverloads
+    fun solveLimited(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean? {
+        return when (val value = minisat_solve_limited(handle, assumptions, do_simp, turn_off_simp)) {
+            LBOOL_TRUE -> true
+            LBOOL_FALSE -> false
+            LBOOL_UNDEF -> null
+            else -> error("minisat_solve_limited returned $value")
+        }
+    }
+
     fun getValue(lit: Int): Boolean {
         assert(solvable)
         return when (val value = minisat_get_value(handle, lit)) {
@@ -234,6 +256,9 @@ class JMiniSat(
     private external fun minisat_set_random_var_freq(handle: Long, random_var_freq: Double)
     private external fun minisat_set_rnd_pol(handle: Long, rnd_pol: Boolean)
     private external fun minisat_set_rnd_init_act(handle: Long, rnd_init_act: Boolean)
+    private external fun minisat_set_conf_budget(handle: Long, x: Long)
+    private external fun minisat_set_prop_budget(handle: Long, x: Long)
+    private external fun minisat_budget_off(handle: Long)
     private external fun minisat_interrupt(handle: Long)
     private external fun minisat_clear_interrupt(handle: Long)
     private external fun minisat_to_dimacs(handle: Long, path: String)
@@ -279,6 +304,13 @@ class JMiniSat(
         do_simp: Boolean,
         turn_off_simp: Boolean,
     ): Boolean
+
+    private external fun minisat_solve_limited(
+        handle: Long,
+        assumptions: IntArray,
+        do_simp: Boolean,
+        turn_off_simp: Boolean,
+    ): Byte
 
     private external fun minisat_get_value(handle: Long, lit: Int): Byte
     private external fun minisat_get_model(handle: Long): BooleanArray?

@@ -113,6 +113,18 @@ class JGlucose(
         glucose_set_rnd_init_act(handle, rnd_init_act)
     }
 
+    fun setConfBudget(x: Long) {
+        glucose_set_conf_budget(handle, x)
+    }
+
+    fun setPropBudget(x: Long) {
+        glucose_set_prop_budget(handle, x)
+    }
+
+    fun budgetOff() {
+        glucose_budget_off(handle)
+    }
+
     fun interrupt() {
         glucose_interrupt(handle)
     }
@@ -180,6 +192,16 @@ class JGlucose(
         return solve(assumptions, do_simp, turn_off_simp)
     }
 
+    @JvmOverloads
+    fun solveLimited(assumptions: IntArray, do_simp: Boolean = true, turn_off_simp: Boolean = false): Boolean? {
+        return when (val value = glucose_solve_limited(handle, assumptions, do_simp, turn_off_simp)) {
+            LBOOL_TRUE -> true
+            LBOOL_FALSE -> false
+            LBOOL_UNDEF -> null
+            else -> error("glucose_solve_limited returned $value")
+        }
+    }
+
     fun getValue(lit: Int): Boolean {
         assert(solvable)
         return when (val value = glucose_get_value(handle, lit)) {
@@ -219,6 +241,9 @@ class JGlucose(
     private external fun glucose_set_random_var_freq(handle: Long, random_var_freq: Double)
     private external fun glucose_set_rnd_pol(handle: Long, rnd_pol: Boolean)
     private external fun glucose_set_rnd_init_act(handle: Long, rnd_init_act: Boolean)
+    private external fun glucose_set_conf_budget(handle: Long, x: Long)
+    private external fun glucose_set_prop_budget(handle: Long, x: Long)
+    private external fun glucose_budget_off(handle: Long)
     private external fun glucose_interrupt(handle: Long)
     private external fun glucose_clear_interrupt(handle: Long)
     private external fun glucose_to_dimacs(handle: Long, path: String)
@@ -240,6 +265,13 @@ class JGlucose(
         do_simp: Boolean,
         turn_off_simp: Boolean,
     ): Boolean
+
+    private external fun glucose_solve_limited(
+        handle: Long,
+        assumptions: IntArray,
+        do_simp: Boolean,
+        turn_off_simp: Boolean,
+    ): Byte
 
     private external fun glucose_get_value(handle: Long, lit: Int): Byte
     private external fun glucose_get_model(handle: Long): BooleanArray?
