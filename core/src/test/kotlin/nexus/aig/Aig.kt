@@ -27,7 +27,6 @@ class Aig(
 
     fun node(id: Int): AigNode = mapping.getValue(id)
     fun input(id: Int): AigInput = node(id) as AigInput
-    fun output(id: Int): AigNode = node(id)
     fun andGate(id: Int): AigAndGate = node(id) as AigAndGate
 
     fun dependency_graph(
@@ -48,6 +47,10 @@ class Aig(
         }
 
         return deps
+    }
+
+    fun layers(): Sequence<List<Int>> {
+        return toposort(dependency_graph())
     }
 
     fun eval(inputValues: Map<Int, Boolean>): Map<Int, Boolean> {
@@ -87,12 +90,12 @@ data class Ref(
     val id: Int,
     val negated: Boolean,
 ) {
+    init {
+        require(id > 0)
+    }
+
     override fun toString(): String {
-        return if (negated) {
-            "~@${id.absoluteValue}"
-        } else {
-            "@$id"
-        }
+        return "${if (negated) "~" else ""}@$id"
     }
 
     companion object {
@@ -125,8 +128,6 @@ data class AigAndGate(
 ) : AigNode {
     init {
         require(id > 0)
-        // require(left != 0)
-        // require(right != 0)
     }
 
     override val children: List<Ref> = listOf(left, right)
@@ -165,13 +166,13 @@ fun main() {
         println("Layer #${i + 1} (${layer.size} nodes): $layer")
     }
 
-    val filenameDot = filename.substringBeforeLast(".") + ".dot"
-    File(filenameDot).sink().buffer().use {
-        println("Dumping AIG to DOT '$filenameDot'")
-        for (line in convertAigToDot(aig)) {
-            it.writeln(line)
-        }
-    }
+    // val filenameDot = filename.substringBeforeLast(".") + ".dot"
+    // File(filenameDot).sink().buffer().use {
+    //     println("Dumping AIG to DOT '$filenameDot'")
+    //     for (line in convertAigToDot(aig)) {
+    //         it.writeln(line)
+    //     }
+    // }
 
     log.info("All done in %.3f s".format(secondsSince(timeStart)))
 }

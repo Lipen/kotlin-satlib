@@ -37,7 +37,7 @@ private fun parseLatch(line: String) {
 
 private fun parseOutput(line: String): Ref {
     val lit = line.toInt()
-    check(lit > 0)
+    check(lit > 0) { "Output literal must be a positive number, but $lit found" }
     return Ref(lit / 2, negated = isOdd(lit))
 }
 
@@ -71,6 +71,9 @@ fun parseAig(filename: String): Aig {
         // M == I + L + A
         val header = findHeader(lines)
         val parts = header.split(" ")
+        check(parts.size == 6) {
+            "Only old AIGER format (with 5 tokens in header) is supported"
+        }
         val format = parts[0]
         val (maxIndex, numInputs, numLatches, numOutputs, numAnds) =
             parts.subList(1, 6).map { it.toInt() }

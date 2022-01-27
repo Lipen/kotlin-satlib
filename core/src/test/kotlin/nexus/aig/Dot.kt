@@ -10,8 +10,7 @@ fun convertAigToDot(aig: Aig): Sequence<String> = sequence {
     }
     yield("}")
 
-    val deps = aig.dependency_graph()
-    val layers = toposort(deps).toList()
+    val layers = aig.layers().toList()
     for ((i, layer) in layers.withIndex()) {
         yield("// Layer #${i + 1}")
         yield("{ rank=same")
@@ -37,7 +36,7 @@ fun convertAigToDot(aig: Aig): Sequence<String> = sequence {
 
     yield("// Input connections")
     for ((i, node) in aig.inputs.withIndex()) {
-        yield("  ${node.id} -> I$i;")
+        yield("  ${node.id} -> I$i [arrowhead=none];")
     }
 
     yield("// Node connections")

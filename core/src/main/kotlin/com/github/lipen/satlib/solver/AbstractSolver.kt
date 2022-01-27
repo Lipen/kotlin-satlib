@@ -95,13 +95,13 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun solve(assumptions: LitArray): Boolean {
-        log.debug { "solve(assumptions = ${assumptions.asList()})" }
+        log.trace { "solve(assumptions = ${assumptions.asList()})" }
         return _solve(assumptions)
     }
 
     final override fun solve(assumptions: Iterable<Lit>): Boolean {
         val pool = assumptions.toList_()
-        log.debug { "solve(assumptions = $pool)" }
+        log.trace { "solve(assumptions = $pool)" }
         return _solve(pool)
     }
 
