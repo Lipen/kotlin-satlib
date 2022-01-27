@@ -1,12 +1,7 @@
 package nexus.aig
 
-import com.github.lipen.satlib.utils.writeln
 import examples.utils.secondsSince
 import examples.utils.timeNow
-import okio.buffer
-import okio.sink
-import java.io.File
-import kotlin.math.absoluteValue
 
 private val log = mu.KotlinLogging.logger {}
 
