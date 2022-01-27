@@ -61,7 +61,7 @@ class JGlucose(
     fun newVariable(
         polarity: Boolean = true,
         decision: Boolean = true,
-        frozen: Boolean = true,
+        frozen: Boolean = false,
     ): Int {
         val lit = glucose_new_var(handle, polarity, decision)
         if (frozen) freeze(lit)

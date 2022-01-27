@@ -1,6 +1,10 @@
 package nexus.aig
 
-fun convertAigToDot(aig: Aig): Sequence<String> = sequence {
+fun convertAigToDot(
+    aig: Aig,
+    rankByLayers: Boolean = true,
+    eqIds: List<Pair<Int, Int>> = emptyList(),
+): Sequence<String> = sequence {
     yield("digraph {")
 
     yield("// Inputs")
@@ -13,7 +17,9 @@ fun convertAigToDot(aig: Aig): Sequence<String> = sequence {
     val layers = aig.layers().toList()
     for ((i, layer) in layers.withIndex()) {
         yield("// Layer #${i + 1}")
-        yield("{ rank=same")
+        if (rankByLayers) {
+            yield("{ rank=same")
+        }
         for (id in layer) {
             when (val node = aig.node(id)) {
                 is AigInput -> {
@@ -24,7 +30,9 @@ fun convertAigToDot(aig: Aig): Sequence<String> = sequence {
                 }
             }
         }
-        yield("}")
+        if (rankByLayers) {
+            yield("}")
+        }
     }
 
     yield("// Outputs")
@@ -50,6 +58,13 @@ fun convertAigToDot(aig: Aig): Sequence<String> = sequence {
     yield("// Output connections")
     for ((i, node) in aig.outputs.withIndex()) {
         yield("  O$i -> ${node.id} [arrowhead=${if (node.negated) "dot" else "none"}];")
+    }
+
+    if (eqIds.isNotEmpty()) {
+        yield("// Equivalent gates connections")
+        for ((a, b) in eqIds) {
+            yield("  $a -> $b [arrowhead=none,color=red,penwidth=2];")
+        }
     }
 
     yield("}")

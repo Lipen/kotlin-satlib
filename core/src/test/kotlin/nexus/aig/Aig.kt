@@ -24,6 +24,7 @@ class Aig(
     }
 
     val size: Int = mapping.size
+    val nodes: List<AigNode> = layers().flatten().map { node(it) }.toList()
 
     fun node(id: Int): AigNode = mapping.getValue(id)
     fun input(id: Int): AigInput = node(id) as AigInput

@@ -72,7 +72,7 @@ class JMiniSat(
     fun newVariable(
         polarity: Polarity = Polarity.UNDEF,
         decision: Boolean = true,
-        frozen: Boolean = true,
+        frozen: Boolean = false,
     ): Int {
         val lit = minisat_new_var(handle, polarity.value, decision)
         if (frozen) freeze(lit)

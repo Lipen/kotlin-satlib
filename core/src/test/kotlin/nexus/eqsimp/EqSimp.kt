@@ -20,67 +20,32 @@ private val log = KotlinLogging.logger {}
 
 @Suppress("LocalVariableName")
 private fun Solver.declareBase(aig: Aig) {
-    context["aig"] = aig
     val nodes = aig.layers().flatten().toList()
+    fun id2index(id: Int) = nodes.indexOf(id) + 1
+
+    // Contants
+    context["aig"] = aig
     val V = context("V") { nodes.size }
-    val id2index = (1..V).associateBy { nodes[it - 1] }
     val X = context("X") { aig.inputs.size }
     val Y = context("Y") { aig.outputs.size }
 
     log.info("V = $V, X = $Y, Y = $Y")
 
-    val isUndecideGates = "true".toBoolean() // make non-input variables non-decision
-    val isUnfreezeInputs = "true".toBoolean() // allow elimination of input variables
-    // HAZARD! Do not unfreeze variables which you will be accessing in any way (model value OR assumption)
-    val isUnfreezeGates = "false".toBoolean() // allow elimination of non-input variables (DO NOT!)
-    val isAnyway = "false".toBoolean()
-
+    // Variables
     val nodeValue = context("nodeValue") {
-        if (isUnfreezeInputs || isUnfreezeGates || isUndecideGates || isAnyway) {
-            if (this is MiniSatSolver) {
-                newBoolVarArray(V) { (v) ->
-                    if (v <= X) { // input
-                        backend.newVariable(decision = true, frozen = !isUnfreezeInputs)
-                    } else {
-                        backend.newVariable(decision = !isUndecideGates, frozen = !isUnfreezeGates)
-                    }
-                }
-            } /*else if (this is GlucoseSolver) {
-                newBoolVarArray(V) { (v) ->
-                    if (v <= X) { // input
-                        backend.newVariable(decision = true, frozen = !isUnfreezeInputs)
-                    } else {
-                        backend.newVariable(decision = !isUndecide, frozen = !isUnfreezeGates)
-                    }
-                }
-            }*/ else {
-                log.warn("$this does not support customizing new variables")
-                newBoolVarArray(V)
-            }
-        } else {
-            newBoolVarArray(V)
-        }
+        newBoolVarArray(V)
     }
-    val inputValue = context("inputValue") {
-        newBoolVarArray(X) { (x) ->
-            val node = aig.inputs[x - 1]
-            nodeValue[id2index.getValue(node.id)]
-        }
-    }
-    val outputValue = context("outputValue") {
-        newBoolVarArray(Y) { (y) ->
-            val node = aig.outputs[y - 1]
-            nodeValue[id2index.getValue(node.id)] sign !node.negated
-        }
-    }
+
+    // Constraints
 
     comment("AND gate semantics")
     for (v in (X + 1)..V) {
         val gate = aig.andGate(nodes[v - 1])
+        check(id2index(gate.id) == v)
         iffAnd(
             nodeValue[v],
-            nodeValue[id2index.getValue(gate.left.id)] sign !gate.left.negated,
-            nodeValue[id2index.getValue(gate.right.id)] sign !gate.right.negated,
+            nodeValue[id2index(gate.left.id)] sign !gate.left.negated,
+            nodeValue[id2index(gate.right.id)] sign !gate.right.negated,
         )
     }
 
@@ -95,13 +60,14 @@ fun main() {
 
     //region [samples]
 
-    // val filename = "data/and.aag"
-    // val filename = "data/halfadder.aag"
-    // val filename = "data/eq.aag"
-    // val filename = "data/eq2.aag"
-    // val filename = "data/BubbleSort_4_3.aag"
-    // val filename = "data/BubbleSort_6_4.aag"
-    // val filename = "data/BubbleSort_7_4.aag"
+    // val filename = "data/instances/examples/aag/and.aag"
+    // val filename = "data/instances/examples/aag/halfadder.aag"
+    // val filename = "data/instances/manual/aag/eq.aag" // 1s, 2+0
+    // val filename = "data/instances/manual/aag/eq2.aag" // 1s, 3+0
+    val filename = "data/instances/BubbleSort/aag/BubbleSort_4_3.aag" // 2s, 36+0
+    // val filename = "data/instances/BubbleSort/aag/BubbleSort_5_4.aag" // 17s, 180+0
+    // val filename = "data/instances/BubbleSort/aag/BubbleSort_6_4.aag" // 52s, 270+0
+    // val filename = "data/instances/BubbleSort/aag/BubbleSort_7_4.aag" // 130s, 378+0
 
     //endregion
 
@@ -167,13 +133,13 @@ fun main() {
     //region [valid ISCAS instances]
 
     // val filename = "data/instances/ISCAS/aag/c17.aag" // 1s, 0+0
-    // val filename = "data/instances/ISCAS/aag/c432.aag" // 1s, 110+0
+    // val filename = "data/instances/ISCAS/aag/c432.aag" // 3s, 110+0
     // val filename = "data/instances/ISCAS/aag/c499.aag" // 5s, 0+0
     // val filename = "data/instances/ISCAS/aag/c880.aag" // 3s, 0+0
-    val filename = "data/instances/ISCAS/aag/c1355.aag" // 8s, 0+0
+    // val filename = "data/instances/ISCAS/aag/c1355.aag" // 8s, 0+0
     // val filename = "data/instances/ISCAS/aag/c1908.aag" // 5s, 1+1
-    // val filename = "data/instances/ISCAS/aag/c3540.aag" // [long] 99s, 4+3
-    // val filename = "data/instances/ISCAS/aag/c5315.aag" // [long] 217s, 21+0
+    // val filename = "data/instances/ISCAS/aag/c3540.aag" // [long] 116s, 4+3
+    // val filename = "data/instances/ISCAS/aag/c5315.aag" // [long] 256s, 21+0
     // val filename = "data/instances/ISCAS/aag/c6288.aag" // [long] ~?ks, ?+?
     // val filename = "data/instances/ISCAS/aag/c7552.aag" // [long] ?, ?+?
 
@@ -191,17 +157,23 @@ fun main() {
     MiniSatSolver().useWith {
         // CadicalSolver().useWith {
         declareBase(aig)
-        backend.thaw()
 
+        val layers = aig.layers().toList()
+        val nodes = layers.flatten()
+        fun id2index(id: Int) = nodes.indexOf(id) + 1
         val V: Int = context["V"]
         val X: Int = context["X"]
         val Y: Int = context["Y"]
         val nodeValueVar: BoolVarArray = context["nodeValue"]
-        val inputValueVar: BoolVarArray = context["inputValue"]
-        val outputValueVar: BoolVarArray = context["outputValue"]
 
+        // Freeze gates (because we use them in assumptions later)
         for (v in (X + 1)..V) {
             backend.freeze(nodeValueVar[v])
+        }
+
+        // Mark gate values variables as non-decision
+        for (v in (X + 1)..V) {
+            backend.setDecision(nodeValueVar[v], false)
         }
 
         val (isSat, timeSolve) = measureTimeWithResult { solve() }
@@ -210,59 +182,62 @@ fun main() {
         if (isSat) {
             val model = getModel()
             val nodeValue = context.convertBoolVarArray("nodeValue", model)
-            val inputValue = context.convertBoolVarArray("inputValue", model)
-            val outputValue = context.convertBoolVarArray("outputValue", model)
 
             // println("model = ${model.data.toBinaryString()}")
             // println("nodeValue = ${nodeValue.values.toBinaryString()}")
-            // println("input values: ${inputValue.values.toBinaryString()}")
-            // println("output values: ${outputValue.values.toBinaryString()}")
 
             println("Searching for equivalent gates...")
             val equivalentPairs: MutableList<Pair<Int, Int>> = mutableListOf()
             val antiEquivalentPairs: MutableList<Pair<Int, Int>> = mutableListOf()
+
             for (v1 in (X + 1)..V) {
+                val timeStartFirst = timeNow()
                 if (backend.isEliminated(nodeValueVar[v1])) {
-                    log.warn("Variable $v1 is eliminated")
+                    error("nodeValue[v1=$v1]=${nodeValueVar[v1]} (gate ${aig.node(nodes[v1 - 1])}) is eliminated")
                 }
                 for (v2 in (v1 + 1)..V) {
-                    val (table, timeTableSolve) = measureTimeWithResult {
+                    val (table, timeSolveTable) = measureTimeWithResult {
                         listOf(
                             Pair(false, false),
                             Pair(false, true),
                             Pair(true, false),
                             Pair(true, true)
                         ).map { (x1, x2) ->
-                            val assumptions = listOf(
-                                nodeValueVar[v1] sign x1,
-                                nodeValueVar[v2] sign x2,
-                            )
-                            val (isSubSat, timeSubSolve) = measureTimeWithResult { solve(assumptions) }
+                            val (isSubSat, timeSubSolve) = measureTimeWithResult {
+                                solve(
+                                    assumptions = listOf(
+                                        nodeValueVar[v1] sign x1,
+                                        nodeValueVar[v2] sign x2,
+                                    )
+                                )
+                            }
                             // println("${if (isSubSat) "SAT" else "UNSAT"} assuming ($x1, $x2) in %.3fs".format(timeSubSolve.seconds))
                             isSubSat
                         }
                     }
-                    // println("(v1,v2)=($v1,$v2) :: ${table.toBinaryString()}")
+                    // println("v=($v1,$v2) :: ${table.toBinaryString()}")
                     if (table.toBinaryString() == "1001") {
-                        println(" -- Found equivalent gates: $v1 and $v2 in %.3f ms".format(timeTableSolve.milliseconds))
+                        println(" -- Found equivalent gates: $v1 and $v2 in %.3f ms".format(timeSolveTable.milliseconds))
                         equivalentPairs.add(Pair(v1, v2))
                     }
                     if (table.toBinaryString() == "0110") {
-                        println(" -- Found anti-equivalent gates: $v1 and $v2 in %.3f ms".format(timeTableSolve.milliseconds))
+                        println(" -- Found anti-equivalent gates: $v1 and $v2 in %.3f ms".format(timeSolveTable.milliseconds))
                         antiEquivalentPairs.add(Pair(v1, v2))
                     }
                 }
+
                 // Unfreeze variable `v1` that we won't use anymore
                 backend.setFrozen(nodeValueVar[v1], false)
+
+                println(
+                    "$v1/$V done in %.3fs after %.3fs".format(
+                        secondsSince(timeStartFirst),
+                        secondsSince(timeStart)
+                    )
+                )
             }
             println("Done searching for equivalent gates")
             println("Total equivalent pairs (EQ+XOR): ${equivalentPairs.size} + ${antiEquivalentPairs.size} = ${equivalentPairs.size + antiEquivalentPairs.size} of total ${aig.ands.size} ANDs")
-
-            // for (v in 1..V) {
-            //     if (backend.isEliminated(nodeValueVar[v])) {
-            //         println("Variable $v is eliminated")
-            //     }
-            // }
         } else {
             error("Unexpected UNSAT")
         }

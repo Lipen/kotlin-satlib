@@ -1,6 +1,8 @@
-package nexus.aig
+package nexus.scripts
 
 import com.github.lipen.satlib.utils.writeln
+import nexus.aig.convertAigToDot
+import nexus.aig.parseAig
 import okio.buffer
 import okio.sink
 import kotlin.io.path.Path

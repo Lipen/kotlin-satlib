@@ -231,7 +231,12 @@ fun Solver.iffImply(lhs: Lit, x1: Lit, x2: Lit) {
     addClause(lhs, -x2)
 }
 
-// TODO: iffIff
+/** [lhs] <=> ([x1] <=> [x2]) */
+fun Solver.iffIff(lhs: Lit, x1: Lit, x2: Lit) {
+    implyIff(lhs, x1, x2)
+    addClause(lhs, -x1, -x2)
+    addClause(lhs, x1, x2)
+}
 
 /** [lhs] <=> `ITE`([cond], [a], [b]) */
 fun Solver.iffIte(lhs: Lit, cond: Lit, a: Lit, b: Lit) {
