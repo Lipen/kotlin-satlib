@@ -5,6 +5,7 @@ import com.github.lipen.satlib.core.convertBoolVarArray
 import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.op.iffAnd
+import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
@@ -25,6 +26,7 @@ private fun Solver.declareBase(aig: Aig) {
 
     // Constants
     context["aig"] = aig
+    context["nodes"] = nodes
     val V = context("V") { nodes.size }
     val X = context("X") { aig.inputs.size }
     val Y = context("Y") { aig.outputs.size }
@@ -64,7 +66,7 @@ fun main() {
     // val filename = "data/instances/examples/aag/halfadder.aag"
     // val filename = "data/instances/manual/aag/eq.aag" // 1s, 2+0
     // val filename = "data/instances/manual/aag/eq2.aag" // 1s, 3+0
-    val filename = "data/instances/BubbleSort/aag/BubbleSort_4_3.aag" // 2s, 36+0
+    // val filename = "data/instances/BubbleSort/aag/BubbleSort_4_3.aag" // 2s, 36+0
     // val filename = "data/instances/BubbleSort/aag/BubbleSort_5_4.aag" // 17s, 180+0
     // val filename = "data/instances/BubbleSort/aag/BubbleSort_6_4.aag" // 52s, 270+0
     // val filename = "data/instances/BubbleSort/aag/BubbleSort_7_4.aag" // 130s, 378+0
@@ -133,15 +135,30 @@ fun main() {
     //region [valid ISCAS instances]
 
     // val filename = "data/instances/ISCAS/aag/c17.aag" // 1s, 0+0
-    // val filename = "data/instances/ISCAS/aag/c432.aag" // 3s, 110+0
+    val filename = "data/instances/ISCAS/aag/c432.aag" // 3s, 110+0
     // val filename = "data/instances/ISCAS/aag/c499.aag" // 5s, 0+0
     // val filename = "data/instances/ISCAS/aag/c880.aag" // 3s, 0+0
     // val filename = "data/instances/ISCAS/aag/c1355.aag" // 8s, 0+0
     // val filename = "data/instances/ISCAS/aag/c1908.aag" // 5s, 1+1
     // val filename = "data/instances/ISCAS/aag/c3540.aag" // [long] 116s, 4+3
     // val filename = "data/instances/ISCAS/aag/c5315.aag" // [long] 256s, 21+0
-    // val filename = "data/instances/ISCAS/aag/c6288.aag" // [long] ~?ks, ?+?
+    // val filename = "data/instances/ISCAS/aag/c6288.aag" // [long] 1992s, 0+2
     // val filename = "data/instances/ISCAS/aag/c7552.aag" // [long] ?, ?+?
+
+    //endregion
+
+    //region [EPFL instances]
+
+    // val filename = "data/instances/EPFL/arithmetic/adder/aag/adder.aag" // 9s, 0+0
+    // val filename = "data/instances/EPFL/arithmetic/bar/aag/bar.aag" // ~10ks, 0+0
+    // val filename = "data/instances/EPFL/arithmetic/divisor/aag/div.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/hypotenuse/aag/hyp.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/log2/aag/log2.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/max/aag/max.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/multiplier/aag/multiplier.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/sin/aag/sin.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/sqrt/aag/sqrt.aag" // ?
+    // val filename = "data/instances/EPFL/arithmetic/square/aag/square.aag" // ?
 
     //endregion
 
@@ -158,13 +175,13 @@ fun main() {
         // CadicalSolver().useWith {
         declareBase(aig)
 
-        val layers = aig.layers().toList()
-        val nodes = layers.flatten()
-        fun id2index(id: Int) = nodes.indexOf(id) + 1
+        val nodes: List<Int> = context["nodes"]
         val V: Int = context["V"]
         val X: Int = context["X"]
         val Y: Int = context["Y"]
         val nodeValueVar: BoolVarArray = context["nodeValue"]
+
+        fun id2index(id: Int) = nodes.indexOf(id) + 1
 
         // Freeze gates (because we use them in assumptions later)
         for (v in (X + 1)..V) {
