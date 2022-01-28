@@ -1,16 +1,22 @@
 package nexus.aig
 
+@Suppress("LocalVariableName")
 fun convertAigToDot(
     aig: Aig,
     rankByLayers: Boolean = true,
     eqIds: List<Pair<Int, Int>> = emptyList(),
 ): Sequence<String> = sequence {
+    val SHAPE_PI = "invtriangle" // Primary Input
+    val SHAPE_PO = "triangle" // Primary Output
+    val SHAPE_AND = "oval" // And gate
+    val SHAPE_INPUT = "box" // Input gate
+
     yield("digraph {")
 
-    yield("// Inputs")
+    yield("// Primary Inputs")
     yield("{ rank=sink")
     for (i in aig.inputs.indices) {
-        yield("  I$i [shape=invtriangle,color=blue];")
+        yield("  i$i [shape=$SHAPE_PI,color=blue];")
     }
     yield("}")
 
@@ -21,30 +27,28 @@ fun convertAigToDot(
             yield("{ rank=same")
         }
         for (id in layer) {
-            when (val node = aig.node(id)) {
-                is AigInput -> {
-                    yield("  $id [shape=box]; // $node")
-                }
-                is AigAndGate -> {
-                    yield("  $id [shape=oval]; // $node")
-                }
+            val node = aig.node(id)
+            val shape = when (node) {
+                is AigInput -> SHAPE_INPUT
+                is AigAndGate -> SHAPE_AND
             }
+            yield("  $id [shape=$shape]; // $node")
         }
         if (rankByLayers) {
             yield("}")
         }
     }
 
-    yield("// Outputs")
+    yield("// Primary Outputs")
     yield("{ rank=source")
     for (i in aig.outputs.indices) {
-        yield("  O$i [shape=triangle,color=blue];")
+        yield("  o$i [shape=$SHAPE_PO,color=blue];")
     }
     yield("}")
 
     yield("// Input connections")
     for ((i, node) in aig.inputs.withIndex()) {
-        yield("  ${node.id} -> I$i [arrowhead=none];")
+        yield("  ${node.id} -> i$i [arrowhead=none];")
     }
 
     yield("// Node connections")
@@ -57,7 +61,7 @@ fun convertAigToDot(
 
     yield("// Output connections")
     for ((i, node) in aig.outputs.withIndex()) {
-        yield("  O$i -> ${node.id} [arrowhead=${if (node.negated) "dot" else "none"}];")
+        yield("  o$i -> ${node.id} [arrowhead=${if (node.negated) "dot" else "none"}];")
     }
 
     if (eqIds.isNotEmpty()) {
