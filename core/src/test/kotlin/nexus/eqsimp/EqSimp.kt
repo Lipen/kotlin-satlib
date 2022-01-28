@@ -23,7 +23,7 @@ private fun Solver.declareBase(aig: Aig) {
     val nodes = aig.layers().flatten().toList()
     fun id2index(id: Int) = nodes.indexOf(id) + 1
 
-    // Contants
+    // Constants
     context["aig"] = aig
     val V = context("V") { nodes.size }
     val X = context("X") { aig.inputs.size }
