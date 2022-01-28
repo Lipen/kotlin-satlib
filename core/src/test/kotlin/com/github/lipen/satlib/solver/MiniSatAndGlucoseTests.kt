@@ -18,6 +18,9 @@ class MiniSatAndGlucoseTests {
 
         addClause(x)
 
+        // Freeze all variables before using them in assumptions
+        freezeAll()
+
         solve().`should be true`()
         solve(x).`should be true`()
         solve(-x).`should be false`()
@@ -31,6 +34,9 @@ class MiniSatAndGlucoseTests {
 
         addClause(x, y)
         addClause(-x, -y)
+
+        // Freeze all variables before using them in assumptions
+        freezeAll()
 
         solve().`should be true`()
         solve(x).`should be true`()
