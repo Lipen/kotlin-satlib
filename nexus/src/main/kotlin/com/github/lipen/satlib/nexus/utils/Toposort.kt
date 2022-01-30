@@ -1,11 +1,11 @@
-package nexus.aig
+package com.github.lipen.satlib.nexus.utils
 
 import mu.KotlinLogging
 
-private val log = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 fun <T> toposort(deps: Map<T, Collection<T>>): Sequence<List<T>> = sequence {
-    log.debug { "Performing a topological sort" }
+    logger.debug { "Performing a topological sort" }
 
     // Local mutable data
     val data: MutableMap<T, MutableList<T>> = deps.mapValuesTo(mutableMapOf()) { (_, v) -> v.toMutableList() }

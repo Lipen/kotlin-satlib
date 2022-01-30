@@ -1,9 +1,12 @@
-package nexus.aig
+package com.github.lipen.satlib.nexus.aig
 
-import examples.utils.secondsSince
-import examples.utils.timeNow
+import com.github.lipen.satlib.nexus.utils.isOdd
+import com.github.lipen.satlib.nexus.utils.secondsSince
+import com.github.lipen.satlib.nexus.utils.timeNow
+import com.github.lipen.satlib.nexus.utils.toposort
+import java.io.File
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = mu.KotlinLogging.logger {}
 
 class Aig(
     val inputs: List<AigInput>,
@@ -24,10 +27,10 @@ class Aig(
     fun input(id: Int): AigInput = node(id) as AigInput
     fun andGate(id: Int): AigAndGate = node(id) as AigAndGate
 
-    fun dependency_graph(
+    fun dependencyGraph(
         origin: Collection<Int> = outputs.map { it.id },
     ): Map<Int, List<Int>> {
-        log.debug { "Building a dependency graph" }
+        logger.debug { "Building a dependency graph" }
 
         val deps: MutableMap<Int, List<Int>> = mutableMapOf()
         val queue = ArrayDeque(origin)
@@ -45,7 +48,7 @@ class Aig(
     }
 
     fun layers(): Sequence<List<Int>> {
-        return toposort(dependency_graph())
+        return toposort(dependencyGraph())
     }
 
     fun eval(inputValues: Map<Int, Boolean>): Map<Int, Boolean> {
@@ -131,12 +134,13 @@ data class AigAndGate(
 fun main() {
     val timeStart = timeNow()
 
-    // val filename = "data/and.aag"
-    // val filename = "data/halfadder.aag"
-    val filename = "data/eq.aag"
-    // val filename = "data/eq2.aag"
+    // val filename = "data/instances/examples/aag/and.aag"
+    // val filename = "data/instances/examples/aag/halfadder.aag"
+    val filename = "data/instances/manual/aag/eq.aag"
+    // val filename = "data/instances/manual/aag/eq2.aag"
+
     val aig = parseAig(filename)
-    log.info("Result: $aig")
+    logger.info("Result: $aig")
 
     println("Inputs:")
     for (input in aig.inputs) {
@@ -151,7 +155,7 @@ fun main() {
         println("  - $gate")
     }
 
-    val deps = aig.dependency_graph()
+    val deps = aig.dependencyGraph()
     println("Deps:")
     for ((id, ds) in deps) {
         println("  - $id: ${ds.map { it }}")
@@ -169,5 +173,5 @@ fun main() {
     //     }
     // }
 
-    log.info("All done in %.3f s".format(secondsSince(timeStart)))
+    logger.info("All done in %.3f s".format(secondsSince(timeStart)))
 }

@@ -1,6 +1,7 @@
 @file:Suppress("PublicApiImplicitType", "MemberVisibilityCanBePrivate", "unused")
 
 object Versions {
+    const val clikt = "3.2.0"
     const val gradle_versions = "0.39.0"
     const val jgitver = "0.9.1"
     const val jmh = "1.23"
@@ -12,7 +13,8 @@ object Versions {
     const val kotlin_logging = "2.1.0"
     const val kotlinter = "3.7.0"
     const val kotlinx_coroutines = "1.6.0"
-    const val log4j = "2.14.1"
+    const val log4j = "2.17.1"
+    const val mordant = "1.2.1"
     const val multiarray = "0.12.0"
     const val okio = "3.0.0"
     const val shadow = "7.1.0"
@@ -67,6 +69,18 @@ object Libs {
     object KotlinxCoroutines {
         const val version = Versions.kotlinx_coroutines
         const val kotlinx_coroutines_core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
+    }
+
+    // https://github.com/ajalt/clikt
+    object Clikt {
+        const val version = Versions.clikt
+        const val clikt = "com.github.ajalt.clikt:clikt:$version"
+    }
+
+    // https://github.com/ajalt/mordant
+    object Mordant {
+        const val version = Versions.mordant
+        const val mordant = "com.github.ajalt:mordant:$version"
     }
 }
 

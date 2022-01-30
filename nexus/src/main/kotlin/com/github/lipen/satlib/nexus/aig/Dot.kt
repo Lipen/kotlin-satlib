@@ -1,4 +1,4 @@
-package nexus.aig
+package com.github.lipen.satlib.nexus.aig
 
 @Suppress("LocalVariableName")
 fun convertAigToDot(
@@ -6,17 +6,19 @@ fun convertAigToDot(
     rankByLayers: Boolean = true,
     eqIds: List<Pair<Int, Int>> = emptyList(),
 ): Sequence<String> = sequence {
-    val SHAPE_PI = "invtriangle" // Primary Input
-    val SHAPE_PO = "triangle" // Primary Output
-    val SHAPE_AND = "oval" // And gate
-    val SHAPE_INPUT = "box" // Input gate
+    val STYLE_PI = "shape=invtriangle,color=blue" // Primary Input style
+    val STYLE_PO = "shape=triangle,color=blue" // Primary Output style
+    val STYLE_AND = "shape=oval" // And gate style
+    val STYLE_INPUT = "shape=box" // Input gate style
+    val STYLE_EDGE = "arrowhead=none"
+    val STYLE_EDGE_NEGATED = "arrowhead=none,style=dashed"
 
     yield("digraph {")
 
     yield("// Primary Inputs")
     yield("{ rank=sink")
     for (i in aig.inputs.indices) {
-        yield("  i$i [shape=$SHAPE_PI,color=blue];")
+        yield("  i$i [$STYLE_PI];")
     }
     yield("}")
 
@@ -28,11 +30,11 @@ fun convertAigToDot(
         }
         for (id in layer) {
             val node = aig.node(id)
-            val shape = when (node) {
-                is AigInput -> SHAPE_INPUT
-                is AigAndGate -> SHAPE_AND
+            val style = when (node) {
+                is AigInput -> STYLE_INPUT
+                is AigAndGate -> STYLE_AND
             }
-            yield("  $id [shape=$shape]; // $node")
+            yield("  $id [$style]; // $node")
         }
         if (rankByLayers) {
             yield("}")
@@ -42,26 +44,28 @@ fun convertAigToDot(
     yield("// Primary Outputs")
     yield("{ rank=source")
     for (i in aig.outputs.indices) {
-        yield("  o$i [shape=$SHAPE_PO,color=blue];")
+        yield("  o$i [$STYLE_PO];")
     }
     yield("}")
 
     yield("// Input connections")
     for ((i, node) in aig.inputs.withIndex()) {
-        yield("  ${node.id} -> i$i [arrowhead=none];")
+        yield("  ${node.id} -> i$i [$STYLE_EDGE];")
     }
 
     yield("// Node connections")
     for (id in layers.flatten()) {
         val node = aig.node(id)
         for (child in node.children) {
-            yield("  $id -> ${child.id} [arrowhead=${if (child.negated) "dot" else "none"}];")
+            val style = if (child.negated) STYLE_EDGE_NEGATED else STYLE_EDGE
+            yield("  $id -> ${child.id} [$style];")
         }
     }
 
     yield("// Output connections")
     for ((i, node) in aig.outputs.withIndex()) {
-        yield("  o$i -> ${node.id} [arrowhead=${if (node.negated) "dot" else "none"}];")
+        val style = if (node.negated) STYLE_EDGE_NEGATED else STYLE_EDGE
+        yield("  o$i -> ${node.id} [$style];")
     }
 
     if (eqIds.isNotEmpty()) {

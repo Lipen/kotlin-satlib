@@ -1,11 +1,14 @@
-package nexus.aig
+package com.github.lipen.satlib.nexus.aig
 
+import com.github.lipen.satlib.nexus.utils.isEven
+import com.github.lipen.satlib.nexus.utils.isOdd
 import com.github.lipen.satlib.utils.lineSequence
 import com.github.lipen.satlib.utils.useWith
 import mu.KotlinLogging
 import okio.buffer
 import okio.source
-import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 
 private val log = KotlinLogging.logger {}
 
@@ -57,9 +60,13 @@ private fun parseAnd(line: String): AigAndGate {
 }
 
 fun parseAig(filename: String): Aig {
-    log.info("Parsing AIG from '$filename'")
+    return parseAig(Paths.get(filename))
+}
 
-    File(filename).source().buffer().useWith {
+fun parseAig(path: Path): Aig {
+    log.debug { "Parsing AIG from '$path'" }
+
+    path.source().buffer().useWith {
         val lines = lineSequence().iterator()
 
         // header: aag M I L O A
@@ -105,8 +112,15 @@ fun parseAig(filename: String): Aig {
 
                 val mapping = inputs.associateBy { it.id } + ands.associateBy { it.id }
 
+                // Check maxIndex
                 for (id in mapping.keys) {
-                    check(id <= maxIndex) { "Id $id is greater than maxIndex ($maxIndex)" }
+                    check(id <= maxIndex) { "Gate id $id is greater than maxIndex $maxIndex" }
+                }
+                for (input in inputs) {
+                    check(input.id <= maxIndex) { "Input id ${input.id} is greater than maxIndex $maxIndex" }
+                }
+                for (output in outputs) {
+                    check(output.id <= maxIndex) { "Output id ${output.id} is greater than maxIndex $maxIndex" }
                 }
 
                 Aig(
