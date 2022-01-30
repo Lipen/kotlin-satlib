@@ -3,9 +3,13 @@
 package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
+import com.github.lipen.satlib.nexus.aig.AigAndGate
+import com.github.lipen.satlib.nexus.aig.AigInput
+import com.github.lipen.satlib.nexus.aig.Ref
 import com.github.lipen.satlib.nexus.aig.parseAig
 import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.iffXor2
@@ -26,51 +30,65 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 private fun Solver.encodeAig(
-    name: String,
     aig: Aig,
+    name: String,
     reuse: String? = null,
 ) {
     /* Constants */
 
     context["$name.aig"] = aig
-    // val nodes = context("$name.nodes") { aig.mapping.values.map { it.id } }
-    val nodes = context("$name.nodes") { aig.layers().flatten().toList() }
-    fun index2id(i: Int) = nodes[i - 1]
-    fun id2index(id: Int) = nodes.indexOf(id) + 1
-    val V = context("$name.V") { nodes.size }
     val X = context("$name.X") { aig.inputs.size }
     val Y = context("$name.Y") { aig.outputs.size }
+    val G = context("$name.V") { aig.ands.size }
+    logger.info("$name: X = $Y, Y = $Y, G = $G")
 
-    logger.info("$name: V = $V, X = $Y, Y = $Y")
+    val inputIds = aig.inputs.map { it.id }
+    val outputIds = aig.outputs.map { it.id }
+    val gateIds = aig.ands.map { it.id }
 
-    // TODO: remove
-    check(nodes.take(X).toSet() == aig.inputs.take(X).map { it.id }.toSet())
+    fun input(x: Int): AigInput = aig.inputs[x - 1]
+    fun output(y: Int): Ref = aig.outputs[y - 1]
+    fun andGate(g: Int): AigAndGate = aig.ands[g - 1] // FIXME
 
     /* Variables */
 
-    val nodeValue = context("$name.nodeValue") {
-        if (reuse != null) {
-            val nodesReuse: List<Int> = context["$reuse.nodes"]
-            val nodeValueReuse: BoolVarArray = context["$reuse.nodeValue"]
-            newBoolVarArray(V) { (v) ->
-                if (v > X) newLiteral()
-                else nodeValueReuse[nodesReuse.indexOf(index2id(v)) + 1]
-            }
+    val inputValue = context("$name.inputValue") {
+        if (reuse == null) {
+            newBoolVarArray(X)
         } else {
-            newBoolVarArray(V)
+            context["$reuse.inputValue"]
+        }
+    }
+    val gateValue = context("$name.gateValue") {
+        newBoolVarArray(G)
+    }
+
+    fun nodeValue(id: Int): Lit {
+        return if (id in inputIds) {
+            inputValue[inputIds.indexOf(id) + 1]
+        } else {
+            gateValue[gateIds.indexOf(id) + 1]
+        }
+    }
+
+    fun nodeValue(ref: Ref): Lit = nodeValue(ref.id) sign !ref.negated
+
+    val outputValue = context("$name.outputValue") {
+        newBoolVarArray(Y) { (y) ->
+            val output = output(y)
+            nodeValue(output)
         }
     }
 
     /* Constraints */
 
     comment("AND gate semantics")
-    for (v in (X + 1)..V) {
-        val gate = aig.andGate(index2id(v))
-        check(id2index(gate.id) == v)
+    for (g in 1..G) {
+        val gate = andGate(g)
         iffAnd(
-            nodeValue[v],
-            nodeValue[id2index(gate.left.id)] sign !gate.left.negated,
-            nodeValue[id2index(gate.right.id)] sign !gate.right.negated,
+            gateValue[g],
+            nodeValue(gate.left),
+            nodeValue(gate.right),
         )
     }
 }
@@ -82,29 +100,25 @@ private fun Solver.encodeAigs(
     require(aigLeft.inputs.size == aigRight.inputs.size)
     require(aigLeft.outputs.size == aigRight.outputs.size)
 
-    encodeAig("left", aigLeft)
-    encodeAig("right", aigRight, reuse = "left")
+    encodeAig(aigLeft, "left")
+    encodeAig(aigRight, "right", reuse = "left")
     context["X"] = context["left.X"]
     context["Y"] = context["left.Y"]
+    context["inputValue"] = context["left.inputValue"]
 }
 
 private fun Solver.encodeMiter() {
     /* Constants */
 
     val aigLeft: Aig = context["left.aig"]
-    val nodesLeft: List<Int> = context["left.nodes"]
-    fun idLeft2index(id: Int) = nodesLeft.indexOf(id) + 1
-
     val aigRight: Aig = context["right.aig"]
-    val nodesRight: List<Int> = context["right.nodes"]
-    fun idRight2index(id: Int) = nodesRight.indexOf(id) + 1
 
     val Y: Int = context["Y"]
 
     /* Variables */
 
-    val nodeValueLeft: BoolVarArray = context["left.nodeValue"]
-    val nodeValueRight: BoolVarArray = context["right.nodeValue"]
+    val outputValueLeft: BoolVarArray = context["left.outputValue"]
+    val outputValueRight: BoolVarArray = context["right.outputValue"]
     val xorValue = context("xorValue") {
         newBoolVarArray(Y)
     }
@@ -113,17 +127,16 @@ private fun Solver.encodeMiter() {
 
     comment("Miter XORs")
     for (y in 1..Y) {
-        val outputLeft = aigLeft.outputs[y - 1]
-        val outputRight = aigRight.outputs[y - 1]
         iffXor2(
             xorValue[y],
-            nodeValueLeft[idLeft2index(outputLeft.id)] sign !outputLeft.negated,
-            nodeValueRight[idRight2index(outputRight.id)] sign !outputRight.negated,
+            outputValueLeft[y],
+            outputValueRight[y],
         )
     }
 
     comment("Miter OR")
     addClause((1..Y).map { y -> xorValue[y] })
+    // addClause(xorValue.values)
 }
 
 private fun Solver.encodeOutputMergers(type: String) {
@@ -132,19 +145,14 @@ private fun Solver.encodeOutputMergers(type: String) {
     /* Constants */
 
     val aigLeft: Aig = context["left.aig"]
-    val nodesLeft: List<Int> = context["left.nodes"]
-    fun idLeft2index(id: Int) = nodesLeft.indexOf(id) + 1
-
     val aigRight: Aig = context["right.aig"]
-    val nodesRight: List<Int> = context["right.nodes"]
-    fun idRight2index(id: Int) = nodesRight.indexOf(id) + 1
 
     val Y: Int = context["Y"]
 
     /* Variables */
 
-    val nodeValueLeft: BoolVarArray = context["left.nodeValue"]
-    val nodeValueRight: BoolVarArray = context["right.nodeValue"]
+    val outputValueLeft: BoolVarArray = context["left.outputValue"]
+    val outputValueRight: BoolVarArray = context["right.outputValue"]
     val mergerValue = context("mergerValue") {
         newBoolVarArray(Y)
     }
@@ -153,13 +161,12 @@ private fun Solver.encodeOutputMergers(type: String) {
 
     comment("Merge outputs using $type")
     for (y in 1..Y) {
-        val outputLeft = aigLeft.outputs[y - 1]
-        val outputRight = aigRight.outputs[y - 1]
-        val left = nodeValueLeft[idLeft2index(outputLeft.id)] sign !outputLeft.negated
-        val right = nodeValueRight[idRight2index(outputRight.id)] sign !outputRight.negated
+        val merger = mergerValue[y]
+        val left = outputValueLeft[y]
+        val right = outputValueRight[y]
         when (type) {
-            "EQ" -> iffIff(mergerValue[y], left, right)
-            "XOR" -> iffXor2(mergerValue[y], left, right)
+            "EQ" -> iffIff(merger, left, right)
+            "XOR" -> iffXor2(merger, left, right)
             else -> error("Bad type '$type'")
         }
     }
@@ -253,20 +260,15 @@ private fun Solver.`check equivalence using conjugated tables`(
 
     /* Constants */
 
-    val nodesLeft: List<Int> = context["left.nodes"]
-    fun idLeft2index(id: Int) = nodesLeft.indexOf(id) + 1
-    val nodeValueLeft: BoolVarArray = context["left.nodeValue"]
-
-    val nodesRight: List<Int> = context["right.nodes"]
-    fun idRight2index(id: Int) = nodesRight.indexOf(id) + 1
-    val nodeValueRight: BoolVarArray = context["right.nodeValue"]
+    val outputValueLeft: BoolVarArray = context["left.outputValue"]
+    val outputValueRight: BoolVarArray = context["right.outputValue"]
 
     val Y: Int = context["Y"]
 
     // Freeze assumptions
     for (y in 1..Y) {
-        maybeFreeze(nodeValueLeft[idLeft2index(aigLeft.outputs[y - 1].id)])
-        maybeFreeze(nodeValueRight[idRight2index(aigRight.outputs[y - 1].id)])
+        maybeFreeze(outputValueLeft[y])
+        maybeFreeze(outputValueRight[y])
     }
 
     logger.info("Pre-solving...")
@@ -280,25 +282,10 @@ private fun Solver.`check equivalence using conjugated tables`(
     } else {
         logger.info("Calculating a conjugated table for each output...")
         for (y in 1..Y) {
-            val outputLeft = aigLeft.outputs[y - 1]
-            val outputRight = aigRight.outputs[y - 1]
-            val left = nodeValueLeft[idLeft2index(outputLeft.id)] sign !outputLeft.negated
-            val right = nodeValueRight[idRight2index(outputRight.id)] sign !outputRight.negated
+            val left = outputValueLeft[y]
+            val right = outputValueRight[y]
 
-            // // logger.info("Calculating conjugated table for y = $y...")
-            // val (table, timeCalc) = measureTimeWithResult {
-            //     calculateConjugatedTable(left, right).toBinaryString()
-            // }
-            // logger.info("Calculated conjugated table $table for y=$y in %.3fs".format(timeCalc.seconds))
-            //
-            // if (table != "1001") {
-            //     logger.warn("Circuits are NOT equivalent!")
-            //     return false
-            // }
-
-            // Conjugated table for equal outputs: '1001'
-
-            // logger.info("Calculating conjugated table for y = $y...")
+            logger.info("Calculating conjugated table for y = $y...")
             val timeStartConj = timeNow()
             for ((s1, s2) in listOf(
                 false to false,
@@ -313,12 +300,11 @@ private fun Solver.`check equivalence using conjugated tables`(
                     "y=$y, solve(${s1.toInt()}${s2.toInt()})=${res.toInt()} in %.3fs".format(timeSolveSub.seconds)
                 }
                 if (res != (s1 == s2)) {
-                    // logger.debug { "s1 = $s1, s2 = $s2, res = $res" }
                     logger.warn("Circuits are NOT equivalent! solve(${s1.toInt()}${s2.toInt()}) = ${res.toInt()}")
                     return false
                 }
             }
-            logger.info("Determined the equality of outputs y=$y in %.3fs".format(secondsSince(timeStartConj)))
+            logger.info("Determined the equality of output y=$y in %.3fs".format(secondsSince(timeStartConj)))
 
             // Un-freeze assumptions
             maybeMelt(left)
@@ -365,7 +351,7 @@ fun main() {
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "4_3"
+    val param = "6_4"
     val filenameLeft = "data/instances/${left}/aag/${left}_${param}.aag"
     val filenameRight = "data/instances/${right}/aag/${right}_${param}.aag"
 
@@ -374,7 +360,7 @@ fun main() {
     val solverProvider = { MiniSatSolver() }
     // val solverProvider = { GlucoseSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj"
-    val method = "miter"
+    val method = "conj"
 
     checkEquivalence(aigLeft, aigRight, solverProvider, method)
 
