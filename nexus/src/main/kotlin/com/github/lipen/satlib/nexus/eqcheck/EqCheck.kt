@@ -3,7 +3,6 @@
 package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
-import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
@@ -366,15 +365,16 @@ fun main() {
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "7_4"
+    val param = "4_3"
     val filenameLeft = "data/instances/${left}/aag/${left}_${param}.aag"
     val filenameRight = "data/instances/${right}/aag/${right}_${param}.aag"
 
     val aigLeft = parseAig(filenameLeft)
     val aigRight = parseAig(filenameRight)
     val solverProvider = { MiniSatSolver() }
+    // val solverProvider = { GlucoseSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj"
-    val method = "conj"
+    val method = "miter"
 
     checkEquivalence(aigLeft, aigRight, solverProvider, method)
 
