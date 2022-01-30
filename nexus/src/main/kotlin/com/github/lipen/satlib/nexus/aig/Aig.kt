@@ -4,7 +4,6 @@ import com.github.lipen.satlib.nexus.utils.isOdd
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toposort
-import java.io.File
 
 private val logger = mu.KotlinLogging.logger {}
 
@@ -51,36 +50,8 @@ class Aig(
         return toposort(dependencyGraph())
     }
 
-    fun eval(inputValues: Map<Int, Boolean>): Map<Int, Boolean> {
-        val res: MutableMap<Int, Boolean> = inputValues.toMutableMap()
-
-        TODO()
-    }
-
-    // fun eval(valuation: Map<Int, Boolean>) {
-    //     // val visited = outputs.toMutableSet()
-    //     // val stack = ArrayDeque(outputs)
-    //     // val last = 0
-    //     //
-    //     // while (stack.isNotEmpty()) {
-    //     //     val i = stack.removeLast()
-    //     //     if (i !in visited) {
-    //     //         visited.add(i)
-    //     //         when (val node = mapping.getValue(i)) {
-    //     //             is AigInput -> {
-    //     //                 check(i in valuation)
-    //     //             }
-    //     //             is AigAndGate -> {
-    //     //                 stack.addLast(node.left)
-    //     //                 stack.addLast(node.right)
-    //     //             }
-    //     //         }
-    //     //     }
-    //     // }
-    // }
-
     override fun toString(): String {
-        return "Aig(in: ${inputs.size}, out: ${outputs.size}, ands: ${ands.size})"
+        return "Aig(inputs: ${inputs.size}, outputs: ${outputs.size}, ands: ${ands.size})"
     }
 }
 
@@ -121,8 +92,8 @@ data class AigInput(
 
 data class AigAndGate(
     override val id: Int,
-    var left: Ref,
-    var right: Ref,
+    val left: Ref,
+    val right: Ref,
 ) : AigNode {
     init {
         require(id > 0)
