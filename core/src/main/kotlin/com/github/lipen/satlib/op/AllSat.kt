@@ -16,7 +16,7 @@ fun Solver.allSolutions(
         val model = getModel()
         yield(model)
 
-        val refutationLits = essentialLits.map { i -> i sign !model[i] }
+        val refutationLits = essentialLits.map { lit -> lit sign !model[lit] }
         log.trace { "refutationLits = ${refutationLits.toList()}" }
         addClause(refutationLits)
     }

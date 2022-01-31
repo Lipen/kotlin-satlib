@@ -5,6 +5,8 @@ fun convertAigToDot(
     aig: Aig,
     rankByLayers: Boolean = true,
     eqIds: List<Pair<Int, Int>> = emptyList(),
+    nodeLabel: Map<Int, String> = emptyMap(),
+    nodeAddStyle: Map<Int, String> = emptyMap(),
 ): Sequence<String> = sequence {
     val STYLE_PI = "shape=invtriangle,color=blue" // Primary Input style
     val STYLE_PO = "shape=triangle,color=blue" // Primary Output style
@@ -34,7 +36,12 @@ fun convertAigToDot(
                 is AigInput -> STYLE_INPUT
                 is AigAndGate -> STYLE_AND
             }
-            yield("  $id [$style]; // $node")
+            // yield("  $id [$style]; // $node")
+            val label = nodeLabel[id]
+            val labelS = if (label == null) "" else ",label=\"${label.replace("\"", "\\\"")}\""
+            val additionalStyle = nodeAddStyle[id]
+            val addStyleS = if (additionalStyle == null) "" else ",$additionalStyle"
+            yield("  $id [$style$labelS$addStyleS]; // $node")
         }
         if (rankByLayers) {
             yield("}")

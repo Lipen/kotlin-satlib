@@ -15,7 +15,7 @@ class EqGatesCommand : CliktCommand() {
     private val pathAig: Path by option(
         "-i", "--input",
         metavar = "<path>",
-        help = "File with And-Inverter graph in ASCII AIGER format",
+        help = "File with And-Inverter graph in ASCII AIGER format"
     ).path(canBeDir = false).required()
 
     private val solverType: SolverType by solverTypeOption()

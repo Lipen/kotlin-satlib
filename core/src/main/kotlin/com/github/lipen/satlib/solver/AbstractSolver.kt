@@ -87,7 +87,7 @@ abstract class AbstractSolver : Solver {
     final override fun solve(): Boolean {
         val assumptions = assumptionsObservable.collect()
         return if (assumptions.isEmpty()) {
-            log.debug { "solve()" }
+            log.trace { "solve()" }
             _solve()
         } else {
             solve(assumptions)

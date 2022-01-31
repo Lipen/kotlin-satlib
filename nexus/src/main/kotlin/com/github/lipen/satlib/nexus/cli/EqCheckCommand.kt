@@ -16,17 +16,17 @@ private val logger = KotlinLogging.logger {}
 class EqCheckCommand : CliktCommand() {
     private val pathAigLeft: Path by argument(
         "LEFT_AIG",
-        help = "File with left AIG in ASCII AIGER format",
+        help = "File with left AIG in ASCII AIGER format"
     ).path(canBeDir = false)
     private val pathAigRight: Path by argument(
         "RIGHT_AIG",
-        help = "File with right AIG in ASCII AIGER format",
+        help = "File with right AIG in ASCII AIGER format"
     ).path(canBeDir = false)
 
     private val method: String by option(
         "-m",
         "--method",
-        help = "Method of equivalence check",
+        help = "Method of equivalence check"
     ).choice("miter", "merge-eq", "merge-xor", "conj").default("miter")
 
     private val solverType: SolverType by solverTypeOption()

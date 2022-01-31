@@ -39,16 +39,12 @@ private fun Solver.encodeAig(
     context["$name.aig"] = aig
     val X = context("$name.X") { aig.inputs.size }
     val Y = context("$name.Y") { aig.outputs.size }
-    val G = context("$name.V") { aig.ands.size }
+    val G = context("$name.V") { aig.andGates.size }
     logger.info("$name: X = $Y, Y = $Y, G = $G")
-
-    val inputIds = aig.inputs.map { it.id }
-    val outputIds = aig.outputs.map { it.id }
-    val gateIds = aig.ands.map { it.id }
 
     fun input(x: Int): AigInput = aig.inputs[x - 1]
     fun output(y: Int): Ref = aig.outputs[y - 1]
-    fun andGate(g: Int): AigAndGate = aig.ands[g - 1] // FIXME
+    fun andGate(g: Int): AigAndGate = aig.andGates[g - 1] // FIXME: order?
 
     /* Variables */
 
@@ -59,15 +55,15 @@ private fun Solver.encodeAig(
             context["$reuse.inputValue"]
         }
     }
-    val gateValue = context("$name.gateValue") {
+    val andGateValue = context("$name.andGateValue") {
         newBoolVarArray(G)
     }
 
     fun nodeValue(id: Int): Lit {
-        return if (id in inputIds) {
-            inputValue[inputIds.indexOf(id) + 1]
-        } else {
-            gateValue[gateIds.indexOf(id) + 1]
+        val node = aig.node(id)
+        return when (node) {
+            is AigInput -> inputValue[aig.inputs.indexOf(node) + 1]
+            is AigAndGate -> andGateValue[aig.andGates.indexOf(node) + 1]
         }
     }
 
@@ -86,7 +82,7 @@ private fun Solver.encodeAig(
     for (g in 1..G) {
         val gate = andGate(g)
         iffAnd(
-            gateValue[g],
+            andGateValue[g],
             nodeValue(gate.left),
             nodeValue(gate.right),
         )
@@ -360,7 +356,7 @@ fun main() {
     val solverProvider = { MiniSatSolver() }
     // val solverProvider = { GlucoseSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj"
-    val method = "conj"
+    val method = "merge-xor"
 
     checkEquivalence(aigLeft, aigRight, solverProvider, method)
 

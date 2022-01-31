@@ -25,7 +25,7 @@ fun main() {
     output.parent.createDirectories()
     output.sink().buffer().use {
         println("Dumping AIG to DOT '$output'")
-        for (line in convertAigToDot(aig, true, eqIds)) {
+        for (line in convertAigToDot(aig, rankByLayers = true, eqIds = eqIds)) {
             it.writeln(line)
         }
     }

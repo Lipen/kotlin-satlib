@@ -151,7 +151,7 @@ fun searchEqGates(aig: Aig, solverProvider: () -> Solver): List<Pair<Int, Int>> 
             }
 
             println("Done searching for equivalent gates")
-            println("Total equivalent pairs (EQ+XOR): ${equivalentPairs.size} + ${antiEquivalentPairs.size} = ${equivalentPairs.size + antiEquivalentPairs.size} of total ${aig.ands.size} ANDs")
+            println("Total equivalent pairs (EQ+XOR): ${equivalentPairs.size} + ${antiEquivalentPairs.size} = ${equivalentPairs.size + antiEquivalentPairs.size} of total ${aig.andGates.size} ANDs")
 
             return equivalentPairs
         } else {
