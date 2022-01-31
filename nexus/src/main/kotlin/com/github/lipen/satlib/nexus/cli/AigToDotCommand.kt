@@ -86,6 +86,7 @@ class AigToDotCommand : CliktCommand() {
         } else {
             pathDot
         }
+        logger.info("Writing DOT to '$pathDot'...")
         pathDot.sink().buffer().use {
             val lines = if (computeDisbalance) {
                 fun s(t: Int, f: Int): Double {
@@ -140,6 +141,7 @@ class AigToDotCommand : CliktCommand() {
             } else {
                 pathPdf
             }
+            logger.info("Rendering DOT to '$pathPdf'")
             Runtime.getRuntime().exec("dot -Tpdf \"$pathDot\" -o \"$pathPdf\"").waitFor()
         }
     }
