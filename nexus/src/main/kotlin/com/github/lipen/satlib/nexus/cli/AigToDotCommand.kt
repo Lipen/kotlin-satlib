@@ -59,9 +59,9 @@ class AigToDotCommand : CliktCommand() {
         default = true,
     )
 
-    private val isDisbalance: Boolean by option(
+    private val computeDisbalance: Boolean by option(
         "--disbalance",
-        help = "Compute and include disbalance",
+        help = "Compute disbalance of AIG nodes",
     ).flag(
         "--no-disbalance",
         default = false,
@@ -72,7 +72,6 @@ class AigToDotCommand : CliktCommand() {
         metavar = "<int>",
         help = "Sample size for disbalance computation"
     ).int().default(10000)
-
     private val randomSeed: Int by option(
         "--random-seed",
         metavar = "<int>",
@@ -88,7 +87,7 @@ class AigToDotCommand : CliktCommand() {
             pathDot
         }
         pathDot.sink().buffer().use {
-            val lines = if (isDisbalance) {
+            val lines = if (computeDisbalance) {
                 fun s(t: Int, f: Int): Double {
                     return t.toDouble() / (t + f)
                 }
