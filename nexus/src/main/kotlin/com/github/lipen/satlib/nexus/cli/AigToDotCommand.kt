@@ -14,6 +14,7 @@ import mu.KotlinLogging
 import okio.buffer
 import okio.sink
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.nameWithoutExtension
 import kotlin.math.min
@@ -87,6 +88,7 @@ class AigToDotCommand : CliktCommand() {
             pathDot
         }
         logger.info("Writing DOT to '$pathDot'...")
+        pathDot.parent.createDirectories()
         pathDot.sink().buffer().use {
             val lines = if (computeDisbalance) {
                 fun s(t: Int, f: Int): Double {
@@ -139,9 +141,10 @@ class AigToDotCommand : CliktCommand() {
             val pathPdf = if (reuseName) {
                 pathPdf!! / (pathDot.nameWithoutExtension + ".pdf")
             } else {
-                pathPdf
+                pathPdf!!
             }
             logger.info("Rendering DOT to '$pathPdf'")
+            pathPdf.parent.createDirectories()
             Runtime.getRuntime().exec("dot -Tpdf \"$pathDot\" -o \"$pathPdf\"").waitFor()
         }
     }
