@@ -10,7 +10,6 @@ import com.github.ajalt.clikt.parameters.types.path
 import com.github.lipen.satlib.nexus.aig.convertAigToDot
 import com.github.lipen.satlib.nexus.aig.parseAig
 import com.github.lipen.satlib.nexus.eqgates.searchEqGates
-import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.utils.writeln
 import mu.KotlinLogging
 import okio.buffer
@@ -101,7 +100,7 @@ class AigToDotCommand : CliktCommand() {
         logger.info("Writing DOT to '$pathDot'...")
         pathDot.parent.createDirectories()
         pathDot.sink().buffer().use {
-            val eqIds = if(computeEqGates) {
+            val eqIds = if (computeEqGates) {
                 val solverProvider = solverType.solverProvider()
                 searchEqGates(aig, solverProvider)
             } else {
@@ -145,7 +144,13 @@ class AigToDotCommand : CliktCommand() {
                     }
                 }
 
-                convertAigToDot(aig, rankByLayers = rankByLayers, eqIds = eqIds, nodeLabel = nodeLabel, nodeAddStyle = nodeAddStyle)
+                convertAigToDot(
+                    aig,
+                    rankByLayers = rankByLayers,
+                    eqIds = eqIds,
+                    nodeLabel = nodeLabel,
+                    nodeAddStyle = nodeAddStyle
+                )
             } else {
                 convertAigToDot(aig, rankByLayers = rankByLayers, eqIds = eqIds)
             }
