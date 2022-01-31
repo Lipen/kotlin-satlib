@@ -9,6 +9,8 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.lipen.satlib.nexus.aig.convertAigToDot
 import com.github.lipen.satlib.nexus.aig.parseAig
+import com.github.lipen.satlib.nexus.eqgates.searchEqGates
+import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.utils.writeln
 import mu.KotlinLogging
 import okio.buffer
@@ -62,7 +64,7 @@ class AigToDotCommand : CliktCommand() {
 
     private val computeDisbalance: Boolean by option(
         "--disbalance",
-        help = "Compute disbalance of AIG nodes",
+        help = "Compute disbalance of AIG nodes"
     ).flag(
         "--no-disbalance",
         default = false,
@@ -79,6 +81,15 @@ class AigToDotCommand : CliktCommand() {
         help = "Random seed"
     ).int().default(42)
 
+    private val computeEqGates: Boolean by option(
+        "--eq-gates",
+        help = "Determine equivalent gates"
+    ).flag(
+        "--no-eq-gates",
+        default = false,
+    )
+    private val solverType: SolverType by solverTypeOption()
+
     override fun run() {
         val aig = parseAig(pathAig)
 
@@ -90,6 +101,13 @@ class AigToDotCommand : CliktCommand() {
         logger.info("Writing DOT to '$pathDot'...")
         pathDot.parent.createDirectories()
         pathDot.sink().buffer().use {
+            val eqIds = if(computeEqGates) {
+                val solverProvider = solverType.solverProvider()
+                searchEqGates(aig, solverProvider)
+            } else {
+                emptyList()
+            }
+
             val lines = if (computeDisbalance) {
                 fun s(t: Int, f: Int): Double {
                     return t.toDouble() / (t + f)
@@ -127,9 +145,9 @@ class AigToDotCommand : CliktCommand() {
                     }
                 }
 
-                convertAigToDot(aig, rankByLayers = rankByLayers, nodeLabel = nodeLabel, nodeAddStyle = nodeAddStyle)
+                convertAigToDot(aig, rankByLayers = rankByLayers, eqIds = eqIds, nodeLabel = nodeLabel, nodeAddStyle = nodeAddStyle)
             } else {
-                convertAigToDot(aig, rankByLayers = rankByLayers)
+                convertAigToDot(aig, rankByLayers = rankByLayers, eqIds = eqIds)
             }
 
             for (line in lines) {
