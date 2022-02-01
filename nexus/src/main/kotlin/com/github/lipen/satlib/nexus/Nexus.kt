@@ -5,8 +5,8 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.lipen.satlib.nexus.cli.AigToDotCommand
-import com.github.lipen.satlib.nexus.cli.EqGatesCommand
 import com.github.lipen.satlib.nexus.cli.EqCheckCommand
+import com.github.lipen.satlib.nexus.cli.EqGatesCommand
 import com.soywiz.klock.measureTime
 import mu.KotlinLogging
 

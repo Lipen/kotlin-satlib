@@ -1,8 +1,8 @@
 package com.github.lipen.satlib.nexus.scripts
 
-import com.github.lipen.satlib.utils.writeln
 import com.github.lipen.satlib.nexus.aig.convertAigToDot
 import com.github.lipen.satlib.nexus.aig.parseAig
+import com.github.lipen.satlib.utils.writeln
 import okio.buffer
 import okio.sink
 import kotlin.io.path.Path

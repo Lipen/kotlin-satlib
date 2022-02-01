@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName", "FunctionName")
+@file:Suppress("LocalVariableName", "FunctionName", "DuplicatedCode")
 
 package com.github.lipen.satlib.nexus.eqcheck
 
@@ -60,8 +60,7 @@ private fun Solver.encodeAig(
     }
 
     fun nodeValue(id: Int): Lit {
-        val node = aig.node(id)
-        return when (node) {
+        return when (val node = aig.node(id)) {
             is AigInput -> inputValue[aig.inputs.indexOf(node) + 1]
             is AigAndGate -> andGateValue[aig.andGates.indexOf(node) + 1]
         }
@@ -254,12 +253,9 @@ private fun Solver.`check equivalence using conjugated tables`(
         encodeAigs(aigLeft, aigRight)
     }
 
-    /* Constants */
-
+    val Y: Int = context["Y"]
     val outputValueLeft: BoolVarArray = context["left.outputValue"]
     val outputValueRight: BoolVarArray = context["right.outputValue"]
-
-    val Y: Int = context["Y"]
 
     // Freeze assumptions
     for (y in 1..Y) {

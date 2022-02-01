@@ -45,12 +45,24 @@ class Aig(
     val outputIds: List<Int> = outputs.map { it.id }
     val andGateIds: List<Int> = andGates.map { it.id }
 
-    private val _layers by lazy { toposort(dependencyGraph()).toList() }
-    val layers: List<List<Int>> = _layers
+    val layers: List<List<Int>> by lazy { toposort(dependencyGraph()).toList() }
+
+    val parentsTable: Map<Int, List<Int>> =
+        mapping.mapValues { mutableListOf<Int>() }.also {
+            for (layer in layers) {
+                for (id in layer) {
+                    for (child in children(id)) {
+                        it[child.id]!!.add(id)
+                    }
+                }
+            }
+        }
 
     fun node(id: Int): AigNode = mapping.getValue(id)
     fun input(id: Int): AigInput = node(id) as AigInput
     fun andGate(id: Int): AigAndGate = node(id) as AigAndGate
+
+    fun children(id: Int): List<Ref> = node(id).children
 
     fun dependencyGraph(
         origin: Collection<Int> = outputs.map { it.id },
