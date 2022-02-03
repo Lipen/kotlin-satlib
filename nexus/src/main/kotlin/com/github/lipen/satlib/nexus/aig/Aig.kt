@@ -96,7 +96,7 @@ class Aig(
         }
 
         // Walk by layers and compute gate values
-        for ((i, layer) in layers().withIndex()) {
+        for ((i, layer) in layers.withIndex()) {
             // 0-th layer contains only inputs
             if (i == 0) continue
 
@@ -367,5 +367,5 @@ fun main() {
         println("Saturation: ${conjugatedTable.count { it }}/${conjugatedTable.size}")
     }
 
-    logger.info("All done in %.3f s".format(secondsSince(timeStart)))
+    logger.info("All done in %.3fs".format(secondsSince(timeStart)))
 }

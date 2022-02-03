@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.lipen.satlib.nexus.aig.parseAig
@@ -27,7 +28,7 @@ class EqCheckCommand : CliktCommand() {
         "-m",
         "--method",
         help = "Method of equivalence check"
-    ).choice("miter", "merge-eq", "merge-xor", "conj").default("miter")
+    ).choice("miter", "merge-eq", "merge-xor", "conj").required()
 
     private val solverType: SolverType by solverTypeOption()
 

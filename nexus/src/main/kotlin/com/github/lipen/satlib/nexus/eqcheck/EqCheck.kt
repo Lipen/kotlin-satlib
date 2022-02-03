@@ -105,9 +105,6 @@ private fun Solver.encodeAigs(
 private fun Solver.encodeMiter() {
     /* Constants */
 
-    val aigLeft: Aig = context["left.aig"]
-    val aigRight: Aig = context["right.aig"]
-
     val Y: Int = context["Y"]
 
     /* Variables */
@@ -167,7 +164,7 @@ private fun Solver.encodeOutputMergers(type: String) {
     }
 }
 
-private fun Solver.`check equivalence using naive miter`(
+private fun Solver.`check circuits equivalence using miter`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
@@ -188,7 +185,7 @@ private fun Solver.`check equivalence using naive miter`(
     return !isSat
 }
 
-private fun Solver.`check equivalence using output mergers`(
+private fun Solver.`check circuits equivalence using output mergers`(
     aigLeft: Aig,
     aigRight: Aig,
     type: String, // "EQ" or "XOR"
@@ -245,7 +242,7 @@ private fun Solver.`check equivalence using output mergers`(
     }
 }
 
-private fun Solver.`check equivalence using conjugated tables`(
+private fun Solver.`check circuits equivalence using conjugated tables`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
@@ -325,10 +322,10 @@ fun checkEquivalence(
         logger.info("Using $this")
 
         return when (method) {
-            "miter" -> `check equivalence using naive miter`(aigLeft, aigRight)
-            "merge-eq" -> `check equivalence using output mergers`(aigLeft, aigRight, "EQ")
-            "merge-xor" -> `check equivalence using output mergers`(aigLeft, aigRight, "XOR")
-            "conj" -> `check equivalence using conjugated tables`(aigLeft, aigRight)
+            "miter" -> `check circuits equivalence using miter`(aigLeft, aigRight)
+            "merge-eq" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "EQ")
+            "merge-xor" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "XOR")
+            "conj" -> `check circuits equivalence using conjugated tables`(aigLeft, aigRight)
             else -> TODO("Method '$method'")
         }
     }

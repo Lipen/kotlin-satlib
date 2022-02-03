@@ -114,7 +114,7 @@ class AigToDotCommand : CliktCommand() {
         pathDot.sink().buffer().use {
             val eqIds = if (computeEqGates) {
                 val solverProvider = solverType.solverProvider()
-                searchEqGates(aig, solverProvider)
+                searchEqGates(aig, solverProvider, "conj")
             } else {
                 emptyList()
             }
