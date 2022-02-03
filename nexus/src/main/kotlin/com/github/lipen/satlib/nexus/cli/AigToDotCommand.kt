@@ -51,6 +51,7 @@ class AigToDotCommand : CliktCommand() {
     ).flag(
         "--no-reuse-name",
         default = true,
+        defaultForHelp = "yes",
     )
 
     private val rankByLayers: Boolean by option(
@@ -59,6 +60,7 @@ class AigToDotCommand : CliktCommand() {
     ).flag(
         "--no-rank-by-layers",
         default = true,
+        defaultForHelp = "yes",
     )
 
     private val computeDisbalance: Boolean by option(
@@ -67,6 +69,7 @@ class AigToDotCommand : CliktCommand() {
     ).flag(
         "--no-disbalance",
         default = false,
+        defaultForHelp = "no",
     )
     private val sampleSize: Int by option(
         "-s",
@@ -79,6 +82,14 @@ class AigToDotCommand : CliktCommand() {
         metavar = "<int>",
         help = "Random seed"
     ).int().default(42)
+    private val printDisbalance: Boolean by option(
+        "--print-disbalance",
+        help = "Print disbalance table"
+    ).flag(
+        "--no-print-disbalance",
+        default = false,
+        defaultForHelp = "no",
+    )
 
     private val computeEqGates: Boolean by option(
         "--eq-gates",
@@ -86,6 +97,7 @@ class AigToDotCommand : CliktCommand() {
     ).flag(
         "--no-eq-gates",
         default = false,
+        defaultForHelp = "no",
     )
     private val solverType: SolverType by solverTypeOption()
 
@@ -121,10 +133,12 @@ class AigToDotCommand : CliktCommand() {
                 logger.info("Computing disbalance table using sampleSize=$sampleSize and randomSeed=$randomSeed...")
                 val table = aig._compute(sampleSize, random)
 
-                println("Table for $aig:")
-                for ((id, p) in table.entries.sortedBy { (_, p) -> val (t, f) = p; s(t, f) }) {
-                    val (t, f) = p
-                    println("  - $id: t=$t, f=$f, s=%.3f".format(s(t, f)))
+                if (printDisbalance) {
+                    println("Table for $aig:")
+                    for ((id, p) in table.entries.sortedBy { (_, p) -> val (t, f) = p; s(t, f) }) {
+                        val (t, f) = p
+                        println("  - $id: t=$t, f=$f, s=%.3f".format(s(t, f)))
+                    }
                 }
 
                 val nodeLabel = table.mapValues { (_, p) ->
