@@ -11,6 +11,7 @@ import com.github.lipen.satlib.nexus.aig.AigAndGate
 import com.github.lipen.satlib.nexus.aig.AigInput
 import com.github.lipen.satlib.nexus.aig.Ref
 import com.github.lipen.satlib.nexus.aig.parseAig
+import com.github.lipen.satlib.nexus.aig.shadow
 import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.maybeMelt
@@ -27,20 +28,6 @@ import mu.KotlinLogging
 import kotlin.math.absoluteValue
 
 private val logger = KotlinLogging.logger {}
-
-private fun Aig.shadow(id: Int): List<Int> {
-    val queue: ArrayDeque<Int> = ArrayDeque(listOf(id))
-    val shadow: MutableSet<Int> = mutableSetOf()
-
-    while (queue.isNotEmpty()) {
-        val x = queue.removeFirst()
-        if (shadow.add(x)) {
-            queue.addAll(parentsTable.getValue(x))
-        }
-    }
-
-    return shadow.toList()
-}
 
 @Suppress("LocalVariableName")
 private fun Solver.encodeAig(

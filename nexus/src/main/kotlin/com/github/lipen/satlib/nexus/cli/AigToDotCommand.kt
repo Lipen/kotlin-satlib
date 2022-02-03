@@ -7,8 +7,10 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import com.github.lipen.satlib.nexus.aig.cone
 import com.github.lipen.satlib.nexus.aig.convertAigToDot
 import com.github.lipen.satlib.nexus.aig.parseAig
+import com.github.lipen.satlib.nexus.aig.shadow
 import com.github.lipen.satlib.nexus.eqgates.searchEqGates
 import com.github.lipen.satlib.utils.writeln
 import mu.KotlinLogging
@@ -90,6 +92,14 @@ class AigToDotCommand : CliktCommand() {
         default = false,
         defaultForHelp = "no",
     )
+    private val computeStats: Boolean by option(
+        "--stats",
+        help = "Compute cones and shadows of AIG nodes"
+    ).flag(
+        "--no-stats",
+        default = false,
+        defaultForHelp = "no",
+    )
 
     private val computeEqGates: Boolean by option(
         "--eq-gates",
@@ -141,9 +151,16 @@ class AigToDotCommand : CliktCommand() {
                     }
                 }
 
-                val nodeLabel = table.mapValues { (_, p) ->
+                val nodeLabel = table.mapValues { (id, p) ->
                     val (t, f) = p
-                    "\\N:%.3f".format(s(t, f))
+                    if (computeStats) {
+                        val cone = aig.cone(id)
+                        val shadow = aig.shadow(id)
+                        "\\N : %.3f\ncone: ${cone.size} (${cone.filter { it in aig.inputIds }.size})\nshad: ${shadow.size} (${shadow.filter { it in aig.outputIds }.size})".format(
+                            s(t, f))
+                    } else {
+                        "\\N: %.3f".format(s(t, f))
+                    }
                 }
                 val nodeAddStyle = table.mapValues { (_, p) ->
                     val (t, f) = p
