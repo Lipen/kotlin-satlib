@@ -42,14 +42,14 @@ class Aig(
     val outputIds: List<Int> = outputs.map { it.id }
     val andGateIds: List<Int> = andGates.map { it.id }
 
-    val layers: List<List<Int>> by lazy { toposort(dependencyGraph()).toList() }
+    val layers: List<List<Int>> = toposort(dependencyGraph()).toList()
 
-    val parentsTable: Map<Int, List<Int>> =
-        mapping.mapValues { mutableListOf<Int>() }.also {
+    private val parentsTable: Map<Int, List<Ref>> =
+        mapping.keys.associateWith { mutableListOf<Ref>() }.also {
             for (layer in layers) {
                 for (id in layer) {
                     for (child in children(id)) {
-                        it[child.id]!!.add(id)
+                        it.getValue(child.id).add(Ref(id, child.negated))
                     }
                 }
             }
@@ -60,6 +60,7 @@ class Aig(
     fun andGate(id: Int): AigAndGate = node(id) as AigAndGate
 
     fun children(id: Int): List<Ref> = node(id).children
+    fun parents(id: Int): List<Ref> = parentsTable.getValue(id)
 
     fun dependencyGraph(
         origin: Collection<Int> = outputs.map { it.id },
@@ -79,11 +80,6 @@ class Aig(
         }
 
         return deps
-    }
-
-    fun layers(): Sequence<List<Int>> {
-        return layers.asSequence()
-        // return toposort(dependencyGraph())
     }
 
     fun eval(inputValues: List<Boolean>): Map<Int, Boolean> {
@@ -246,7 +242,7 @@ fun main() {
     //     println("Layer #${i + 1} (${layer.size} nodes): $layer")
     // }
 
-    for ((i, layer) in aig.layers().withIndex()) {
+    for ((i, layer) in aig.layers.withIndex()) {
         println("Layer #${i + 1} (${layer.size} nodes): $layer")
     }
 

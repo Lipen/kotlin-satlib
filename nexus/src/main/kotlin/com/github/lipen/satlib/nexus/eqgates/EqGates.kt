@@ -1,23 +1,18 @@
-@file:Suppress("LocalVariableName", "FunctionName")
+@file:Suppress("LocalVariableName", "FunctionName", "DuplicatedCode")
 
 package com.github.lipen.satlib.nexus.eqgates
 
 import com.github.lipen.satlib.core.BoolVarArray
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.core.newBoolVarArray
-import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
-import com.github.lipen.satlib.nexus.aig.AigAndGate
-import com.github.lipen.satlib.nexus.aig.AigInput
-import com.github.lipen.satlib.nexus.aig.Ref
 import com.github.lipen.satlib.nexus.aig.parseAig
+import com.github.lipen.satlib.nexus.encoding.encodeAig1
 import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.iffXor2
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.maybeMelt
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
-import com.github.lipen.satlib.op.iffAnd
 import com.github.lipen.satlib.op.iffIff
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
@@ -29,57 +24,6 @@ import kotlin.io.path.Path
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
-
-private fun Solver.encodeAig(aig: Aig) {
-    /* Constants */
-
-    context["aig"] = aig
-    val X = context("X") { aig.inputs.size }
-    val Y = context("Y") { aig.outputs.size }
-    val G = context("G") { aig.andGates.size }
-    logger.info("X = $Y, Y = $Y, G = $G")
-
-    fun inputByIndex(x: Int): AigInput = aig.inputs[x - 1]
-    fun outputByIndex(y: Int): Ref = aig.outputs[y - 1]
-    fun andGateByIndex(g: Int): AigAndGate = aig.andGates[g - 1] // FIXME: order?
-
-    /* Variables */
-
-    val inputValue = context("inputValue") {
-        newBoolVarArray(X)
-    }
-    val andGateValue = context("andGateValue") {
-        newBoolVarArray(G)
-    }
-
-    fun nodeValueById(id: Int): Lit {
-        return when (val node = aig.node(id)) {
-            is AigInput -> inputValue[aig.inputs.indexOf(node) + 1]
-            is AigAndGate -> andGateValue[aig.andGates.indexOf(node) + 1]
-        }
-    }
-
-    fun nodeValueByRef(ref: Ref): Lit = nodeValueById(ref.id) sign !ref.negated
-
-    val outputValue = context("outputValue") {
-        newBoolVarArray(Y) { (y) ->
-            val output = outputByIndex(y)
-            nodeValueByRef(output)
-        }
-    }
-
-    /* Constraints */
-
-    comment("AND gate semantics")
-    for (g in 1..G) {
-        val gate = andGateByIndex(g)
-        iffAnd(
-            andGateValue[g],
-            nodeValueByRef(gate.left),
-            nodeValueByRef(gate.right),
-        )
-    }
-}
 
 private fun Solver.`check gates equivalence using conjugated table`(
     lit1: Lit,
@@ -181,7 +125,7 @@ fun searchEqGates(
         for ((i, id1) in aig.andGateIds.withIndex()) {
             for ((j, id2) in aig.andGateIds.withIndex()) {
                 if (i >= j) continue
-                if (nodeValue.getValue(id1) != nodeValue.getValue(id2)) {
+                if (nodeValue[id1] != nodeValue[id2]) {
                     nonEqGates.add(Pair(i + 1, j + 1))
                 }
             }
@@ -195,10 +139,12 @@ fun searchEqGates(
         logger.info("Using $this")
 
         declare(logger) {
-            encodeAig(aig)
+            encodeAig1(aig)
         }
+
         val G: Int = context["G"]
         val andGateValueVar: BoolVarArray = context["andGateValue"]
+
         // Freeze gates (because we use them in assumptions later)
         for (g in 1..G) {
             maybeFreeze(andGateValueVar[g])
@@ -207,6 +153,7 @@ fun searchEqGates(
         // for (g in 1..G) {
         //     maybeSetDecision(andGateValueVar[g], false)
         // }
+
         val (isSat, timeSolve) = measureTimeWithResult { solve() }
         logger.info { "${if (isSat) "SAT" else "UNSAT"} for template CNF in %.3fs".format(timeSolve.seconds) }
         if (!isSat) error("Unexpected UNSAT")

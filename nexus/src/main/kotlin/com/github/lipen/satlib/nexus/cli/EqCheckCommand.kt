@@ -27,7 +27,7 @@ class EqCheckCommand : CliktCommand() {
         "-m",
         "--method",
         help = "Method of equivalence check"
-    ).choice("miter", "merge-eq", "merge-xor", "conj").required()
+    ).choice("miter", "merge-eq", "merge-xor", "conj", "dec").required()
 
     private val solverType: SolverType by solverTypeOption()
 

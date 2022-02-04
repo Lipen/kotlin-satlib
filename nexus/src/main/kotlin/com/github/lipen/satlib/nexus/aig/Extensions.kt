@@ -16,10 +16,8 @@ fun Aig.cone(id: Int): List<Int> {
     return cone.toList()
 }
 
-fun Aig.inputSupport(id: Int): List<Int> {
-    // Returns a list of input node ids
-    return cone(id).filter { it in inputIds }
-}
+// Returns a list of input node ids
+fun Aig.inputSupport(id: Int): List<Int> = cone(id).filter { it in inputIds }
 
 fun Aig.shadow(id: Int): List<Int> {
     // Returns a list of node ids
@@ -30,14 +28,12 @@ fun Aig.shadow(id: Int): List<Int> {
     while (queue.isNotEmpty()) {
         val x = queue.removeFirst()
         if (shadow.add(x)) {
-            queue.addAll(parentsTable.getValue(x))
+            queue.addAll(parents(x).map { it.id })
         }
     }
 
     return shadow.toList()
 }
 
-fun Aig.outputSupport(id: Int): List<Int> {
-    // Returns a list of output node ids
-    return shadow(id).filter { it in outputIds }
-}
+// Returns a list of output node ids
+fun Aig.outputSupport(id: Int): List<Int> = shadow(id).filter { it in outputIds }

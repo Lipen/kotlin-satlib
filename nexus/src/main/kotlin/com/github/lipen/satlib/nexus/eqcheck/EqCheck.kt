@@ -4,170 +4,34 @@ package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
-import com.github.lipen.satlib.nexus.aig.AigAndGate
-import com.github.lipen.satlib.nexus.aig.AigInput
-import com.github.lipen.satlib.nexus.aig.Ref
 import com.github.lipen.satlib.nexus.aig.parseAig
+import com.github.lipen.satlib.nexus.encoding.encodeAigs
+import com.github.lipen.satlib.nexus.encoding.encodeMiter
+import com.github.lipen.satlib.nexus.encoding.encodeOutputMergers
 import com.github.lipen.satlib.nexus.utils.declare
-import com.github.lipen.satlib.nexus.utils.iffXor2
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.maybeMelt
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toInt
-import com.github.lipen.satlib.op.iffAnd
-import com.github.lipen.satlib.op.iffIff
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
 import mu.KotlinLogging
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
-
-private fun Solver.encodeAig(
-    aig: Aig,
-    name: String,
-    reuse: String? = null,
-) {
-    /* Constants */
-
-    context["$name.aig"] = aig
-    val X = context("$name.X") { aig.inputs.size }
-    val Y = context("$name.Y") { aig.outputs.size }
-    val G = context("$name.V") { aig.andGates.size }
-    logger.info("$name: X = $Y, Y = $Y, G = $G")
-
-    fun input(x: Int): AigInput = aig.inputs[x - 1]
-    fun output(y: Int): Ref = aig.outputs[y - 1]
-    fun andGate(g: Int): AigAndGate = aig.andGates[g - 1] // FIXME: order?
-
-    /* Variables */
-
-    val inputValue = context("$name.inputValue") {
-        if (reuse == null) {
-            newBoolVarArray(X)
-        } else {
-            context["$reuse.inputValue"]
-        }
-    }
-    val andGateValue = context("$name.andGateValue") {
-        newBoolVarArray(G)
-    }
-
-    fun nodeValue(id: Int): Lit {
-        return when (val node = aig.node(id)) {
-            is AigInput -> inputValue[aig.inputs.indexOf(node) + 1]
-            is AigAndGate -> andGateValue[aig.andGates.indexOf(node) + 1]
-        }
-    }
-
-    fun nodeValue(ref: Ref): Lit = nodeValue(ref.id) sign !ref.negated
-
-    val outputValue = context("$name.outputValue") {
-        newBoolVarArray(Y) { (y) ->
-            val output = output(y)
-            nodeValue(output)
-        }
-    }
-
-    /* Constraints */
-
-    comment("AND gate semantics")
-    for (g in 1..G) {
-        val gate = andGate(g)
-        iffAnd(
-            andGateValue[g],
-            nodeValue(gate.left),
-            nodeValue(gate.right),
-        )
-    }
-}
-
-private fun Solver.encodeAigs(
-    aigLeft: Aig,
-    aigRight: Aig,
-) {
-    require(aigLeft.inputs.size == aigRight.inputs.size)
-    require(aigLeft.outputs.size == aigRight.outputs.size)
-
-    encodeAig(aigLeft, "left")
-    encodeAig(aigRight, "right", reuse = "left")
-    context["X"] = context["left.X"]
-    context["Y"] = context["left.Y"]
-    context["inputValue"] = context["left.inputValue"]
-}
-
-private fun Solver.encodeMiter() {
-    /* Constants */
-
-    val Y: Int = context["Y"]
-
-    /* Variables */
-
-    val outputValueLeft: BoolVarArray = context["left.outputValue"]
-    val outputValueRight: BoolVarArray = context["right.outputValue"]
-    val xorValue = context("xorValue") {
-        newBoolVarArray(Y)
-    }
-
-    /* Constraints */
-
-    comment("Miter XORs")
-    for (y in 1..Y) {
-        iffXor2(
-            xorValue[y],
-            outputValueLeft[y],
-            outputValueRight[y],
-        )
-    }
-
-    comment("Miter OR")
-    addClause((1..Y).map { y -> xorValue[y] })
-    // addClause(xorValue.values)
-}
-
-private fun Solver.encodeOutputMergers(type: String) {
-    require(type in listOf("EQ", "XOR"))
-
-    /* Constants */
-
-    val aigLeft: Aig = context["left.aig"]
-    val aigRight: Aig = context["right.aig"]
-
-    val Y: Int = context["Y"]
-
-    /* Variables */
-
-    val outputValueLeft: BoolVarArray = context["left.outputValue"]
-    val outputValueRight: BoolVarArray = context["right.outputValue"]
-    val mergerValue = context("mergerValue") {
-        newBoolVarArray(Y)
-    }
-
-    /* Constraints */
-
-    comment("Merge outputs using $type")
-    for (y in 1..Y) {
-        val merger = mergerValue[y]
-        val left = outputValueLeft[y]
-        val right = outputValueRight[y]
-        when (type) {
-            "EQ" -> iffIff(merger, left, right)
-            "XOR" -> iffXor2(merger, left, right)
-            else -> error("Bad type '$type'")
-        }
-    }
-}
 
 private fun Solver.`check circuits equivalence using miter`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
+    logger.info("Checking equivalence using miter...")
+
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
         encodeMiter()
@@ -190,6 +54,8 @@ private fun Solver.`check circuits equivalence using output mergers`(
     aigRight: Aig,
     type: String, // "EQ" or "XOR"
 ): Boolean {
+    logger.info("Checking equivalence using output $type-mergers...")
+
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
         encodeOutputMergers(type)
@@ -246,6 +112,8 @@ private fun Solver.`check circuits equivalence using conjugated tables`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
+    logger.info("Checking equivalence using conjugated tables...")
+
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
     }
@@ -305,13 +173,43 @@ private fun Solver.`check circuits equivalence using conjugated tables`(
     }
 }
 
+private fun Solver.`check circuits equivalence using decomposition`(
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using decomposition...")
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val decomposition: List<List<Lit>> = emptyList()
+    // TODO
+
+    for ((index, assumptions) in decomposition.withIndex()) {
+        val (res, timeSolve) = measureTimeWithResult {
+            solve(assumptions)
+        }
+        logger.debug {
+            "${if (res) "SAT" else "UNSAT"} on $index/${decomposition.size} in %.3fs".format(timeSolve.seconds)
+        }
+        if (res) {
+            logger.warn("Circuits are NOT equivalent!")
+            return false
+        }
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
 fun checkEquivalence(
     aigLeft: Aig,
     aigRight: Aig,
     solverProvider: () -> Solver,
     method: String,
 ): Boolean {
-    logger.info("Checking for equivalence using '$method' method")
+    logger.info("Preparing to check the equivalence using '$method' method...")
     logger.info("Left circuit: $aigLeft")
     logger.info("Right circuit: $aigRight")
 
@@ -326,6 +224,7 @@ fun checkEquivalence(
             "merge-eq" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "EQ")
             "merge-xor" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "XOR")
             "conj" -> `check circuits equivalence using conjugated tables`(aigLeft, aigRight)
+            "dec" -> `check circuits equivalence using decomposition`(aigLeft, aigRight)
             else -> TODO("Method '$method'")
         }
     }

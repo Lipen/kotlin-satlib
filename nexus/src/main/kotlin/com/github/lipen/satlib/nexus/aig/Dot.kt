@@ -12,8 +12,8 @@ fun convertAigToDot(
     val STYLE_PO = "shape=triangle,color=blue" // Primary Output style
     val STYLE_AND = "shape=oval" // And gate style
     val STYLE_INPUT = "shape=box" // Input gate style
-    val STYLE_EDGE = "arrowhead=none"
-    val STYLE_EDGE_NEGATED = "arrowhead=none,style=dashed"
+    val STYLE_EDGE = "arrowhead=none" // Positive edge style
+    val STYLE_EDGE_NEGATED = "arrowhead=none,style=dashed" // Complemented edge style
 
     yield("digraph {")
 
@@ -24,7 +24,7 @@ fun convertAigToDot(
     }
     yield("}")
 
-    val layers = aig.layers().toList()
+    val layers = aig.layers
     for ((i, layer) in layers.withIndex()) {
         yield("// Layer #${i + 1}")
         if (rankByLayers) {

@@ -20,8 +20,8 @@ fun main() {
 
     val output = Path("data/dot/${input.nameWithoutExtension}-eq.dot")
     val aig = parseAig(input.pathString)
-    val nodes = aig.layers().flatten().toList()
-    val eqIds = equivalentPairs.map { (a, b) -> nodes[a - 1] to nodes[b - 1] }
+    val ids = aig.layers.flatten()
+    val eqIds = equivalentPairs.map { (a, b) -> ids[a - 1] to ids[b - 1] }
     output.parent.createDirectories()
     output.sink().buffer().use {
         println("Dumping AIG to DOT '$output'")

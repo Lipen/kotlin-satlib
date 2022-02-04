@@ -29,8 +29,7 @@ import kotlin.math.absoluteValue
 
 private val logger = KotlinLogging.logger {}
 
-@Suppress("LocalVariableName")
-private fun Solver.encodeAig(
+private fun Solver.encodeAigATPG(
     aig: Aig,
     name: String,
     reuse: String? = null,
@@ -129,8 +128,8 @@ private fun Solver.encodeStuckAtFault(
     aig: Aig,
     brokenGateId: Int,
 ) {
-    encodeAig(aig, name = "original")
-    encodeAig(aig, name = "faulty", reuse = "original", brokenGateId = brokenGateId)
+    encodeAigATPG(aig, name = "original")
+    encodeAigATPG(aig, name = "faulty", reuse = "original", brokenGateId = brokenGateId)
     context["X"] = context["original.X"]
     context["Y"] = context["original.Y"]
     context["inputValue"] = context["original.inputValue"]
