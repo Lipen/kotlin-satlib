@@ -13,6 +13,7 @@ build/
 *.pdf
 
 # Data, archives
+/data/
 *.csv
 *.zip
 *.gz
@@ -26,6 +27,7 @@ logs/
 *.log
 
 # Other
+old/
 *.txt
 
 # Solvers sources
