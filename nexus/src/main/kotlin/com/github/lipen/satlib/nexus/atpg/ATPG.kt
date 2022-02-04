@@ -12,18 +12,16 @@ import com.github.lipen.satlib.nexus.aig.AigInput
 import com.github.lipen.satlib.nexus.aig.Ref
 import com.github.lipen.satlib.nexus.aig.parseAig
 import com.github.lipen.satlib.nexus.aig.shadow
+import com.github.lipen.satlib.nexus.eqgates.`check gates equivalence using conjugated table`
 import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.maybeMelt
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
-import com.github.lipen.satlib.nexus.utils.toInt
 import com.github.lipen.satlib.op.iffAnd
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
-import com.soywiz.klock.measureTimeWithResult
 import mu.KotlinLogging
 import kotlin.math.absoluteValue
 
@@ -37,6 +35,8 @@ private fun Solver.encodeAigATPG(
 ) {
     if (reuse != null) {
         require(brokenGateId != 0)
+    } else {
+        require(brokenGateId == 0)
     }
 
     /* Constants */
@@ -64,7 +64,7 @@ private fun Solver.encodeAigATPG(
         if (reuse == null) {
             newBoolVarArray(G)
         } else {
-            val shadow = context("shadow") { aig.shadow(brokenGateId) }
+            val shadow = context("shadow") { aig.shadow(brokenGateId.absoluteValue) }
             println("shadow of $brokenGateId (size=${shadow.size}): $shadow")
             val andGateValueReuse: BoolVarArray = context["$reuse.andGateValue"]
             newBoolVarArray(G) { (g) ->
@@ -162,27 +162,28 @@ private fun atpg(aig: Aig) {
 
             logger.info("Calculating conjugated table for y = $y...")
             val timeStartConj = timeNow()
-            var ok = true
-            for ((s1, s2) in listOf(
-                false to false,
-                false to true,
-                true to false,
-                true to true,
-            )) {
-                val (res, timeSolveSub) = measureTimeWithResult {
-                    solve(left sign s1, right sign s2)
-                }
-                logger.debug {
-                    "y=$y, solve(${s1.toInt()}${s2.toInt()})=${res.toInt()} in %.3fs".format(timeSolveSub.seconds)
-                }
-                if (res != (s1 == s2)) {
-                    logger.warn {
-                        "Circuits are NOT equivalent in output y=$y: solve(${s1.toInt()}${s2.toInt()}) = ${res.toInt()}"
-                    }
-                    ok = false
-                    // return false
-                }
-            }
+            // var ok = true
+            // for ((s1, s2) in listOf(
+            //     false to false,
+            //     false to true,
+            //     true to false,
+            //     true to true,
+            // )) {
+            //     val (res, timeSolveSub) = measureTimeWithResult {
+            //         solve(left sign s1, right sign s2)
+            //     }
+            //     logger.debug {
+            //         "y=$y, solve(${s1.toInt()}${s2.toInt()})=${res.toInt()} in %.3fs".format(timeSolveSub.seconds)
+            //     }
+            //     if (res != (s1 == s2)) {
+            //         logger.warn {
+            //             "Circuits are NOT equivalent in output y=$y: solve(${s1.toInt()}${s2.toInt()}) = ${res.toInt()}"
+            //         }
+            //         ok = false
+            //         // return false
+            //     }
+            // }
+            val ok = `check gates equivalence using conjugated table`(left, right)
             if (ok) {
                 logger.info {
                     "Circuits are equivalent in output y=$y. Done in %.3fs".format(secondsSince(timeStartConj))

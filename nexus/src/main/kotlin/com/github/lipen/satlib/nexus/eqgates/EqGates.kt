@@ -25,7 +25,7 @@ import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
-private fun Solver.`check gates equivalence using conjugated table`(
+internal fun Solver.`check gates equivalence using conjugated table`(
     lit1: Lit,
     lit2: Lit,
 ): Boolean {
@@ -67,7 +67,7 @@ private fun Solver.`check gates equivalence using conjugated table`(
     return true
 }
 
-private fun Solver.`check gates equivalence using merger`(
+internal fun Solver.`check gates equivalence using merger`(
     lit1: Lit,
     lit2: Lit,
     type: String, // EQ or XOR

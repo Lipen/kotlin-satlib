@@ -26,7 +26,7 @@ import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
-private fun Solver.`check circuits equivalence using miter`(
+internal fun Solver.`check circuits equivalence using miter`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
@@ -49,7 +49,7 @@ private fun Solver.`check circuits equivalence using miter`(
     return !isSat
 }
 
-private fun Solver.`check circuits equivalence using output mergers`(
+internal fun Solver.`check circuits equivalence using output mergers`(
     aigLeft: Aig,
     aigRight: Aig,
     type: String, // "EQ" or "XOR"
@@ -108,7 +108,7 @@ private fun Solver.`check circuits equivalence using output mergers`(
     }
 }
 
-private fun Solver.`check circuits equivalence using conjugated tables`(
+internal fun Solver.`check circuits equivalence using conjugated tables`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
@@ -173,7 +173,7 @@ private fun Solver.`check circuits equivalence using conjugated tables`(
     }
 }
 
-private fun Solver.`check circuits equivalence using decomposition`(
+internal fun Solver.`check circuits equivalence using decomposition`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
