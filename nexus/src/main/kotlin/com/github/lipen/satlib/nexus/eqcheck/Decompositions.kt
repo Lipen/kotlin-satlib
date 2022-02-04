@@ -7,7 +7,6 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.nexus.aig.Aig
 import com.github.lipen.satlib.nexus.aig.parseAig
 import com.github.lipen.satlib.nexus.encoding.encodeAig1
-import com.github.lipen.satlib.nexus.encoding.encodeAigs
 import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.pow
@@ -39,7 +38,7 @@ internal fun Solver.determineDecomposition1(
     logger.info("Computing p-table using sampleSize=$sampleSize and randomSeed=$randomSeed...")
     val tfTable = aig._compute(sampleSize, random)
     val pTable = tfTable.mapValues { (_, tf) ->
-        val (t,f )= tf
+        val (t, f) = tf
         t.toDouble() / (t + f)
     }
     // println("Sorted p-table: ${pTable.toSortedMap { a, b -> pTable.getValue(a).compareTo(pTable.getValue(b)) }}")

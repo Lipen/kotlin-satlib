@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode", "LocalVariableName")
+
 package com.github.lipen.satlib.nexus.encoding
 
 import com.github.lipen.satlib.core.Lit

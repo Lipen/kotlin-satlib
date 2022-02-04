@@ -157,7 +157,8 @@ class AigToDotCommand : CliktCommand() {
                         val cone = aig.cone(id)
                         val shadow = aig.shadow(id)
                         "\\N : %.3f\ncone: ${cone.size} (${cone.filter { it in aig.inputIds }.size})\nshad: ${shadow.size} (${shadow.filter { it in aig.outputIds }.size})".format(
-                            s(t, f))
+                            s(t, f)
+                        )
                     } else {
                         "\\N: %.3f".format(s(t, f))
                     }

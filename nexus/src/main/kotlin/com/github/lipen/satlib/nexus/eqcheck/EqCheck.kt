@@ -22,7 +22,6 @@ import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
 import mu.KotlinLogging
-import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
