@@ -200,7 +200,7 @@ class AigToDotCommand : CliktCommand() {
             }
             logger.info("Rendering DOT to '$pathPdf'")
             pathPdf.parent.createDirectories()
-            Runtime.getRuntime().exec("dot -Tpdf \"$pathDot\" -o \"$pathPdf\"").waitFor()
+            Runtime.getRuntime().exec("dot -Tpdf $pathDot -o $pathPdf").waitFor()
         }
     }
 }

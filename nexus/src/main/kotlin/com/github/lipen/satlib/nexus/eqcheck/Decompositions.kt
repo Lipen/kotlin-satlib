@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName")
+@file:Suppress("LocalVariableName", "DuplicatedCode")
 
 package com.github.lipen.satlib.nexus.eqcheck
 
@@ -8,7 +8,9 @@ import com.github.lipen.satlib.nexus.aig.Aig
 import com.github.lipen.satlib.nexus.aig.parseAig
 import com.github.lipen.satlib.nexus.encoding.encodeAig1
 import com.github.lipen.satlib.nexus.utils.declare
+import com.github.lipen.satlib.nexus.utils.geomean
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
+import com.github.lipen.satlib.nexus.utils.mean
 import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
@@ -17,10 +19,14 @@ import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
 import mu.KotlinLogging
-import kotlin.math.pow
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
+
+internal fun disbalance(p: Double, midpoint: Double = 0.25): Double {
+    return if (p <= midpoint) (midpoint - p) / midpoint
+    else (p - midpoint) / (1 - midpoint)
+}
 
 internal fun Solver.determineDecomposition1(
     aig: Aig,
@@ -57,10 +63,18 @@ internal fun Solver.determineDecomposition1(
         // 0-th layer contains only inputs
         if (i == 0) continue
 
-        if (layer.size <= 20) {
+        if (layer.size > 20) {
+            logger.info("Layer #$i (size=${layer.size}) is too big")
+        } else if (layer.size < 6) {
+            logger.info("Layer #$i (size=${layer.size}) is too small")
+        } else {
             val ps = layer.map { id -> pTable.getValue(id) }
-            val meanDisbalance = ps.sum() / ps.size
-            val geomeanDisbalance = ps.reduce { acc, x -> acc * x }.pow(1.0 / ps.size)
+            val meanP = ps.mean()
+            val geomeanP = ps.geomean()
+
+            val dises = ps.map { p -> disbalance(p) }
+            val meanDis = dises.mean()
+            val geomeanDis = dises.geomean()
 
             val bucket = layer.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
             val (result, timeEval) = measureTimeWithResult {
@@ -68,11 +82,12 @@ internal fun Solver.determineDecomposition1(
             }
             logger.info("Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
             println("  - ids ${layer.size}: $layer")
-            println("  - mean/geomean disbalance: %.3f / %.3f".format(meanDisbalance, geomeanDisbalance))
+            println("  - ps: $ps")
+            println("  - dises: $dises")
+            println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+            println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
             println("  - saturation: %.3f%%".format(result.saturation * 100.0))
             println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
-        } else {
-            logger.info("Layer #$i (size=${layer.size}) is too big")
         }
 
         // for (id in layer) {
@@ -85,8 +100,12 @@ internal fun Solver.determineDecomposition1(
         val lowAsymm = idsSortedByDisbalance.take(k)
 
         val ps = lowAsymm.map { id -> pTable.getValue(id) }
-        val meanDisbalance = ps.sum() / ps.size
-        val geomeanDisbalance = ps.reduce { acc, x -> acc * x }.pow(1.0 / ps.size)
+        val meanP = ps.mean()
+        val geomeanP = ps.geomean()
+
+        val dises = ps.map { p -> disbalance(p) }
+        val meanDis = dises.mean()
+        val geomeanDis = dises.geomean()
 
         val bucket = lowAsymm.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
         val (result, timeEval) = measureTimeWithResult {
@@ -95,7 +114,9 @@ internal fun Solver.determineDecomposition1(
         logger.info("Lowest k=$k asymm gates evaluated in %.3fs".format(timeEval.seconds))
         println("  - ids (${lowAsymm.size}): $lowAsymm")
         println("  - ps: $ps")
-        println("  - mean/geomean disbalance: %.3f / %.3f".format(meanDisbalance, geomeanDisbalance))
+        println("  - dises: $dises")
+        println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+        println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
         println("  - saturation: %.3f%%".format(result.saturation * 100.0))
         println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
     }
@@ -105,8 +126,12 @@ internal fun Solver.determineDecomposition1(
         val highAsymm = idsSortedByDisbalance.takeLast(k)
 
         val ps = highAsymm.map { id -> pTable.getValue(id) }
-        val meanDisbalance = ps.sum() / ps.size
-        val geomeanDisbalance = ps.reduce { acc, x -> acc * x }.pow(1.0 / ps.size)
+        val meanP = ps.mean()
+        val geomeanP = ps.geomean()
+
+        val dises = ps.map { p -> disbalance(p) }
+        val meanDis = dises.mean()
+        val geomeanDis = dises.geomean()
 
         val bucket = highAsymm.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
         val (result, timeEval) = measureTimeWithResult {
@@ -115,7 +140,9 @@ internal fun Solver.determineDecomposition1(
         logger.info("Highest k=$k asymm gates evaluated in %.3fs".format(timeEval.seconds))
         println("  - ids (${highAsymm.size}): $highAsymm")
         println("  - ps: $ps")
-        println("  - mean/geomean disbalance: %.3f / %.3f".format(meanDisbalance, geomeanDisbalance))
+        println("  - dises: $dises")
+        println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+        println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
         println("  - saturation: %.3f%%".format(result.saturation * 100.0))
         println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
     }
@@ -123,14 +150,16 @@ internal fun Solver.determineDecomposition1(
     run {
         val k = 14
         val topAsymm = aig.mapping.keys.sortedBy { id ->
-            val p = pTable.getValue(id)
-            if (p < 0.25) (0.25 - p) / 0.25
-            else (p - 0.25) / 0.75
+            disbalance(pTable.getValue(id))
         }.takeLast(k)
 
         val ps = topAsymm.map { id -> pTable.getValue(id) }
-        val meanDisbalance = ps.sum() / ps.size
-        val geomeanDisbalance = ps.reduce { acc, x -> acc * x }.pow(1.0 / ps.size)
+        val meanP = ps.mean()
+        val geomeanP = ps.geomean()
+
+        val dises = ps.map { p -> disbalance(p) }
+        val meanDis = dises.mean()
+        val geomeanDis = dises.geomean()
 
         val bucket = topAsymm.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
         val (result, timeEval) = measureTimeWithResult {
@@ -139,7 +168,9 @@ internal fun Solver.determineDecomposition1(
         logger.info("Top k=$k asymm gates evaluated in %.3fs".format(timeEval.seconds))
         println("  - ids (${topAsymm.size}): $topAsymm")
         println("  - ps: $ps")
-        println("  - mean/geomean disbalance: %.3f / %.3f".format(meanDisbalance, geomeanDisbalance))
+        println("  - dises: $dises")
+        println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+        println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
         println("  - saturation: %.3f%%".format(result.saturation * 100.0))
         println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
     }
@@ -154,18 +185,19 @@ fun main() {
     val right = "PancakeSort"
     // Params: 3_3, 4_3, 5_4, 6_4, ...
     val param = "7_4"
-    val filenameLeft = "data/instances/${left}/fraag/${left}_${param}.aag"
-    val filenameRight = "data/instances/${right}/fraag/${right}_${param}.aag"
+    val aag = "aag" // "aag" or "fraag"
+    val filenameLeft = "data/instances/${left}/$aag/${left}_${param}.aag"
+    val filenameRight = "data/instances/${right}/$aag/${right}_${param}.aag"
 
     val aigLeft = parseAig(filenameLeft)
-    // val aigRight = parseAig(filenameRight)
+    val aigRight = parseAig(filenameRight)
     // val solverProvider = { MiniSatSolver() }
     // val solverProvider = { GlucoseSolver() }
     val solverProvider = { CadicalSolver() }
 
     solverProvider().useWith {
         logger.info("Using $this")
-        val decomposition = determineDecomposition1(aigLeft)
+        val decomposition = determineDecomposition1(aigRight)
         logger.info("Decomposition size: ${decomposition.size}")
         for (item in decomposition) {
             println("  - $item")
