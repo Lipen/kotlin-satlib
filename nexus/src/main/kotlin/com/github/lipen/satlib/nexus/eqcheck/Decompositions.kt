@@ -28,6 +28,14 @@ internal fun disbalance(p: Double, midpoint: Double = 0.25): Double {
     else (p - midpoint) / (1 - midpoint)
 }
 
+private data class LayerInfo(
+    val index: Int,
+    val layer: List<Int>, // ids
+    val ps: List<Double>,
+    val dises: List<Double>,
+    val result: BucketEvaluationResult,
+)
+
 internal fun Solver.determineDecomposition1(
     aig: Aig,
 ): List<List<Lit>> {
@@ -59,6 +67,8 @@ internal fun Solver.determineDecomposition1(
     logger.info { "${if (isSat) "SAT" else "UNSAT"} for template CNF in %.3fs".format(timeSolve.seconds) }
     if (!isSat) error("Unexpected UNSAT")
 
+    val layerInfo: MutableMap<Int, LayerInfo> = mutableMapOf()
+
     for ((i, layer) in aig.layers.withIndex()) {
         // 0-th layer contains only inputs
         if (i == 0) continue
@@ -88,6 +98,14 @@ internal fun Solver.determineDecomposition1(
             println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
             println("  - saturation: %.3f%%".format(result.saturation * 100.0))
             println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+
+            layerInfo[i] = LayerInfo(
+                index = i,
+                layer = layer,
+                ps = ps,
+                dises = dises,
+                result = result,
+            )
         }
 
         // for (id in layer) {
@@ -175,6 +193,34 @@ internal fun Solver.determineDecomposition1(
         println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
     }
 
+    logger.info("Some low-saturated layers:")
+    // for (info in layerInfo.values.sortedBy { it.result.saturation }) {
+    for (info in layerInfo.values.sortedBy { it.result.domain.size }) {
+        val saturation = info.result.saturation
+        if (saturation <= 0.05) {
+            val i = info.index
+            val layer = info.layer
+            val result = info.result
+
+            val ps = info.ps
+            val meanP = ps.mean()
+            val geomeanP = ps.geomean()
+
+            val dises = info.dises
+            val meanDis = dises.mean()
+            val geomeanDis = dises.geomean()
+
+            logger.info("Layer #$i (size=${layer.size})")
+            println("  - ids (${layer.size}): $layer")
+            println("  - ps: $ps")
+            println("  - dises: $dises")
+            println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+            println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
+            println("  - saturation: %.3f%%".format(result.saturation * 100.0))
+            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+        }
+    }
+
     return emptyList()
 }
 
@@ -197,7 +243,7 @@ fun main() {
 
     solverProvider().useWith {
         logger.info("Using $this")
-        val decomposition = determineDecomposition1(aigRight)
+        val decomposition = determineDecomposition1(aigLeft)
         logger.info("Decomposition size: ${decomposition.size}")
         for (item in decomposition) {
             println("  - $item")

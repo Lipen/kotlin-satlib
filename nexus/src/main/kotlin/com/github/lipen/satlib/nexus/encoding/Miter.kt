@@ -5,6 +5,7 @@ package com.github.lipen.satlib.nexus.encoding
 import com.github.lipen.satlib.core.BoolVarArray
 import com.github.lipen.satlib.core.newBoolVarArray
 import com.github.lipen.satlib.nexus.utils.iffXor2
+import com.github.lipen.satlib.op.iffOr
 import com.github.lipen.satlib.solver.Solver
 import mu.KotlinLogging
 
@@ -22,6 +23,7 @@ internal fun Solver.encodeMiter() {
     val xorValue = context("xorValue") {
         newBoolVarArray(Y)
     }
+    val miterOrLadderValue = newBoolVarArray(Y - 1)
 
     /* Constraints */
 
@@ -34,7 +36,20 @@ internal fun Solver.encodeMiter() {
         )
     }
 
-    comment("Miter OR")
-    addClause((1..Y).map { y -> xorValue[y] })
-    // addClause(xorValue.values)
+    // comment("Miter OR")
+    // addClause((1..Y).map { y -> xorValue[y] })
+
+    check(Y >= 2)
+    comment("Miter OR (ladder)")
+    var prev = xorValue[1]
+    for (y in 2 until Y) {
+        val next = miterOrLadderValue[y - 1]
+        iffOr(
+            next,
+            prev,
+            xorValue[y],
+        )
+        prev = next
+    }
+    addClause(prev, xorValue[Y])
 }

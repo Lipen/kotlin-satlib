@@ -3,7 +3,6 @@
 package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
-import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
 import com.github.lipen.satlib.nexus.aig.parseAig
@@ -20,11 +19,12 @@ import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toInt
-import com.github.lipen.satlib.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
+import com.soywiz.klock.milliseconds
 import mu.KotlinLogging
 import kotlin.random.Random
 
@@ -221,76 +221,92 @@ internal fun Solver.`check circuits equivalence using decomposition`(
     if (!isSatMain) error("Unexpected UNSAT")
 
     val decLeft = run {
-        val i = 9
-        val layer = aigLeft.layers[i]
-        val ps = layer.map { id -> pTableLeft.getValue(id) }
-        val meanP = ps.mean()
-        val geomeanP = ps.geomean()
+        // val indices= listOf(9)
+        val indices = listOf(81)
+        // val indices = listOf(66)
+        indices.map { i ->
+            val layer = aigLeft.layers[i]
+            val ps = layer.map { id -> pTableLeft.getValue(id) }
+            val meanP = ps.mean()
+            val geomeanP = ps.geomean()
 
-        val dises = ps.map { p -> disbalance(p) }
-        val meanDis = dises.mean()
-        val geomeanDis = dises.geomean()
+            val dises = ps.map { p -> disbalance(p) }
+            val meanDis = dises.mean()
+            val geomeanDis = dises.geomean()
 
-        val bucket = layer.map { id -> andGateValueLeft[aigLeft.andGateIds.indexOf(id) + 1] }
-        val (result, timeEval) = measureTimeWithResult {
-            evalBucket(bucket)
+            val bucket = layer.map { id -> andGateValueLeft[aigLeft.andGateIds.indexOf(id) + 1] }
+            val (result, timeEval) = measureTimeWithResult {
+                evalBucket(bucket)
+            }
+            logger.info("(Left) Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
+            println("  - ids ${layer.size}: $layer")
+            println("  - ps: $ps")
+            println("  - dises: $dises")
+            println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+            println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
+            println("  - saturation: %.3f%%".format(result.saturation * 100.0))
+            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+
+            result.domain.map { f -> bucketValuation(bucket, f) }
         }
-        logger.info("(Left) Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
-        println("  - ids ${layer.size}: $layer")
-        println("  - ps: $ps")
-        println("  - dises: $dises")
-        println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
-        println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
-        println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-        println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
-
-        result.domain.map { f -> bucketValuation(bucket, f) }
     }
 
     val decRight = run {
-        val i = 141
-        val layer = aigRight.layers[i]
-        val ps = layer.map { id -> pTableRight.getValue(id) }
-        val meanP = ps.mean()
-        val geomeanP = ps.geomean()
+        // val indices = listOf(141)
+        // val indices = listOf(394, 373, 372, 402)
+        // val indices = listOf(394, /*373,*/ 327)
+        // val indices = listOf(402)
+        val indices = listOf(394, 373, 372)
+        indices.map { i ->
+            val layer = aigRight.layers[i]
+            val ps = layer.map { id -> pTableRight.getValue(id) }
+            val meanP = ps.mean()
+            val geomeanP = ps.geomean()
 
-        val dises = ps.map { p -> disbalance(p) }
-        val meanDis = dises.mean()
-        val geomeanDis = dises.geomean()
+            val dises = ps.map { p -> disbalance(p) }
+            val meanDis = dises.mean()
+            val geomeanDis = dises.geomean()
 
-        val bucket = layer.map { id -> andGateValueRight[aigRight.andGateIds.indexOf(id) + 1] }
-        val (result, timeEval) = measureTimeWithResult {
-            evalBucket(bucket)
+            val bucket = layer.map { id -> andGateValueRight[aigRight.andGateIds.indexOf(id) + 1] }
+            val (result, timeEval) = measureTimeWithResult {
+                evalBucket(bucket)
+            }
+            logger.info("(Right) Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
+            println("  - ids ${layer.size}: $layer")
+            println("  - ps: $ps")
+            println("  - dises: $dises")
+            println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+            println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
+            println("  - saturation: %.3f%%".format(result.saturation * 100.0))
+            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+
+            result.domain.map { f -> bucketValuation(bucket, f) }
         }
-        logger.info("(Right) Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
-        println("  - ids ${layer.size}: $layer")
-        println("  - ps: $ps")
-        println("  - dises: $dises")
-        println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
-        println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
-        println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-        println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
-
-        result.domain.map { f -> bucketValuation(bucket, f) }
     }
 
-    val decomposition: List<List<Lit>> = listOf(decLeft, decRight).cartesianProduct().map { (x1, x2) ->
-        x1 + x2
-    }.toList()
-    logger.info("Left decomposition size: ${decLeft.size}")
-    logger.info("Right decomposition size: ${decRight.size}")
+    logger.info("Left decomposition size: ${decLeft.size} = ${decLeft.joinToString("+") { it.size.toString() }}")
+    logger.info("Right decomposition size: ${decRight.size} = ${decRight.joinToString("+") { it.size.toString() }}")
+    // val decomposition: List<List<Lit>> = listOf(decLeft, decRight).cartesianProduct().map { (x1, x2) ->
+    //     x1 + x2
+    // }.toList()
+    val decomposition = (decLeft + decRight).cartesianProduct().map { it.flatten() }.toList() //.shuffled(random)
+    // val decomposition = emptyList<List<Int>>()
     logger.info("Total decomposition size: ${decomposition.size}")
 
     logger.info("Encoding miter...")
     encodeMiter()
 
     logger.info("Solving all ${decomposition.size} instances in the decomposition...")
+    val timeStartSolveAll = timeNow()
     for ((index, assumptions) in decomposition.withIndex()) {
         val (res, timeSolve) = measureTimeWithResult {
             solve(assumptions)
         }
-        logger.debug {
-            "${if (res) "SAT" else "UNSAT"} on $index/${decomposition.size} in %.3fs".format(timeSolve.seconds)
+        if (index % 1000 == 0 || timeSolve >= 500.milliseconds) {
+            logger.debug {
+                "${if (res) "SAT" else "UNSAT"} on $index/${decomposition.size} in %.3fs [total: %.3fs]"
+                    .format(timeSolve.seconds, secondsSince(timeStartSolveAll))
+            }
         }
         if (res) {
             logger.warn("Circuits are NOT equivalent!")
@@ -344,8 +360,8 @@ fun main() {
 
     val aigLeft = parseAig(filenameLeft)
     val aigRight = parseAig(filenameRight)
-    val solverProvider = { MiniSatSolver() }
-    // val solverProvider = { GlucoseSolver() }
+    // val solverProvider = { MiniSatSolver() }
+    val solverProvider = { GlucoseSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec"
     val method = "dec"
 

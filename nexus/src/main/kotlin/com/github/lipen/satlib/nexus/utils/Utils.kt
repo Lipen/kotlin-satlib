@@ -19,4 +19,4 @@ internal fun Iterable<Boolean>.toBinaryString(): String = joinToString("") { if 
 internal fun Int.bit(i: Int): Boolean = (this and (1 shl (i - 1))) != 0
 
 internal fun Collection<Double>.mean(): Double = sum() / size
-internal fun Collection<Double>.geomean(): Double = reduce(Double::times).pow(1 / size)
+internal fun Collection<Double>.geomean(): Double = reduce(Double::times).pow(1.0 / size)
