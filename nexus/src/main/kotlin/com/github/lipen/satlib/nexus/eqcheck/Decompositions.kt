@@ -33,7 +33,7 @@ private data class LayerInfo(
     val layer: List<Int>, // ids
     val ps: List<Double>,
     val dises: List<Double>,
-    val result: BucketEvaluationResult,
+    val result: Bucket,
 )
 
 internal fun Solver.determineDecomposition1(
@@ -97,7 +97,7 @@ internal fun Solver.determineDecomposition1(
             println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
             println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
             println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+            println("  - domain: ${result.domain.size} / ${2.pow(result.lits.size)}")
 
             layerInfo[i] = LayerInfo(
                 index = i,
@@ -136,7 +136,7 @@ internal fun Solver.determineDecomposition1(
         println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
         println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
         println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-        println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+        println("  - domain: ${result.domain.size} / ${2.pow(result.lits.size)}")
     }
 
     run {
@@ -162,7 +162,7 @@ internal fun Solver.determineDecomposition1(
         println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
         println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
         println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-        println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+        println("  - domain: ${result.domain.size} / ${2.pow(result.lits.size)}")
     }
 
     run {
@@ -190,7 +190,7 @@ internal fun Solver.determineDecomposition1(
         println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
         println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
         println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-        println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+        println("  - domain: ${result.domain.size} / ${2.pow(result.lits.size)}")
     }
 
     logger.info("Some low-saturated layers:")
@@ -217,7 +217,7 @@ internal fun Solver.determineDecomposition1(
             println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
             println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
             println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
+            println("  - domain: ${result.domain.size} / ${2.pow(result.lits.size)}")
         }
     }
 

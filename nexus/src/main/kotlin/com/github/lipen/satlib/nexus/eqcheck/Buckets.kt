@@ -9,26 +9,31 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-internal fun bucketValuation(bucket: List<Lit>, f: Int) : List<Lit> {
-    return bucket.mapIndexed { i, lit -> lit sign f.bit(bucket.size - i) }
+internal fun bucketValuation(lits: List<Lit>, f: Long) : List<Lit> {
+    return lits.mapIndexed { i, lit -> lit sign f.bit(lits.size - i - 1) }
 }
 
-internal data class BucketEvaluationResult(
-    val bucket: List<Lit>,
-    val saturation: Double,
-    val domain: List<Int>,
+internal fun valuationIndex(valuation: List<Lit>): Long {
+    return valuation.mapIndexed { i, v -> if (v > 0) 2L.pow(valuation.size - i - 1) else 0L }.sum()
+}
+
+internal data class Bucket(
+    val lits: List<Lit>,
+    val domain: List<Long>,
 ) {
+    val saturation: Double = domain.size.toDouble() / 2.pow(lits.size)
+
     fun decomposition(): List<List<Lit>> {
-        return domain.map { f -> bucket.mapIndexed { i, lit -> lit sign f.bit(i) } }
+        return domain.map { f -> bucketValuation(lits, f) }
     }
 }
 
-internal fun Solver.evalBucket(bucket: List<Lit>): BucketEvaluationResult {
-    val domain = mutableListOf<Int>()
-    val n = 2.pow(bucket.size)
+internal fun Solver.evalBucket(lits: List<Lit>): Bucket {
+    val domain = mutableListOf<Long>()
+    val n = 2.pow(lits.size)
 
-    for (f in 0 until n) {
-        val assumptions = bucketValuation(bucket, f)
+    for (f in 0L until n) {
+        val assumptions = bucketValuation(lits, f)
         val res = solve(assumptions)
         if (res) {
             domain.add(f)
@@ -39,6 +44,5 @@ internal fun Solver.evalBucket(bucket: List<Lit>): BucketEvaluationResult {
         }*/
     }
 
-    val saturation = domain.size.toDouble() / n.toDouble()
-    return BucketEvaluationResult(bucket, saturation, domain)
+    return Bucket(lits, domain)
 }

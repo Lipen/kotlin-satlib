@@ -126,11 +126,11 @@ class Aig(
             val nodeValue = eval(inputValues)
             for (id in mapping.keys) {
                 if (nodeValue.getValue(id)) {
-                    // tableTrue.merge(id, 1, Int::plus)
-                    tableTrue[id] = tableTrue[id]!! + 1
+                    tableTrue.merge(id, 1, Int::plus)
+                    // tableTrue[id] = tableTrue[id]!! + 1
                 } else {
-                    // tableFalse.merge(id, 1, Int::plus)
-                    tableFalse[id] = tableFalse[id]!! + 1
+                    tableFalse.merge(id, 1, Int::plus)
+                    // tableFalse[id] = tableFalse[id]!! + 1
                 }
             }
         }

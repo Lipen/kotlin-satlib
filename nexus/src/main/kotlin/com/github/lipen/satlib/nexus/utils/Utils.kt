@@ -15,8 +15,9 @@ internal fun Boolean.toInt(): Int = if (this) 1 else 0
 
 internal fun Iterable<Boolean>.toBinaryString(): String = joinToString("") { if (it) "1" else "0" }
 
-/** Returns the [i]-th bit (1-based, LSB-to-MSB order) of the number. */
-internal fun Int.bit(i: Int): Boolean = (this and (1 shl (i - 1))) != 0
+/** Returns the [i]-th bit (0-based, LSB-to-MSB order) of the number. */
+internal fun Int.bit(i: Int): Boolean = (this and (1 shl i)) != 0
+internal fun Long.bit(i: Int): Boolean = (this and (1L shl i)) != 0L
 
 internal fun Collection<Double>.mean(): Double = sum() / size
 internal fun Collection<Double>.geomean(): Double = reduce(Double::times).pow(1.0 / size)

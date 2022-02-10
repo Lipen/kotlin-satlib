@@ -3,6 +3,7 @@
 package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
 import com.github.lipen.satlib.nexus.aig.parseAig
@@ -26,6 +27,7 @@ import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
 import mu.KotlinLogging
+import java.util.PriorityQueue
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -175,6 +177,52 @@ internal fun Solver.`check circuits equivalence using conjugated tables`(
     }
 }
 
+private fun Solver.buildDecomposition(
+    aig: Aig,
+    pTable: Map<Int, Double>,
+    andGateValue: BoolVarArray,
+    ids: List<Int>,
+): Bucket {
+    val ps = ids.map { id -> pTable.getValue(id) }
+    val meanP = ps.mean()
+    val geomeanP = ps.geomean()
+
+    val dises = ps.map { p -> disbalance(p) }
+    val meanDis = dises.mean()
+    val geomeanDis = dises.geomean()
+
+    val bucket = ids.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
+    val (result, timeEval) = measureTimeWithResult {
+        evalBucket(bucket)
+    }
+    println("  - eval time: %.3fs".format(timeEval.seconds))
+    println("  - ids ${ids.size}: $ids")
+    println("  - ps: $ps")
+    println("  - dises: $dises")
+    println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
+    println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
+    println("  - saturation: %.3f%%".format(result.saturation * 100.0))
+    println("  - domain: ${result.domain.size} / ${2.pow(result.lits.size)}")
+
+    // return result.domain.map { f -> bucketValuation(bucket, f) }
+    return result
+}
+
+private fun Solver.mergeBuckets(
+    bucket1: Bucket,
+    bucket2: Bucket,
+): List<List<Lit>> {
+    val decs = listOf(bucket1.decomposition(), bucket2.decomposition())
+    val decomposition = decs.cartesianProduct().map { it.flatten() }.toList()
+    return decomposition.filter { assumptions ->
+        val res = solve(assumptions)
+        // if (!res) {
+        //     logger.debug { "Found incompatible valuations" }
+        // }
+        res
+    }
+}
+
 internal fun Solver.`check circuits equivalence using decomposition`(
     aigLeft: Aig,
     aigRight: Aig,
@@ -220,38 +268,16 @@ internal fun Solver.`check circuits equivalence using decomposition`(
     logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
     if (!isSatMain) error("Unexpected UNSAT")
 
-    val decLeft = run {
-        // val indices= listOf(9)
+    val bucketsLeft = run {
         val indices = listOf(81)
-        // val indices = listOf(66)
         indices.map { i ->
             val layer = aigLeft.layers[i]
-            val ps = layer.map { id -> pTableLeft.getValue(id) }
-            val meanP = ps.mean()
-            val geomeanP = ps.geomean()
-
-            val dises = ps.map { p -> disbalance(p) }
-            val meanDis = dises.mean()
-            val geomeanDis = dises.geomean()
-
-            val bucket = layer.map { id -> andGateValueLeft[aigLeft.andGateIds.indexOf(id) + 1] }
-            val (result, timeEval) = measureTimeWithResult {
-                evalBucket(bucket)
-            }
-            logger.info("(Left) Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
-            println("  - ids ${layer.size}: $layer")
-            println("  - ps: $ps")
-            println("  - dises: $dises")
-            println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
-            println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
-            println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
-
-            result.domain.map { f -> bucketValuation(bucket, f) }
+            logger.info("(Left) Layer #$i (size=${layer.size})")
+            buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, layer)
         }
     }
 
-    val decRight = run {
+    val bucketsRight = run {
         // val indices = listOf(141)
         // val indices = listOf(394, 373, 372, 402)
         // val indices = listOf(394, /*373,*/ 327)
@@ -259,38 +285,42 @@ internal fun Solver.`check circuits equivalence using decomposition`(
         val indices = listOf(394, 373, 372)
         indices.map { i ->
             val layer = aigRight.layers[i]
-            val ps = layer.map { id -> pTableRight.getValue(id) }
-            val meanP = ps.mean()
-            val geomeanP = ps.geomean()
-
-            val dises = ps.map { p -> disbalance(p) }
-            val meanDis = dises.mean()
-            val geomeanDis = dises.geomean()
-
-            val bucket = layer.map { id -> andGateValueRight[aigRight.andGateIds.indexOf(id) + 1] }
-            val (result, timeEval) = measureTimeWithResult {
-                evalBucket(bucket)
-            }
-            logger.info("(Right) Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
-            println("  - ids ${layer.size}: $layer")
-            println("  - ps: $ps")
-            println("  - dises: $dises")
-            println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
-            println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
-            println("  - saturation: %.3f%%".format(result.saturation * 100.0))
-            println("  - domain: ${result.domain.size} / ${2.pow(result.bucket.size)}")
-
-            result.domain.map { f -> bucketValuation(bucket, f) }
+            logger.info("(Right) Layer #$i (size=${layer.size})")
+            buildDecomposition(aigRight, pTableRight, andGateValueRight, layer)
         }
     }
 
-    logger.info("Left decomposition size: ${decLeft.size} = ${decLeft.joinToString("+") { it.size.toString() }}")
-    logger.info("Right decomposition size: ${decRight.size} = ${decRight.joinToString("+") { it.size.toString() }}")
-    // val decomposition: List<List<Lit>> = listOf(decLeft, decRight).cartesianProduct().map { (x1, x2) ->
-    //     x1 + x2
-    // }.toList()
-    val decomposition = (decLeft + decRight).cartesianProduct().map { it.flatten() }.toList() //.shuffled(random)
-    // val decomposition = emptyList<List<Int>>()
+    logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.joinToString("+") { it.domain.size.toString() }}")
+    logger.info("Right buckets: ${bucketsRight.size} = ${bucketsRight.joinToString("+") { it.domain.size.toString() }}")
+    logger.info(
+        "Estimated decomposition size: ${
+            (bucketsLeft + bucketsRight).map { it.domain.size }.reduce(Int::times)
+        }"
+    )
+
+    logger.info("Trying to merge buckets...")
+
+    // val buckets = bucketsLeft.map { it.decomposition() } +
+    //     listOf(mergeBuckets(bucketsRight[0], bucketsRight[1])) +
+    //     bucketsRight.subList(2, bucketsRight.size).map { it.decomposition() }
+    val queue = PriorityQueue(compareBy<Bucket> { b -> b.saturation })
+    queue.addAll(bucketsLeft)
+    queue.addAll(bucketsRight)
+
+    while (queue.size > 1) {
+        val b1 = queue.remove()
+        val b2 = queue.remove()
+        logger.info("Merging buckets: (lits: ${b1.lits.size}, dom: ${b1.domain.size}, sat: ${b1.saturation}) and (lits: ${b2.lits.size}, dom: ${b2.domain.size}, sat: ${b2.saturation})")
+        val domain = mergeBuckets(b1, b2)
+        val b = Bucket(b1.lits + b2.lits, domain.map { valuationIndex(it) })
+        logger.debug {
+            "New bucket: $b"
+        }
+        queue.add(b)
+    }
+
+    // val decomposition = buckets/*.map { it.decomposition() }*/.cartesianProduct().map { it.flatten() }.toList()
+    val decomposition = queue.remove().decomposition()
     logger.info("Total decomposition size: ${decomposition.size}")
 
     logger.info("Encoding miter...")
@@ -304,7 +334,7 @@ internal fun Solver.`check circuits equivalence using decomposition`(
         }
         if (index % 1000 == 0 || timeSolve >= 500.milliseconds) {
             logger.debug {
-                "${if (res) "SAT" else "UNSAT"} on $index/${decomposition.size} in %.3fs [total: %.3fs]"
+                "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
                     .format(timeSolve.seconds, secondsSince(timeStartSolveAll))
             }
         }
