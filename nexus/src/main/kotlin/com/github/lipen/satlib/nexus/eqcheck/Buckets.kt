@@ -9,7 +9,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-internal fun bucketValuation(lits: List<Lit>, f: Long) : List<Lit> {
+internal fun bucketValuation(lits: List<Lit>, f: Long): List<Lit> {
     return lits.mapIndexed { i, lit -> lit sign f.bit(lits.size - i - 1) }
 }
 
@@ -21,16 +21,22 @@ internal data class Bucket(
     val lits: List<Lit>,
     val domain: List<Long>,
 ) {
-    val saturation: Double = domain.size.toDouble() / 2.pow(lits.size)
+    init {
+        require(lits.size <= 63)
+    }
+
+    val saturation: Double = domain.size.toDouble() / 2L.pow(lits.size)
 
     fun decomposition(): List<List<Lit>> {
         return domain.map { f -> bucketValuation(lits, f) }
     }
 }
 
-internal fun Solver.evalBucket(lits: List<Lit>): Bucket {
+internal fun Solver.evalAllValuations(lits: List<Lit>): Bucket {
+    require(lits.size <= 60)
+
     val domain = mutableListOf<Long>()
-    val n = 2.pow(lits.size)
+    val n = 2L.pow(lits.size)
 
     for (f in 0L until n) {
         val assumptions = bucketValuation(lits, f)

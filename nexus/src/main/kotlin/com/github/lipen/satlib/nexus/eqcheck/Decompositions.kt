@@ -88,7 +88,7 @@ internal fun Solver.determineDecomposition1(
 
             val bucket = layer.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
             val (result, timeEval) = measureTimeWithResult {
-                evalBucket(bucket)
+                evalAllValuations(bucket)
             }
             logger.info("Layer #$i (size=${layer.size}) evaluated in %.3fs".format(timeEval.seconds))
             println("  - ids ${layer.size}: $layer")
@@ -127,7 +127,7 @@ internal fun Solver.determineDecomposition1(
 
         val bucket = lowAsymm.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
         val (result, timeEval) = measureTimeWithResult {
-            evalBucket(bucket)
+            evalAllValuations(bucket)
         }
         logger.info("Lowest k=$k asymm gates evaluated in %.3fs".format(timeEval.seconds))
         println("  - ids (${lowAsymm.size}): $lowAsymm")
@@ -153,7 +153,7 @@ internal fun Solver.determineDecomposition1(
 
         val bucket = highAsymm.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
         val (result, timeEval) = measureTimeWithResult {
-            evalBucket(bucket)
+            evalAllValuations(bucket)
         }
         logger.info("Highest k=$k asymm gates evaluated in %.3fs".format(timeEval.seconds))
         println("  - ids (${highAsymm.size}): $highAsymm")
@@ -181,7 +181,7 @@ internal fun Solver.determineDecomposition1(
 
         val bucket = topAsymm.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
         val (result, timeEval) = measureTimeWithResult {
-            evalBucket(bucket)
+            evalAllValuations(bucket)
         }
         logger.info("Top k=$k asymm gates evaluated in %.3fs".format(timeEval.seconds))
         println("  - ids (${topAsymm.size}): $topAsymm")

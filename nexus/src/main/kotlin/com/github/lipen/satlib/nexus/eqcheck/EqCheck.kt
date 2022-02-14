@@ -3,7 +3,6 @@
 package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
-import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
 import com.github.lipen.satlib.nexus.aig.parseAig
@@ -20,6 +19,7 @@ import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toInt
+import com.github.lipen.satlib.op.iffAnd
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
@@ -193,7 +193,7 @@ private fun Solver.buildDecomposition(
 
     val bucket = ids.map { id -> andGateValue[aig.andGateIds.indexOf(id) + 1] }
     val (result, timeEval) = measureTimeWithResult {
-        evalBucket(bucket)
+        evalAllValuations(bucket)
     }
     println("  - eval time: %.3fs".format(timeEval.seconds))
     println("  - ids ${ids.size}: $ids")
@@ -211,23 +211,58 @@ private fun Solver.buildDecomposition(
 private fun Solver.mergeBuckets(
     bucket1: Bucket,
     bucket2: Bucket,
-): List<List<Lit>> {
-    val decs = listOf(bucket1.decomposition(), bucket2.decomposition())
-    val decomposition = decs.cartesianProduct().map { it.flatten() }.toList()
-    return decomposition.filter { assumptions ->
-        val res = solve(assumptions)
-        // if (!res) {
-        //     logger.debug { "Found incompatible valuations" }
-        // }
-        res
-    }
+): Bucket {
+    // bucket1.domain = [1,2,3]
+    // bucket2.domain = [4,5]
+    // listOf(d1, d2) = [ [1,2,3], [4,5] ]
+    // cartesian product = [ [1,4], [1,5], [2,4], [2,5], [3,4], [3,5] ]
+    val d = listOf(bucket1.domain, bucket2.domain).cartesianProduct()
+        .mapNotNull { (f1, f2) ->
+            val v1 = bucketValuation(bucket1.lits, f1)
+            val v2 = bucketValuation(bucket2.lits, f2)
+            val assumptions = v1 + v2
+            if (solve(assumptions)) {
+                valuationIndex(assumptions)
+            } else {
+                null
+            }
+        }
+    val newDomain = d.toList()
+    return Bucket(bucket1.lits + bucket2.lits, newDomain)
 }
 
-internal fun Solver.`check circuits equivalence using decomposition`(
+private fun Solver.mergeBucketsTree(
+    buckets: Iterable<Bucket>,
+): Bucket {
+    val queue = PriorityQueue(compareBy<Bucket> { b -> b.saturation })
+    queue.addAll(buckets)
+    check(queue.isNotEmpty())
+
+    while (queue.size > 1) {
+        val b1 = queue.remove()
+        val b2 = queue.remove()
+        logger.info(
+            "Merging buckets: (lits: ${b1.lits.size}, dom: ${b1.domain.size}, sat: %.3f%%) and (lits: ${b2.lits.size}, dom: ${b2.domain.size}, sat: %.3f%%)".format(
+                b1.saturation * 100.0,
+                b2.saturation * 100.0
+            )
+        )
+        val b = mergeBuckets(b1, b2)
+        logger.debug {
+            "New bucket: (lits: ${b.lits.size}, domain: ${b.domain.size}, saturation: %.3f%%))"
+                .format(b.saturation * 100.0)
+        }
+        queue.add(b)
+    }
+
+    return queue.remove()
+}
+
+internal fun Solver.`check circuits equivalence using disbalance-based decomposition`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
-    logger.info("Checking equivalence using decomposition...")
+    logger.info("Checking equivalence using disbalance-based decomposition...")
 
     val sampleSize = 10000
     val randomSeed = 42
@@ -245,6 +280,104 @@ internal fun Solver.`check circuits equivalence using decomposition`(
     }
     val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
     val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    val bucketSize = 14
+
+    val bucketsLeft = run {
+        idsSortedByDisLeft.windowed(bucketSize, bucketSize).take(2).mapIndexed { index, ids ->
+            logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
+            buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+        }
+    }
+
+    val bucketsRight = run {
+        idsSortedByDisRight.windowed(bucketSize, bucketSize).take(1).mapIndexed { index, ids ->
+            logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
+            buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+        }
+    }
+
+    logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.joinToString("+") { it.domain.size.toString() }}")
+    logger.info("Right buckets: ${bucketsRight.size} = ${bucketsRight.joinToString("+") { it.domain.size.toString() }}")
+    logger.info(
+        "Estimated decomposition size: ${
+            (bucketsLeft + bucketsRight).map { it.domain.size.toLong() }.reduce(Long::times)
+        }"
+    )
+
+    // val decomposition = (bucketsLeft + bucketsRight).map { it.lits }.cartesianProduct().map { (a, b) -> a + b }.toList()
+    val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
+    logger.info("Total decomposition size: ${decomposition.size}")
+
+    logger.info("Encoding miter...")
+    encodeMiter()
+
+    logger.info("Solving all ${decomposition.size} instances in the decomposition...")
+    val timeStartSolveAll = timeNow()
+    for ((index, assumptions) in decomposition.withIndex()) {
+        val (res, timeSolve) = measureTimeWithResult {
+            solve(assumptions)
+        }
+        if (index % 1000 == 0 || timeSolve >= 500.milliseconds) {
+            logger.debug {
+                "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
+                    .format(timeSolve.seconds, secondsSince(timeStartSolveAll))
+            }
+        }
+        if (res) {
+            logger.warn("Circuits are NOT equivalent!")
+            return false
+        }
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
+internal fun Solver.`check circuits equivalence using layer-wise decomposition`(
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using layer-wise decomposition...")
+
+    val sampleSize = 10000
+    val randomSeed = 42
+    val random = Random(randomSeed)
+    logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
+    val tfTableLeft = aigLeft._compute(sampleSize, random)
+    val pTableLeft = tfTableLeft.mapValues { (_, tf) ->
+        val (t, f) = tf
+        t.toDouble() / (t + f)
+    }
+    val tfTableRight = aigRight._compute(sampleSize, random)
+    val pTableRight = tfTableRight.mapValues { (_, tf) ->
+        val (t, f) = tf
+        t.toDouble() / (t + f)
+    }
 
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
@@ -294,33 +427,13 @@ internal fun Solver.`check circuits equivalence using decomposition`(
     logger.info("Right buckets: ${bucketsRight.size} = ${bucketsRight.joinToString("+") { it.domain.size.toString() }}")
     logger.info(
         "Estimated decomposition size: ${
-            (bucketsLeft + bucketsRight).map { it.domain.size }.reduce(Int::times)
+            (bucketsLeft + bucketsRight).map { it.domain.size.toLong() }.reduce(Long::times)
         }"
     )
 
     logger.info("Trying to merge buckets...")
 
-    // val buckets = bucketsLeft.map { it.decomposition() } +
-    //     listOf(mergeBuckets(bucketsRight[0], bucketsRight[1])) +
-    //     bucketsRight.subList(2, bucketsRight.size).map { it.decomposition() }
-    val queue = PriorityQueue(compareBy<Bucket> { b -> b.saturation })
-    queue.addAll(bucketsLeft)
-    queue.addAll(bucketsRight)
-
-    while (queue.size > 1) {
-        val b1 = queue.remove()
-        val b2 = queue.remove()
-        logger.info("Merging buckets: (lits: ${b1.lits.size}, dom: ${b1.domain.size}, sat: ${b1.saturation}) and (lits: ${b2.lits.size}, dom: ${b2.domain.size}, sat: ${b2.saturation})")
-        val domain = mergeBuckets(b1, b2)
-        val b = Bucket(b1.lits + b2.lits, domain.map { valuationIndex(it) })
-        logger.debug {
-            "New bucket: $b"
-        }
-        queue.add(b)
-    }
-
-    // val decomposition = buckets/*.map { it.decomposition() }*/.cartesianProduct().map { it.flatten() }.toList()
-    val decomposition = queue.remove().decomposition()
+    val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
     logger.info("Total decomposition size: ${decomposition.size}")
 
     logger.info("Encoding miter...")
@@ -348,6 +461,127 @@ internal fun Solver.`check circuits equivalence using decomposition`(
     return true
 }
 
+internal fun Solver.`check circuits equivalence using domain-based method`(
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using domain-based method...")
+
+    val sampleSize = 10000
+    val randomSeed = 42
+    val random = Random(randomSeed)
+    logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
+    val tfTableLeft = aigLeft._compute(sampleSize, random)
+    val pTableLeft = tfTableLeft.mapValues { (_, tf) ->
+        val (t, f) = tf
+        t.toDouble() / (t + f)
+    }
+    val tfTableRight = aigRight._compute(sampleSize, random)
+    val pTableRight = tfTableRight.mapValues { (_, tf) ->
+        val (t, f) = tf
+        t.toDouble() / (t + f)
+    }
+    val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
+    val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val Y: Int = context["Y"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+    val outputValueLeft: BoolVarArray = context["left.outputValue"]
+    val outputValueRight: BoolVarArray = context["right.outputValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    // // Freeze outputs
+    // for (y in 1..Y) {
+    //     maybeFreeze(outputValueLeft[y])
+    //     maybeFreeze(outputValueRight[y])
+    // }
+    //
+    // logger.info("Pre-solving...")
+    // val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    // logger.debug("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    // if (!isSatMain) error("Unexpected UNSAT")
+
+    val bucketSize = 14
+
+    val bucketsLeft = run {
+        idsSortedByDisLeft.windowed(bucketSize, bucketSize).take(5).mapIndexed { index, ids ->
+            logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
+            buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+        }
+    }
+
+    val bucketsRight = run {
+        idsSortedByDisRight.windowed(bucketSize, bucketSize).take(5).mapIndexed { index, ids ->
+            logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
+            buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+        }
+    }
+
+    logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.joinToString("+") { it.domain.size.toString() }}")
+    logger.info("Right buckets: ${bucketsRight.size} = ${bucketsRight.joinToString("+") { it.domain.size.toString() }}")
+    logger.info(
+        "Estimated decomposition size: ${
+            (bucketsLeft + bucketsRight).map { it.domain.size.toLong() }.reduce(Long::times)
+        }"
+    )
+
+    reset()
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    logger.info("Encoding buckets...")
+    val buckets = bucketsLeft + bucketsRight
+    for ((index, b) in buckets.withIndex()) {
+        logger.info(
+            "Bucket #${index + 1}: (lits: ${b.lits.size}, domain: ${b.domain.size}, saturation: %.3f%%))"
+                .format(b.saturation * 100.0)
+        )
+        val vs = b.decomposition().map { lits ->
+            val aux = newLiteral()
+            iffAnd(aux, lits)
+            aux
+        }
+        addClause(vs)
+    }
+
+    logger.info("Encoding miter...")
+    encodeMiter()
+
+    for (x in 1..numberOfVariables) {
+        maybeMelt(x)
+    }
+
+    logger.info("Solving...")
+    val (res, timeSolve) = measureTimeWithResult {
+        solve()
+    }
+    logger.debug { "${if (res) "SAT" else "UNSAT"} in %.3fs".format(timeSolve.seconds) }
+    if (res) {
+        logger.warn("Circuits are NOT equivalent!")
+        return false
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
 fun checkEquivalence(
     aigLeft: Aig,
     aigRight: Aig,
@@ -369,7 +603,9 @@ fun checkEquivalence(
             "merge-eq" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "EQ")
             "merge-xor" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "XOR")
             "conj" -> `check circuits equivalence using conjugated tables`(aigLeft, aigRight)
-            "dec" -> `check circuits equivalence using decomposition`(aigLeft, aigRight)
+            "dec-dis" -> `check circuits equivalence using disbalance-based decomposition`(aigLeft, aigRight)
+            "dec-layer" -> `check circuits equivalence using layer-wise decomposition`(aigLeft, aigRight)
+            "domain" -> `check circuits equivalence using domain-based method`(aigLeft, aigRight)
             else -> TODO("Method '$method'")
         }
     }
@@ -385,15 +621,17 @@ fun main() {
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
     val param = "7_4"
-    val filenameLeft = "data/instances/${left}/aag/${left}_${param}.aag"
-    val filenameRight = "data/instances/${right}/aag/${right}_${param}.aag"
+    val aag = "fraag" // "aag" or "fraag"
+    val filenameLeft = "data/instances/${left}/$aag/${left}_${param}.aag"
+    val filenameRight = "data/instances/${right}/$aag/${right}_${param}.aag"
 
     val aigLeft = parseAig(filenameLeft)
     val aigRight = parseAig(filenameRight)
     // val solverProvider = { MiniSatSolver() }
     val solverProvider = { GlucoseSolver() }
-    // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec"
-    val method = "dec"
+    // val solverProvider = { CryptoMiniSatSolver() }
+    // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec-layer", "dec-dis", "domain"
+    val method = "miter"
 
     checkEquivalence(aigLeft, aigRight, solverProvider, method)
 
