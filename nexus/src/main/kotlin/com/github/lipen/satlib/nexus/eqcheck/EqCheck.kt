@@ -14,6 +14,9 @@ import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.geomean
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.maybeMelt
+import com.github.lipen.satlib.nexus.utils.maybeNumberOfConflicts
+import com.github.lipen.satlib.nexus.utils.maybeNumberOfDecisions
+import com.github.lipen.satlib.nexus.utils.maybeNumberOfPropagations
 import com.github.lipen.satlib.nexus.utils.mean
 import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.nexus.utils.secondsSince
@@ -27,7 +30,9 @@ import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
 import mu.KotlinLogging
+import java.io.File
 import java.util.PriorityQueue
+import kotlin.math.round
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
@@ -43,9 +48,14 @@ internal fun Solver.`check circuits equivalence using miter`(
         encodeMiter()
     }
 
+    dumpDimacs(File("cnf_miter.cnf"))
+
     logger.info("Solving...")
     val (isSat, timeSolve) = measureTimeWithResult { solve() }
-    logger.info("${if (isSat) "SAT" else "UNSAT"} in %.3fs".format(timeSolve.seconds))
+    logger.info { "${if (isSat) "SAT" else "UNSAT"} in %.3fs".format(timeSolve.seconds) }
+    logger.debug { "Decisions: ${maybeNumberOfDecisions()}" }
+    logger.debug { "Conflicts: ${maybeNumberOfConflicts()}" }
+    logger.debug { "Propagations: ${maybeNumberOfPropagations()}" }
 
     if (!isSat) {
         logger.info("Circuits are equivalent!")
@@ -197,8 +207,8 @@ private fun Solver.buildDecomposition(
     }
     println("  - eval time: %.3fs".format(timeEval.seconds))
     println("  - ids ${ids.size}: $ids")
-    println("  - ps: $ps")
-    println("  - dises: $dises")
+    println("  - ps: ${ps.map { round(it * 1000.0) / 1000.0 }}")
+    println("  - dises: ${dises.map { round(it * 1000.0) / 1000.0 }}")
     println("  - mean/geomean p: %.3f / %.3f".format(meanP, geomeanP))
     println("  - mean/geomean dis: %.3f / %.3f".format(meanDis, geomeanDis))
     println("  - saturation: %.3f%%".format(result.saturation * 100.0))
@@ -481,10 +491,10 @@ internal fun Solver.`check circuits equivalence using domain-based method`(
         val (t, f) = tf
         t.toDouble() / (t + f)
     }
-    val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
-    val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
-    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
-    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+    val idsSortedByPLeft = aigLeft.andGateIds.sortedBy { id -> pTableLeft.getValue(id) }
+    val idsSortedByPRight = aigRight.andGateIds.sortedBy { id -> pTableRight.getValue(id) }
+    val idsSortedByDisLeft = aigLeft.andGateIds.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
+    val idsSortedByDisRight = aigRight.andGateIds.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
 
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
@@ -498,39 +508,52 @@ internal fun Solver.`check circuits equivalence using domain-based method`(
     val outputValueLeft: BoolVarArray = context["left.outputValue"]
     val outputValueRight: BoolVarArray = context["right.outputValue"]
 
-    // Freeze variables
+    // Freeze gates
     for (g in 1..GL) {
         maybeFreeze(andGateValueLeft[g])
     }
     for (g in 1..GR) {
         maybeFreeze(andGateValueRight[g])
     }
+    // Freeze outputs
+    for (y in 1..Y) {
+        maybeFreeze(outputValueLeft[y])
+        maybeFreeze(outputValueRight[y])
+    }
 
-    // // Freeze outputs
-    // for (y in 1..Y) {
-    //     maybeFreeze(outputValueLeft[y])
-    //     maybeFreeze(outputValueRight[y])
-    // }
-    //
-    // logger.info("Pre-solving...")
-    // val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
-    // logger.debug("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
-    // if (!isSatMain) error("Unexpected UNSAT")
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.debug("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
 
     val bucketSize = 14
+    val numberOfBuckets = 6
+    val numberOfBucketsAll = numberOfBuckets + 5
 
     val bucketsLeft = run {
-        idsSortedByDisLeft.windowed(bucketSize, bucketSize).take(5).mapIndexed { index, ids ->
-            logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
-            buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
-        }
+        idsSortedByDisLeft.asSequence()
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBucketsAll)
+            .mapIndexed { index, ids ->
+                logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+            }
+            .sortedBy { it.saturation }
+            .take(numberOfBuckets)
+            .toList()
     }
 
     val bucketsRight = run {
-        idsSortedByDisRight.windowed(bucketSize, bucketSize).take(5).mapIndexed { index, ids ->
-            logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
-            buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
-        }
+        idsSortedByDisRight.asSequence()
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBucketsAll)
+            .mapIndexed { index, ids ->
+                logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+            }
+            .sortedBy { it.saturation }
+            .take(numberOfBuckets)
+            .toList()
     }
 
     logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.joinToString("+") { it.domain.size.toString() }}")
@@ -544,35 +567,45 @@ internal fun Solver.`check circuits equivalence using domain-based method`(
     reset()
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
-    }
 
-    logger.info("Encoding buckets...")
-    val buckets = bucketsLeft + bucketsRight
-    for ((index, b) in buckets.withIndex()) {
-        logger.info(
-            "Bucket #${index + 1}: (lits: ${b.lits.size}, domain: ${b.domain.size}, saturation: %.3f%%))"
-                .format(b.saturation * 100.0)
-        )
-        val vs = b.decomposition().map { lits ->
-            val aux = newLiteral()
-            iffAnd(aux, lits)
-            aux
+        logger.info("Encoding buckets...")
+        val buckets = bucketsLeft + bucketsRight
+        for ((index, b) in buckets.withIndex()) {
+            val nthStr = when (b) {
+                in bucketsLeft -> "left ${bucketsLeft.indexOf(b)}th"
+                in bucketsRight -> "right ${bucketsRight.indexOf(b)}th"
+                else -> error("Bad bucket $b")
+            }
+            logger.info(
+                "Bucket #${index + 1} (${nthStr}): (lits: ${b.lits.size}, domain: ${b.domain.size}, saturation: %.3f%%))"
+                    .format(b.saturation * 100.0)
+            )
+            val vs = b.decomposition().map { lits ->
+                val aux = newLiteral()
+                iffAnd(aux, lits)
+                aux
+            }
+            addClause(vs)
         }
-        addClause(vs)
+
+        logger.info("Encoding miter...")
+        encodeMiter()
     }
 
-    logger.info("Encoding miter...")
-    encodeMiter()
+    // for (x in 1..numberOfVariables) {
+    //     maybeMelt(x)
+    // }
 
-    for (x in 1..numberOfVariables) {
-        maybeMelt(x)
-    }
+    dumpDimacs(File("cnf_domain_${bucketSize}-${numberOfBuckets}-${numberOfBuckets}.cnf"))
 
     logger.info("Solving...")
     val (res, timeSolve) = measureTimeWithResult {
         solve()
     }
     logger.debug { "${if (res) "SAT" else "UNSAT"} in %.3fs".format(timeSolve.seconds) }
+    logger.debug { "Decisions: ${maybeNumberOfDecisions()}" }
+    logger.debug { "Conflicts: ${maybeNumberOfConflicts()}" }
+    logger.debug { "Propagations: ${maybeNumberOfPropagations()}" }
     if (res) {
         logger.warn("Circuits are NOT equivalent!")
         return false

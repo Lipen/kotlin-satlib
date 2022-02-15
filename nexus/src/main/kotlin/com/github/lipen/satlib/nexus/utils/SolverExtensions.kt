@@ -1,6 +1,7 @@
 package com.github.lipen.satlib.nexus.utils
 
 import com.github.lipen.satlib.core.Lit
+import com.github.lipen.satlib.solver.CadicalSolver
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
@@ -65,4 +66,25 @@ internal inline fun Solver.declare(
         "Declared $diffVars variables and $diffClauses clauses in %.3f s"
             .format(secondsSince(timeStartDeclare))
     }
+}
+
+fun Solver.maybeNumberOfDecisions(): Long = when (this) {
+    is MiniSatSolver -> backend.numberOfDecisions
+    is GlucoseSolver -> backend.numberOfDecisions
+    is CadicalSolver -> backend.numberOfDecisions
+    else -> -1
+}
+
+fun Solver.maybeNumberOfConflicts(): Long = when (this) {
+    is MiniSatSolver -> backend.numberOfConflicts
+    is GlucoseSolver -> backend.numberOfConflicts
+    is CadicalSolver -> backend.numberOfConflicts
+    else -> -1
+}
+
+fun Solver.maybeNumberOfPropagations(): Long = when (this) {
+    is MiniSatSolver -> backend.numberOfPropagations
+    is GlucoseSolver -> backend.numberOfPropagations
+    is CadicalSolver -> backend.numberOfPropagations
+    else -> -1
 }
