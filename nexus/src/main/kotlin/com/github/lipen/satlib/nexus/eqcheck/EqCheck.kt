@@ -3,6 +3,7 @@
 package com.github.lipen.satlib.nexus.eqcheck
 
 import com.github.lipen.satlib.core.BoolVarArray
+import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.aig.Aig
 import com.github.lipen.satlib.nexus.aig.parseAig
@@ -23,13 +24,18 @@ import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toInt
 import com.github.lipen.satlib.op.iffAnd
+import com.github.lipen.satlib.solver.CadicalSolver
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
+import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
 import mu.KotlinLogging
+import okio.appendingSink
+import okio.buffer
+import okio.sink
 import java.io.File
 import java.util.PriorityQueue
 import kotlin.math.round
@@ -218,6 +224,16 @@ private fun Solver.buildDecomposition(
     return result
 }
 
+private fun bucketsDecomposition(
+    buckets: List<Bucket>,
+): List<List<Lit>> {
+    return buckets
+        .map { it.decomposition() }
+        .cartesianProduct()
+        .map { it.flatten() }
+        .toList()
+}
+
 private fun Solver.mergeBuckets(
     bucket1: Bucket,
     bucket2: Bucket,
@@ -248,15 +264,17 @@ private fun Solver.mergeBucketsTree(
     queue.addAll(buckets)
     check(queue.isNotEmpty())
 
+    logger.info("Trying to tree-merge buckets...")
+
     while (queue.size > 1) {
         val b1 = queue.remove()
         val b2 = queue.remove()
-        logger.info(
+        logger.debug {
             "Merging buckets: (lits: ${b1.lits.size}, dom: ${b1.domain.size}, sat: %.3f%%) and (lits: ${b2.lits.size}, dom: ${b2.domain.size}, sat: %.3f%%)".format(
                 b1.saturation * 100.0,
                 b2.saturation * 100.0
             )
-        )
+        }
         val b = mergeBuckets(b1, b2)
         logger.debug {
             "New bucket: (lits: ${b.lits.size}, domain: ${b.domain.size}, saturation: %.3f%%))"
@@ -265,7 +283,13 @@ private fun Solver.mergeBucketsTree(
         queue.add(b)
     }
 
-    return queue.remove()
+    val mergedBucket = queue.remove()
+    logger.info {
+        "Final tree-merged bucket: (lits: ${mergedBucket.lits.size}, domain: ${mergedBucket.domain.size}, saturation: %.3f%%))"
+            .format(mergedBucket.saturation * 100.0)
+    }
+
+    return mergedBucket
 }
 
 internal fun Solver.`check circuits equivalence using disbalance-based decomposition`(
@@ -325,7 +349,7 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     }
 
     val bucketsRight = run {
-        idsSortedByDisRight.windowed(bucketSize, bucketSize).take(1).mapIndexed { index, ids ->
+        idsSortedByDisRight.windowed(bucketSize, bucketSize).take(2).mapIndexed { index, ids ->
             logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
             buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
         }
@@ -339,8 +363,9 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
         }"
     )
 
-    // val decomposition = (bucketsLeft + bucketsRight).map { it.lits }.cartesianProduct().map { (a, b) -> a + b }.toList()
-    val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
+    val decomposition = bucketsDecomposition(listOf(mergeBucketsTree(bucketsLeft), mergeBucketsTree(bucketsRight)))
+    // val decomposition = bucketsDecomposition(bucketsLeft + bucketsRight)
+    // val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
     logger.info("Total decomposition size: ${decomposition.size}")
 
     logger.info("Encoding miter...")
@@ -349,10 +374,21 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     logger.info("Solving all ${decomposition.size} instances in the decomposition...")
     val timeStartSolveAll = timeNow()
     for ((index, assumptions) in decomposition.withIndex()) {
+        // if (index + 1 == 27542) {
+        //     val fileCnf = File("cnf_dec-dis_27542.cnf")
+        //     dumpDimacs(fileCnf)
+        //     fileCnf.appendingSink().buffer().useWith {
+        //         writeln("c Assumptions")
+        //         for (x in assumptions) {
+        //             writeln("$x 0")
+        //         }
+        //     }
+        // }
         val (res, timeSolve) = measureTimeWithResult {
             solve(assumptions)
+            // false
         }
-        if (index % 1000 == 0 || timeSolve >= 500.milliseconds) {
+        if (index == 0 || (index + 1) % (if (decomposition.size < 100_000) 1_000 else if (decomposition.size < 1_000_000) 10_000 else 100_000) == 0 || timeSolve >= 500.milliseconds) {
             logger.debug {
                 "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
                     .format(timeSolve.seconds, secondsSince(timeStartSolveAll))
@@ -441,9 +477,9 @@ internal fun Solver.`check circuits equivalence using layer-wise decomposition`(
         }"
     )
 
-    logger.info("Trying to merge buckets...")
+    val decomposition = bucketsDecomposition(bucketsLeft + bucketsRight)
+    // val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
 
-    val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
     logger.info("Total decomposition size: ${decomposition.size}")
 
     logger.info("Encoding miter...")
@@ -653,7 +689,7 @@ fun main() {
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "7_4"
+    val param = "8_4"
     val aag = "fraag" // "aag" or "fraag"
     val filenameLeft = "data/instances/${left}/$aag/${left}_${param}.aag"
     val filenameRight = "data/instances/${right}/$aag/${right}_${param}.aag"
@@ -661,9 +697,11 @@ fun main() {
     val aigLeft = parseAig(filenameLeft)
     val aigRight = parseAig(filenameRight)
     // val solverProvider = { MiniSatSolver() }
-    val solverProvider = { GlucoseSolver() }
+    // val solverProvider = { GlucoseSolver() }
     // val solverProvider = { CryptoMiniSatSolver() }
+    val solverProvider = { CadicalSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec-layer", "dec-dis", "domain"
+    // val method = "dec-dis"
     val method = "miter"
 
     checkEquivalence(aigLeft, aigRight, solverProvider, method)
