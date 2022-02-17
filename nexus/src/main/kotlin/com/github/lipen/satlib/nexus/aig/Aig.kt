@@ -110,7 +110,7 @@ class Aig(
         // return outputs.map { nodeValue.getValue(it.id) xor it.negated }
     }
 
-    fun _compute(n: Int, random: Random): Map<Int, Pair<Int, Int>> {
+    fun computeTFTable(n: Int, random: Random): Map<Int, Pair<Int, Int>> {
         // Returns {id: (countTrue, countFalse)}
 
         val tableTrue = mutableMapOf<Int, Int>()
@@ -136,6 +136,13 @@ class Aig(
         }
 
         return mapping.keys.associateWith { Pair(tableTrue[it]!!, tableFalse[it]!!) }
+    }
+
+    fun computePTable(n: Int, random:Random): Map<Int, Double> {
+        return computeTFTable(n,random).mapValues { (_, tf) ->
+            val (t, f) = tf
+            t.toDouble() / (t+f).toDouble()
+        }
     }
 
     override fun toString(): String {
@@ -252,7 +259,7 @@ fun main() {
 
     val random = Random(42)
     val n = 10000
-    val table = aig._compute(n, random)
+    val table = aig.computeTFTable(n, random)
     println("table for n = $n:")
     val sortedTable = table.toList().sortedBy { (_, p) -> val (t, f) = p; -s(t, f) }
     for ((id, p) in sortedTable.take(10)) {

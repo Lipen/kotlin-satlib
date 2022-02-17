@@ -50,7 +50,7 @@ internal fun Solver.determineDecomposition1(
     val randomSeed = 42
     val random = Random(randomSeed)
     logger.info("Computing p-table using sampleSize=$sampleSize and randomSeed=$randomSeed...")
-    val tfTable = aig._compute(sampleSize, random)
+    val tfTable = aig.computeTFTable(sampleSize, random)
     val pTable = tfTable.mapValues { (_, tf) ->
         val (t, f) = tf
         t.toDouble() / (t + f)

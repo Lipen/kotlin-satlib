@@ -1,5 +1,6 @@
 plugins {
     application
+    kotlin("plugin.serialization")
     id(Plugins.Shadow.id)
 }
 
@@ -13,6 +14,7 @@ dependencies {
     implementation(Libs.Clikt.clikt)
     implementation(Libs.Mordant.mordant)
     implementation(Libs.Log4j.log4j_slf4j_impl)
+    implementation(Libs.KotlinxSerialization.serialization_json)
 }
 
 application {

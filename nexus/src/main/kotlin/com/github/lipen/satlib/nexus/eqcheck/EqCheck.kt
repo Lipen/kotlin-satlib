@@ -25,17 +25,12 @@ import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toInt
 import com.github.lipen.satlib.op.iffAnd
 import com.github.lipen.satlib.solver.CadicalSolver
-import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
-import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
 import mu.KotlinLogging
-import okio.appendingSink
-import okio.buffer
-import okio.sink
 import java.io.File
 import java.util.PriorityQueue
 import kotlin.math.round
@@ -302,16 +297,8 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     val randomSeed = 42
     val random = Random(randomSeed)
     logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
-    val tfTableLeft = aigLeft._compute(sampleSize, random)
-    val pTableLeft = tfTableLeft.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
-    val tfTableRight = aigRight._compute(sampleSize, random)
-    val pTableRight = tfTableRight.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
+    val pTableLeft = aigLeft.computePTable(sampleSize, random)
+    val pTableRight = aigRight.computePTable(sampleSize, random)
     val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
     val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
     val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
@@ -414,16 +401,8 @@ internal fun Solver.`check circuits equivalence using layer-wise decomposition`(
     val randomSeed = 42
     val random = Random(randomSeed)
     logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
-    val tfTableLeft = aigLeft._compute(sampleSize, random)
-    val pTableLeft = tfTableLeft.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
-    val tfTableRight = aigRight._compute(sampleSize, random)
-    val pTableRight = tfTableRight.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
+    val pTableLeft = aigLeft.computePTable(sampleSize, random)
+    val pTableRight = aigRight.computePTable(sampleSize, random)
 
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
@@ -517,16 +496,8 @@ internal fun Solver.`check circuits equivalence using domain-based method`(
     val randomSeed = 42
     val random = Random(randomSeed)
     logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
-    val tfTableLeft = aigLeft._compute(sampleSize, random)
-    val pTableLeft = tfTableLeft.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
-    val tfTableRight = aigRight._compute(sampleSize, random)
-    val pTableRight = tfTableRight.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
+    val pTableLeft = aigLeft.computePTable(sampleSize, random)
+    val pTableRight = aigRight.computePTable(sampleSize, random)
     val idsSortedByPLeft = aigLeft.andGateIds.sortedBy { id -> pTableLeft.getValue(id) }
     val idsSortedByPRight = aigRight.andGateIds.sortedBy { id -> pTableRight.getValue(id) }
     val idsSortedByDisLeft = aigLeft.andGateIds.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
@@ -689,7 +660,7 @@ fun main() {
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "8_4"
+    val param = "6_4"
     val aag = "fraag" // "aag" or "fraag"
     val filenameLeft = "data/instances/${left}/$aag/${left}_${param}.aag"
     val filenameRight = "data/instances/${right}/$aag/${right}_${param}.aag"

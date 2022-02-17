@@ -74,7 +74,7 @@ class AigToDotCommand : CliktCommand() {
         defaultForHelp = "no",
     )
     private val sampleSize: Int by option(
-        "-s",
+        "-n",
         "--sample-size",
         metavar = "<int>",
         help = "Sample size for disbalance computation"
@@ -130,7 +130,7 @@ class AigToDotCommand : CliktCommand() {
             }
 
             val lines = if (computeDisbalance) {
-                fun s(t: Int, f: Int): Double {
+                fun getP(t: Int, f: Int): Double {
                     return t.toDouble() / (t + f)
                 }
 
@@ -141,31 +141,31 @@ class AigToDotCommand : CliktCommand() {
 
                 val random = Random(randomSeed)
                 logger.info("Computing disbalance table using sampleSize=$sampleSize and randomSeed=$randomSeed...")
-                val table = aig._compute(sampleSize, random)
+                val tfTable = aig.computeTFTable(sampleSize, random)
 
                 if (printDisbalance) {
                     println("Table for $aig:")
-                    for ((id, p) in table.entries.sortedBy { (_, p) -> val (t, f) = p; s(t, f) }) {
-                        val (t, f) = p
-                        println("  - $id: t=$t, f=$f, s=%.3f".format(s(t, f)))
+                    for ((id, tf) in tfTable.entries.sortedBy { (_, tf) -> val (t, f) = tf; getP(t, f) }) {
+                        val (t, f) = tf
+                        println("  - $id: t=$t, f=$f, s=%.3f".format(getP(t, f)))
                     }
                 }
 
-                val nodeLabel = table.mapValues { (id, p) ->
+                val nodeLabel = tfTable.mapValues { (id, p) ->
                     val (t, f) = p
                     if (computeStats) {
                         val cone = aig.cone(id)
                         val shadow = aig.shadow(id)
                         "\\N : %.3f\ncone: ${cone.size} (${cone.filter { it in aig.inputIds }.size})\nshad: ${shadow.size} (${shadow.filter { it in aig.outputIds }.size})".format(
-                            s(t, f)
+                            getP(t, f)
                         )
                     } else {
-                        "\\N: %.3f".format(s(t, f))
+                        "\\N: %.3f".format(getP(t, f))
                     }
                 }
-                val nodeAddStyle = table.mapValues { (_, p) ->
+                val nodeAddStyle = tfTable.mapValues { (_, p) ->
                     val (t, f) = p
-                    val saturation = s(t, f) // saturation
+                    val saturation = getP(t, f) // saturation
                     check(saturation in 0.0..1.0)
                     val mid = 0.25
                     val power = 3

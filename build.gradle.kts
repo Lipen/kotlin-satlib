@@ -7,6 +7,7 @@ group = "com.github.Lipen"
 plugins {
     idea
     kotlin("jvm") version Versions.kotlin
+    kotlin("plugin.serialization") version Versions.kotlin apply false
     with(Plugins.Kotlinter) { id(id) version (version) }
     with(Plugins.Jgitver) { id(id) version (version) }
     with(Plugins.GradleVersions) { id(id) version (version) }
