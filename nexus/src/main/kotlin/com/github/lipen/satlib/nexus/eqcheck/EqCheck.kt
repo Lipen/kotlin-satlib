@@ -30,9 +30,16 @@ import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
+import okio.buffer
+import okio.source
 import java.io.File
+import java.nio.file.Paths
 import java.util.PriorityQueue
+import kotlin.io.path.exists
+import kotlin.math.absoluteValue
 import kotlin.math.round
 import kotlin.random.Random
 
@@ -326,20 +333,34 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
     if (!isSatMain) error("Unexpected UNSAT")
 
-    val bucketSize = 14
+    val bucketSize = 12
+    val numberOfBucketsCompute = (100 / bucketSize)
+    val numberOfBuckets = 2
 
     val bucketsLeft = run {
-        idsSortedByDisLeft.windowed(bucketSize, bucketSize).take(2).mapIndexed { index, ids ->
-            logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
-            buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
-        }
+        idsSortedByDisLeft.asSequence()
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBucketsCompute)
+            .mapIndexed { index, ids ->
+                logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+            }
+            .sortedBy { it.saturation }
+            .take(numberOfBuckets)
+            .toList()
     }
 
     val bucketsRight = run {
-        idsSortedByDisRight.windowed(bucketSize, bucketSize).take(2).mapIndexed { index, ids ->
-            logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
-            buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
-        }
+        idsSortedByDisRight.asSequence()
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBucketsCompute)
+            .mapIndexed { index, ids ->
+                logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+            }
+            .sortedBy { it.saturation }
+            .take(numberOfBuckets)
+            .toList()
     }
 
     logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.joinToString("+") { it.domain.size.toString() }}")
@@ -350,19 +371,53 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
         }"
     )
 
-    val decomposition = bucketsDecomposition(listOf(mergeBucketsTree(bucketsLeft), mergeBucketsTree(bucketsRight)))
+    val megaBucketLeft = mergeBucketsTree(bucketsLeft)
+    val megaBucketRight = mergeBucketsTree(bucketsRight)
+
+    val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight))
+        .map { lits -> lits.sortedBy { lit -> lit.absoluteValue } }
     // val decomposition = bucketsDecomposition(bucketsLeft + bucketsRight)
     // val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
     logger.info("Total decomposition size: ${decomposition.size}")
 
+    // File("assumptions.txt").sink().buffer().useWith {
+    //     for (assumptions in decomposition) {
+    //         writeln(assumptions.toString())
+    //     }
+    // }
+
     logger.info("Encoding miter...")
     encodeMiter()
+
+    // logger.info("Pre-checking left...")
+    // val timeStartPreCheckLeft = timeNow()
+    // var satsLeft = 0
+    // var unsatsLeft = 0
+    // for ((index, assumptions) in megaBucketLeft.decomposition().withIndex()) {
+    //     val (res, timeSolve) = measureTimeWithResult {
+    //         this as GlucoseSolver
+    //         // backend.
+    //         solve(assumptions)
+    //     }
+    //     if (index == 0 || (index + 1) % (if (decomposition.size < 100_000) 1_000 else if (decomposition.size < 1_000_000) 10_000 else 100_000) == 0 || timeSolve >= 500.milliseconds) {
+    //         logger.debug {
+    //             "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
+    //                 .format(timeSolve.seconds, secondsSince(timeStartPreCheckLeft))
+    //         }
+    //     }
+    //     if (res) {
+    //         satsLeft += 1
+    //     } else {
+    //         unsatsLeft += 1
+    //     }
+    // }
+    // logger.info("(Left) SAT=${satsLeft}, UNSAT=${unsatsLeft}")
 
     logger.info("Solving all ${decomposition.size} instances in the decomposition...")
     val timeStartSolveAll = timeNow()
     for ((index, assumptions) in decomposition.withIndex()) {
-        // if (index + 1 == 27542) {
-        //     val fileCnf = File("cnf_dec-dis_27542.cnf")
+        // if (index + 1 == 28177) {
+        //     val fileCnf = File("cnf_dec-dis_28177.cnf")
         //     dumpDimacs(fileCnf)
         //     fileCnf.appendingSink().buffer().useWith {
         //         writeln("c Assumptions")
@@ -375,7 +430,7 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
             solve(assumptions)
             // false
         }
-        if (index == 0 || (index + 1) % (if (decomposition.size < 100_000) 1_000 else if (decomposition.size < 1_000_000) 10_000 else 100_000) == 0 || timeSolve >= 500.milliseconds) {
+        if (index == 0 || index == decomposition.size || (index + 1) % (if (decomposition.size < 100_000) 1_000 else if (decomposition.size < 1_000_000) 10_000 else 100_000) == 0 || timeSolve >= 500.milliseconds) {
             logger.debug {
                 "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
                     .format(timeSolve.seconds, secondsSince(timeStartSolveAll))
@@ -386,6 +441,14 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
             return false
         }
     }
+
+    // val (resFinal, timeSolveFinal) = measureTimeWithResult {
+    //     solve()
+    // }
+    // logger.debug {
+    //     "${if (resFinal) "SAT" else "UNSAT"} without assumptions in %.3fs [total: %.3fs]"
+    //         .format(timeSolveFinal.seconds, secondsSince(timeStartSolveAll))
+    // }
 
     logger.info("Circuits are equivalent!")
     return true
@@ -651,6 +714,20 @@ fun checkEquivalence(
     }
 }
 
+private fun loadPTable(aig: Aig, path: String) {
+    @Suppress("NAME_SHADOWING")
+    val path = Paths.get(path)
+    if (path.exists()) {
+        logger.debug { "Loading p-table from '$path'..." }
+        val pTable = path.source().buffer().inputStream().use { input ->
+            Json.decodeFromStream<Map<Int, Double>>(input)
+        }
+        aig.precomputedPTable = pTable
+    } else {
+        logger.debug { "Not found p-table at '$path'..." }
+    }
+}
+
 fun main() {
     val timeStart = timeNow()
 
@@ -660,10 +737,13 @@ fun main() {
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "6_4"
+    val param = "7_4"
     val aag = "fraag" // "aag" or "fraag"
-    val filenameLeft = "data/instances/${left}/$aag/${left}_${param}.aag"
-    val filenameRight = "data/instances/${right}/$aag/${right}_${param}.aag"
+
+    val nameLeft = "${left}_${param}"
+    val nameRight = "${right}_${param}"
+    val filenameLeft = "data/instances/$left/$aag/$nameLeft.aag"
+    val filenameRight = "data/instances/$right/$aag/$nameRight.aag"
 
     val aigLeft = parseAig(filenameLeft)
     val aigRight = parseAig(filenameRight)
@@ -672,8 +752,11 @@ fun main() {
     // val solverProvider = { CryptoMiniSatSolver() }
     val solverProvider = { CadicalSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec-layer", "dec-dis", "domain"
-    // val method = "dec-dis"
-    val method = "miter"
+    // val method = "miter"
+    val method = "dec-dis"
+
+    loadPTable(aigLeft, "data/instances/$left/ptable/${nameLeft}_$aag.json")
+    loadPTable(aigRight, "data/instances/$right/ptable/${nameRight}_$aag.json")
 
     checkEquivalence(aigLeft, aigRight, solverProvider, method)
 

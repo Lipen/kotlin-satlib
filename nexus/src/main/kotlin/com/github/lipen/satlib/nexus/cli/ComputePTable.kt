@@ -13,8 +13,6 @@ import mu.KotlinLogging
 import okio.use
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
 import kotlin.random.Random
 
@@ -30,8 +28,8 @@ class ComputePTableCommand : CliktCommand() {
     private val pathOutput: Path by option(
         "-o", "--output",
         metavar = "<path>",
-        help = "Path to the dir with the resulting p-table"
-    ).path().required()
+        help = "Path to the resulting p-table"
+    ).path(canBeDir = false).required()
 
     private val sampleSize: Int by option(
         "-n",
@@ -48,22 +46,15 @@ class ComputePTableCommand : CliktCommand() {
     override fun run() {
         val aig = parseAig(pathAig)
 
-        logger.info {
-            "Computing p-table using n=$sampleSize and randomSeed=$randomSeed..."
-        }
+        logger.info("Computing p-table using n=$sampleSize and randomSeed=$randomSeed...")
         val random = Random(randomSeed)
         val pTable = aig.computePTable(sampleSize, random)
-        logger.info {
-            "Computed p-table of size ${pTable.size}"
-        }
+        logger.info("Computed p-table of size ${pTable.size}")
 
-        val pathPTable = pathOutput / "${pathAig.nameWithoutExtension}.json"
-        logger.info {
-            "Writing p-table to '$pathPTable'..."
-        }
-        pathPTable.parent.createDirectories()
+        logger.info("Writing p-table to '$pathOutput'...")
+        pathOutput.parent.createDirectories()
         val json = Json { prettyPrint = true }
-        pathPTable.outputStream().use { out ->
+        pathOutput.outputStream().use { out ->
             json.encodeToStream(pTable, out)
         }
     }

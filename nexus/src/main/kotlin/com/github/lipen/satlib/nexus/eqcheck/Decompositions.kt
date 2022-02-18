@@ -50,12 +50,7 @@ internal fun Solver.determineDecomposition1(
     val randomSeed = 42
     val random = Random(randomSeed)
     logger.info("Computing p-table using sampleSize=$sampleSize and randomSeed=$randomSeed...")
-    val tfTable = aig.computeTFTable(sampleSize, random)
-    val pTable = tfTable.mapValues { (_, tf) ->
-        val (t, f) = tf
-        t.toDouble() / (t + f)
-    }
-    // println("Sorted p-table: ${pTable.toSortedMap { a, b -> pTable.getValue(a).compareTo(pTable.getValue(b)) }}")
+    val pTable = aig.computePTable(sampleSize, random)
     val idsSortedByDisbalance = aig.mapping.keys.sortedBy { id -> pTable.getValue(id) }
 
     // Freeze gates (because we use them in assumptions later)

@@ -138,10 +138,14 @@ class Aig(
         return mapping.keys.associateWith { Pair(tableTrue[it]!!, tableFalse[it]!!) }
     }
 
-    fun computePTable(n: Int, random:Random): Map<Int, Double> {
-        return computeTFTable(n,random).mapValues { (_, tf) ->
+    internal var precomputedPTable: Map<Int, Double>? = null
+
+    fun computePTable(n: Int, random: Random): Map<Int, Double> {
+        if (precomputedPTable != null) return precomputedPTable!!
+
+        return computeTFTable(n, random).mapValues { (_, tf) ->
             val (t, f) = tf
-            t.toDouble() / (t+f).toDouble()
+            t.toDouble() / (t + f).toDouble()
         }
     }
 
