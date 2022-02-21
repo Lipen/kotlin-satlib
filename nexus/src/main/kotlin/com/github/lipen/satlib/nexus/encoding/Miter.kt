@@ -36,20 +36,20 @@ internal fun Solver.encodeMiter() {
         )
     }
 
-    // comment("Miter OR")
-    // addClause((1..Y).map { y -> xorValue[y] })
+    comment("Miter OR")
+    addClause((1..Y).map { y -> xorValue[y] })
 
-    check(Y >= 2)
-    comment("Miter OR (ladder)")
-    var prev = xorValue[1]
-    for (y in 2 until Y) {
-        val next = miterOrLadderValue[y - 1]
-        iffOr(
-            next,
-            prev,
-            xorValue[y],
-        )
-        prev = next
-    }
-    addClause(prev, xorValue[Y])
+    // check(Y >= 2)
+    // comment("Miter OR (ladder)")
+    // var prev = xorValue[1]
+    // for (y in 2 until Y) {
+    //     val next = miterOrLadderValue[y - 1]
+    //     iffOr(
+    //         next,
+    //         prev,
+    //         xorValue[y],
+    //     )
+    //     prev = next
+    // }
+    // addClause(prev, xorValue[Y])
 }

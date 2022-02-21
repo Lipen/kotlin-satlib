@@ -77,7 +77,7 @@ internal fun Solver.encodeAig2(
     val X = context("$name.X") { aig.inputs.size }
     val Y = context("$name.Y") { aig.outputs.size }
     val G = context("$name.G") { aig.andGates.size }
-    logger.info("$name: X = $Y, Y = $Y, G = $G")
+    // logger.info("$name: X = $Y, Y = $Y, G = $G")
 
     fun input(x: Int): AigInput = aig.inputs[x - 1]
     fun output(y: Int): Ref = aig.outputs[y - 1]

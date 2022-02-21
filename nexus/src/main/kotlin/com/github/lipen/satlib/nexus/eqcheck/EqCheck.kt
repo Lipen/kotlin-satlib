@@ -22,9 +22,11 @@ import com.github.lipen.satlib.nexus.utils.mean
 import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
+import com.github.lipen.satlib.nexus.utils.toBinaryString
 import com.github.lipen.satlib.nexus.utils.toInt
 import com.github.lipen.satlib.op.iffAnd
 import com.github.lipen.satlib.solver.CadicalSolver
+import com.github.lipen.satlib.solver.CryptoMiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
@@ -333,9 +335,10 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
     if (!isSatMain) error("Unexpected UNSAT")
 
-    val bucketSize = 12
-    val numberOfBucketsCompute = (100 / bucketSize)
-    val numberOfBuckets = 2
+    val bucketSize = 14
+    val numberOfBuckets = Pair(2, 2)
+    // val numberOfBucketsCompute = (100 / bucketSize)
+    val numberOfBucketsCompute = 5
 
     val bucketsLeft = run {
         idsSortedByDisLeft.asSequence()
@@ -346,7 +349,7 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
                 buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
             }
             .sortedBy { it.saturation }
-            .take(numberOfBuckets)
+            .take(numberOfBuckets.first)
             .toList()
     }
 
@@ -359,7 +362,7 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
                 buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
             }
             .sortedBy { it.saturation }
-            .take(numberOfBuckets)
+            .take(numberOfBuckets.second)
             .toList()
     }
 
@@ -373,82 +376,122 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
 
     val megaBucketLeft = mergeBucketsTree(bucketsLeft)
     val megaBucketRight = mergeBucketsTree(bucketsRight)
+    // logger.info("Final decomposition size: ${megaBucketLeft.domain.size * megaBucketRight.domain.size}")
 
     val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight))
         .map { lits -> lits.sortedBy { lit -> lit.absoluteValue } }
-    // val decomposition = bucketsDecomposition(bucketsLeft + bucketsRight)
-    // val decomposition = mergeBucketsTree(bucketsLeft + bucketsRight).decomposition()
     logger.info("Total decomposition size: ${decomposition.size}")
 
-    // File("assumptions.txt").sink().buffer().useWith {
-    //     for (assumptions in decomposition) {
-    //         writeln(assumptions.toString())
+    // =====================
+    //
+    // data class TimingInfo(
+    //     val indexLeft: Int,
+    //     val indexRight: Int,
+    //     val time: Double,
+    // )
+    //
+    // val timeStartAll = timeNow()
+    // val times: MutableList<TimingInfo> = mutableListOf()
+    // for ((indexLeft, litsLeft) in megaBucketLeft.decomposition().withIndex()) {
+    //     val timeStartIter = timeNow()
+    //     reset()
+    //     encodeAigs(aigLeft, aigRight)
+    //     encodeMiter()
+    //     for (lit in litsLeft) {
+    //         addClause(lit)
     //     }
-    // }
-
-    logger.info("Encoding miter...")
-    encodeMiter()
-
-    // logger.info("Pre-checking left...")
-    // val timeStartPreCheckLeft = timeNow()
-    // var satsLeft = 0
-    // var unsatsLeft = 0
-    // for ((index, assumptions) in megaBucketLeft.decomposition().withIndex()) {
-    //     val (res, timeSolve) = measureTimeWithResult {
-    //         this as GlucoseSolver
-    //         // backend.
-    //         solve(assumptions)
-    //     }
-    //     if (index == 0 || (index + 1) % (if (decomposition.size < 100_000) 1_000 else if (decomposition.size < 1_000_000) 10_000 else 100_000) == 0 || timeSolve >= 500.milliseconds) {
-    //         logger.debug {
-    //             "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
-    //                 .format(timeSolve.seconds, secondsSince(timeStartPreCheckLeft))
+    //
+    //     for ((indexRight, litsRight) in megaBucketRight.decomposition().withIndex()) {
+    //         val (res, timeSolve) = measureTimeWithResult {
+    //             solve(litsRight)
+    //             // false
+    //         }
+    //         times.add(TimingInfo(indexLeft, indexRight, timeSolve.seconds))
+    //         if (res) {
+    //             logger.warn("Circuits are NOT equivalent!")
+    //             return false
     //         }
     //     }
-    //     if (res) {
-    //         satsLeft += 1
-    //     } else {
-    //         unsatsLeft += 1
+    //     if (indexLeft == 0 || (indexLeft + 1) % 100 == 0 || secondsSince(timeStartIter) > 2) {
+    //         logger.info {
+    //             "Iteration #${indexLeft + 1}/${megaBucketLeft.domain.size} done in %.3fs [total: %.3fs]"
+    //                 .format(secondsSince(timeStartIter), secondsSince(timeStartAll))
+    //         }
     //     }
     // }
-    // logger.info("(Left) SAT=${satsLeft}, UNSAT=${unsatsLeft}")
+    // logger.info("Max times:")
+    // for ((indexLeft, indexRight, time) in times.sortedByDescending { it.time }.take(10)) {
+    //     logger.info("  - %.3fs on $indexLeft/$indexRight".format(time))
+    // }
+    //
+    // =====================
 
-    logger.info("Solving all ${decomposition.size} instances in the decomposition...")
-    val timeStartSolveAll = timeNow()
-    for ((index, assumptions) in decomposition.withIndex()) {
-        // if (index + 1 == 28177) {
-        //     val fileCnf = File("cnf_dec-dis_28177.cnf")
-        //     dumpDimacs(fileCnf)
-        //     fileCnf.appendingSink().buffer().useWith {
-        //         writeln("c Assumptions")
-        //         for (x in assumptions) {
-        //             writeln("$x 0")
-        //         }
-        //     }
-        // }
-        val (res, timeSolve) = measureTimeWithResult {
-            solve(assumptions)
-            // false
-        }
-        if (index == 0 || index == decomposition.size || (index + 1) % (if (decomposition.size < 100_000) 1_000 else if (decomposition.size < 1_000_000) 10_000 else 100_000) == 0 || timeSolve >= 500.milliseconds) {
-            logger.debug {
-                "${if (res) "SAT" else "UNSAT"} on ${index + 1}/${decomposition.size} in %.3fs [total: %.3fs]"
-                    .format(timeSolve.seconds, secondsSince(timeStartSolveAll))
-            }
-        }
-        if (res) {
-            logger.warn("Circuits are NOT equivalent!")
-            return false
-        }
+    val n = megaBucketLeft.lits.size + megaBucketRight.lits.size
+    val permutation = (0 until n).shuffled(Random(42))
+    val decompositionShuffled = decomposition.map { lits ->
+        permutation.map { i -> lits[i] }
+    }
+    val cubes = decompositionShuffled.map { lits -> lits.map { lit -> lit > 0 } }
+    val varsShuffled = decompositionShuffled.first().map { lit -> lit.absoluteValue }
+
+    logger.info("Building trie...")
+    val trie = buildTrie(cubes)
+    logger.info("Done building trie")
+
+    val limit = 50
+    logger.info("Performing trie.dfsLimited($limit)...")
+    val partition = trie.dfsLimited(limit).toList()
+    println("trie.dfsLimited($limit): (total ${partition.size})")
+    for (node in partition.take(10)) {
+        println("  - ${node.cube.asList().toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
     }
 
-    // val (resFinal, timeSolveFinal) = measureTimeWithResult {
-    //     solve()
-    // }
-    // logger.debug {
-    //     "${if (resFinal) "SAT" else "UNSAT"} without assumptions in %.3fs [total: %.3fs]"
-    //         .format(timeSolveFinal.seconds, secondsSince(timeStartSolveAll))
-    // }
+    data class TimingInfo(
+        val indexUnit: Int,
+        val indexLeaf: Int,
+        val time: Double,
+    )
+
+    val timeStartAll = timeNow()
+    val times: MutableList<TimingInfo> = mutableListOf()
+    logger.info("Solving in ${partition.size} iterations...")
+    for ((indexUnit, node) in partition.withIndex()) {
+        val timeStartIter = timeNow()
+        reset()
+        encodeAigs(aigLeft, aigRight)
+        encodeMiter()
+
+        val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
+        for (lit in units) {
+            addClause(lit)
+        }
+
+        val k = units.size
+        val leaves = node.dfs().drop(1)
+
+        for ((indexLeaf, leaf) in leaves.withIndex()) {
+            val assumptions = (k until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
+            val (res, timeSolve) = measureTimeWithResult {
+                solve(assumptions)
+                // false
+            }
+            times.add(TimingInfo(indexUnit, indexLeaf, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+        }
+        if (indexUnit == 0 || (indexUnit + 1) % 100 == 0 || secondsSince(timeStartIter) > 2) {
+            logger.info {
+                "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+                    .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+            }
+        }
+    }
+    logger.info("Max times:")
+    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(10)) {
+        logger.info("  - %.3fs on $indexUnit/$indexLeaf".format(time))
+    }
 
     logger.info("Circuits are equivalent!")
     return true
