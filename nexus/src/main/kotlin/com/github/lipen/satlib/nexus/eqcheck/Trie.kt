@@ -3,7 +3,7 @@ package com.github.lipen.satlib.nexus.eqcheck
 import com.github.lipen.satlib.nexus.utils.toBinaryString
 
 class Node(
-    val cube: BooleanArray,
+    val cube: List<Boolean>,
     var left: Node? = null,
     var right: Node? = null,
 ) {
@@ -37,7 +37,7 @@ class Node(
     fun pprint(n: Int = 0) {
         val indent = "  ".repeat(n)
         if (n > 0) {
-            println(cube.asList().toBinaryString() + " ($leaves leaves)")
+            println(cube.toBinaryString() + " ($leaves leaves)")
         } else {
             println("root ($leaves leaves)")
         }
@@ -53,25 +53,29 @@ class Node(
 }
 
 fun buildTrie(cubes: Iterable<List<Boolean>>): Node {
-    val root = Node(BooleanArray(0))
+    val root = Node(emptyList())
 
-    for (cube in cubes) {
-        // println("Cube: ${cube.toBinaryString()}")
+    for ((index, cube) in cubes.withIndex()) {
+        if ((index + 1) % 10000 == 0) {
+            println("Cube ${index + 1}/${cubes.count()}: ${cube.toBinaryString()}")
+        }
         var current: Node = root
-        for (p in cube) {
+        for ((i, p) in cube.withIndex()) {
             // `p==false` corresponds to `left`
             // `p==true` corresponds to `right`
             when (p) {
                 false -> {
                     if (current.left == null) {
-                        current.left = Node(current.cube + p)
+                        current.left = Node(cube.slice(0..i))
+                        // current.left = Node(current.cube + p)
                         // .also { println("New node with ${it.cube.toBinaryString()}") }
                     }
                     current = current.left!!
                 }
                 true -> {
                     if (current.right == null) {
-                        current.right = Node(current.cube + p)
+                        current.right = Node(cube.slice(0..i))
+                        // current.right = Node(current.cube + p)
                         // .also { println("New node with ${it.cube.toBinaryString()}") }
                     }
                     current = current.right!!
@@ -104,6 +108,6 @@ fun main() {
 
     println("DFS:")
     for (node in root.dfs()) {
-        println("  - ${node.cube.asList().toBinaryString()} (leaves: ${node.leaves})")
+        println("  - ${node.cube.toBinaryString()} (leaves: ${node.leaves})")
     }
 }

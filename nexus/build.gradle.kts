@@ -39,7 +39,7 @@ tasks.shadowJar {
     archiveBaseName.set(rootProject.name)
     archiveClassifier.set("")
     archiveVersion.set("")
-    minimize {
-        exclude(dependency("org.jetbrains.kotlin:kotlin-reflect"))
-    }
+    // minimize {
+    //     exclude(dependency("org.jetbrains.kotlin:kotlin-reflect"))
+    // }
 }

@@ -25,8 +25,9 @@ import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toBinaryString
 import com.github.lipen.satlib.nexus.utils.toInt
 import com.github.lipen.satlib.op.iffAnd
+import com.github.lipen.satlib.op.runWithTimeout
+import com.github.lipen.satlib.op.runWithTimeout2
 import com.github.lipen.satlib.solver.CadicalSolver
-import com.github.lipen.satlib.solver.CryptoMiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
@@ -335,7 +336,7 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
     if (!isSatMain) error("Unexpected UNSAT")
 
-    val bucketSize = 14
+    val bucketSize = 12
     val numberOfBuckets = Pair(2, 2)
     // val numberOfBucketsCompute = (100 / bucketSize)
     val numberOfBucketsCompute = 5
@@ -438,12 +439,12 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     val trie = buildTrie(cubes)
     logger.info("Done building trie")
 
-    val limit = 50
+    val limit = 100
     logger.info("Performing trie.dfsLimited($limit)...")
     val partition = trie.dfsLimited(limit).toList()
     println("trie.dfsLimited($limit): (total ${partition.size})")
     for (node in partition.take(10)) {
-        println("  - ${node.cube.asList().toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
+        println("  - ${node.cube.toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
     }
 
     data class TimingInfo(
@@ -467,29 +468,50 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
         }
 
         val k = units.size
-        val leaves = node.dfs().drop(1)
+        val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
 
-        for ((indexLeaf, leaf) in leaves.withIndex()) {
+        logger.info("Iteration #${indexUnit + 1}: ${leaves.size} leaves")
+        if (leaves.isEmpty()) {
+            logger.debug("Solving iteration #${indexUnit + 1}/${partition.size} with ${units.size} units and without assumptions...")
+            val (res, timeSolve) = measureTimeWithResult {
+                solve()
+            }
+            times.add(TimingInfo(indexUnit, 0, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+        } else for ((indexLeaf, leaf) in leaves.withIndex()) {
             val assumptions = (k until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
             val (res, timeSolve) = measureTimeWithResult {
-                solve(assumptions)
-                // false
+                val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
+                    solve(assumptions)
+                }
+                if (isTimeout) {
+                    logger.warn("Timeout on indexUnit=$indexUnit, indexLeaf=$indexLeaf")
+                }
+                isSat
             }
+            logger.debug("Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs".format(timeSolve.seconds))
             times.add(TimingInfo(indexUnit, indexLeaf, timeSolve.seconds))
             if (res) {
                 logger.warn("Circuits are NOT equivalent!")
                 return false
             }
         }
-        if (indexUnit == 0 || (indexUnit + 1) % 100 == 0 || secondsSince(timeStartIter) > 2) {
-            logger.info {
-                "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
-                    .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
-            }
+        logger.info {
+            "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+                .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
         }
+        // if (indexUnit == 0 || (indexUnit + 1) % 100 == 0 || secondsSince(timeStartIter) > 2) {
+        //     logger.info {
+        //         "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+        //             .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+        //     }
+        // }
     }
     logger.info("Max times:")
-    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(10)) {
+    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(500)) {
         logger.info("  - %.3fs on $indexUnit/$indexLeaf".format(time))
     }
 
@@ -780,7 +802,7 @@ fun main() {
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "7_4"
+    val param = "8_4"
     val aag = "fraag" // "aag" or "fraag"
 
     val nameLeft = "${left}_${param}"
