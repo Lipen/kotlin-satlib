@@ -456,8 +456,10 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
                 }
                 isSat
             }
-            logger.debug("Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs".format(
-                timeSolve.seconds))
+            logger.debug(
+                "Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs"
+                    .format(timeSolve.seconds)
+            )
             times.add(TimingInfo(indexUnit, indexLeaf, timeSolve.seconds))
             if (res) {
                 logger.warn("Circuits are NOT equivalent!")
@@ -900,10 +902,14 @@ fun checkEquivalence(
             "merge-eq" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "EQ")
             "merge-xor" -> `check circuits equivalence using output mergers`(aigLeft, aigRight, "XOR")
             "conj" -> `check circuits equivalence using conjugated tables`(aigLeft, aigRight)
-            "dec-dis-trie" -> `check circuits equivalence using disbalance-based decomposition with trie`(aigLeft,
-                aigRight)
-            "dec-dis-dnf" -> `check circuits equivalence using disbalance-based decomposition with dnf`(aigLeft,
-                aigRight)
+            "dec-dis-trie" -> `check circuits equivalence using disbalance-based decomposition with trie`(
+                aigLeft,
+                aigRight
+            )
+            "dec-dis-dnf" -> `check circuits equivalence using disbalance-based decomposition with dnf`(
+                aigLeft,
+                aigRight
+            )
             "dec-layer" -> `check circuits equivalence using layer-wise decomposition`(aigLeft, aigRight)
             "domain" -> `check circuits equivalence using domain-based method`(aigLeft, aigRight)
             else -> TODO("Method '$method'")
