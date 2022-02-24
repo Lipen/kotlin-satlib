@@ -573,58 +573,79 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
             .format(megaBucketRight.saturation * 100.0)
     }
 
+    val dnfLeft = megaBucketLeft.decomposition()
     val dnfRight = megaBucketRight.decomposition()
-    logger.info("Right DNF size: ${dnfRight.size}")
     val decomposition = megaBucketLeft.decomposition()
+    logger.info("Left DNF size: ${dnfLeft.size}")
+    logger.info("Right DNF size: ${dnfRight.size}")
     logger.info("Decomposition size: ${decomposition.size}")
 
-    // encodeAigs(aigLeft, aigRight)
     encodeMiter()
+    encodeDnf(dnfLeft)
     encodeDnf(dnfRight)
 
-    data class TimingInfo(
-        val index: Int,
-        val time: Double,
-    )
-
-    val timeStartAll = timeNow()
-    val times: MutableList<TimingInfo> = mutableListOf()
+    dumpDimacs(File("cnf_dec-dis-dnf.cnf"))
 
     logger.info("Solving...")
-    for ((index, lits) in decomposition.withIndex()) {
-        val timeStartIter = timeNow()
-        // reset()
+    val (isSat, timeSolve) = measureTimeWithResult { solve() }
+    logger.info { "${if (isSat) "SAT" else "UNSAT"} in %.3fs".format(timeSolve.seconds) }
+    logger.debug { "Decisions: ${maybeNumberOfDecisions()}" }
+    logger.debug { "Conflicts: ${maybeNumberOfConflicts()}" }
+    logger.debug { "Propagations: ${maybeNumberOfPropagations()}" }
 
-        // for (lit in lits) {
-        //     addClause(lit)
-        // }
-
-        val (res, timeSolve) = measureTimeWithResult {
-            val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
-                solve(lits)
-            }
-            if (isTimeout) {
-                logger.warn("Timeout on index=$index (0-based)")
-            }
-            isSat
-        }
-        times.add(TimingInfo(index, timeSolve.seconds))
-        logger.info {
-            "Iteration #${index + 1}/${decomposition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
-                .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
-        }
-        if (res) {
-            logger.warn("Circuits are NOT equivalent!")
-            return false
-        }
+    if (!isSat) {
+        logger.info("Circuits are equivalent!")
+    } else {
+        logger.warn("Circuits are NOT equivalent!")
     }
-    logger.info("Max times:")
-    for ((index, time) in times.sortedByDescending { it.time }.take(100)) {
-        logger.info("  - %.3fs on $index".format(time))
-    }
+    return !isSat
 
-    logger.info("Circuits are equivalent!")
-    return true
+    // data class TimingInfo(
+    //     val index: Int,
+    //     val time: Double,
+    // )
+    //
+    // val timeStartAll = timeNow()
+    // val times: MutableList<TimingInfo> = mutableListOf()
+    //
+    // logger.info("Solving...")
+    // for ((index, lits) in decomposition.withIndex()) {
+    //     val timeStartIter = timeNow()
+    //     // reset()
+    //     // encodeAigs(aigLeft, aigRight)
+    //     // encodeMiter()
+    //     // encodeDnf(dnfRight)
+    //
+    //     // for (lit in lits) {
+    //     //     addClause(lit)
+    //     // }
+    //
+    //     val (res, timeSolve) = measureTimeWithResult {
+    //         val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
+    //             solve(lits)
+    //         }
+    //         if (isTimeout) {
+    //             logger.warn("Timeout on index=$index (0-based)")
+    //         }
+    //         isSat
+    //     }
+    //     times.add(TimingInfo(index, timeSolve.seconds))
+    //     logger.info {
+    //         "Iteration #${index + 1}/${decomposition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+    //             .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+    //     }
+    //     if (res) {
+    //         logger.warn("Circuits are NOT equivalent!")
+    //         return false
+    //     }
+    // }
+    // logger.info("Max times:")
+    // for ((index, time) in times.sortedByDescending { it.time }.take(100)) {
+    //     logger.info("  - %.3fs on $index".format(time))
+    // }
+    //
+    // logger.info("Circuits are equivalent!")
+    // return true
 }
 
 internal fun Solver.`check circuits equivalence using layer-wise decomposition`(
@@ -928,6 +949,7 @@ fun main() {
     // val solverProvider = { CryptoMiniSatSolver() }
     val solverProvider = { CadicalSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec-layer", "dec-dis", "domain"
+    // val method = "miter"
     val method = "dec-dis-dnf"
 
     loadPTable(aigLeft, "data/instances/$left/ptable/${nameLeft}_$aag.json")
