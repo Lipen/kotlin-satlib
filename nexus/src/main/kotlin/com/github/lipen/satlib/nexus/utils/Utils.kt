@@ -3,6 +3,7 @@ package com.github.lipen.satlib.nexus.utils
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
 import kotlin.math.pow
+import kotlin.random.Random
 
 internal fun isEven(i: Int): Boolean = (i and 1) == 0
 internal fun isOdd(i: Int): Boolean = (i and 1) != 0
@@ -21,3 +22,13 @@ internal fun Long.bit(i: Int): Boolean = (this and (1L shl i)) != 0L
 
 internal fun Collection<Double>.mean(): Double = sum() / size
 internal fun Collection<Double>.geomean(): Double = reduce(Double::times).pow(1.0 / size)
+
+internal fun <T> List<T>.sample(n: Int, random: Random = Random): List<T> {
+    require(n <= size)
+    val idx = mutableListOf<Int>()
+    repeat(n) {
+        val ix = (indices - idx).random(random)
+        idx.add(ix)
+    }
+    return idx.map { get(it) }
+}

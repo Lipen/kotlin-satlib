@@ -61,6 +61,7 @@ class Aig(
 
     fun children(id: Int): List<Ref> = node(id).children
     fun parents(id: Int): List<Ref> = parentsTable.getValue(id)
+    fun layerIndex(id: Int): Int = layers.indexOfFirst { it.contains(id) }
 
     fun dependencyGraph(
         origin: Collection<Int> = outputs.map { it.id },

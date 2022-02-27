@@ -23,6 +23,7 @@ import com.github.lipen.satlib.nexus.utils.maybeNumberOfDecisions
 import com.github.lipen.satlib.nexus.utils.maybeNumberOfPropagations
 import com.github.lipen.satlib.nexus.utils.mean
 import com.github.lipen.satlib.nexus.utils.pow
+import com.github.lipen.satlib.nexus.utils.sample
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toBinaryString
@@ -34,13 +35,11 @@ import com.github.lipen.satlib.solver.CadicalSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
-import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
-import okio.appendingSink
 import okio.buffer
 import okio.source
 import java.io.File
@@ -452,55 +451,55 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
         println("  - ${node.cube.toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
     }
 
-    // =====
-    encodeMiter()
-    logger.info("Dumping hard instances...")
-    val hard = listOf(
-        50 to 0,
-        51 to 6,
-        51 to 21,
-        51 to 32,
-        51 to 52,
-        51 to 74,
-        53 to 6,
-        385 to 20,
-    )
-    val hardCubes: MutableList<List<Lit>> = mutableListOf()
-    for ((indexUnit, indexLeaf) in hard) {
-        val node = partition[indexUnit]
-        val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
-        val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
-        val leaf = leaves[indexLeaf]
-        val assumptions = (units.size until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
-        val fileCnf = File("data/hard/cnf_hard_${indexUnit}_${indexLeaf}.cnf")
-        fileCnf.parentFile.mkdirs()
-        logger.info("Dumping hard instance $indexUnit/$indexLeaf to '$fileCnf'...")
-        dumpDimacs(fileCnf)
-        fileCnf.appendingSink().buffer().useWith {
-            writeln("c Units (${units.size})")
-            for (lit in units) {
-                writeln("$lit 0")
-            }
-            writeln("c Assumptions (${assumptions.size})")
-            for (lit in assumptions) {
-                writeln("$lit 0")
-            }
-        }
-        hardCubes.add(units + assumptions)
-    }
-
-    logger.info("Hard cubes:")
-    for (cube in hardCubes) {
-        logger.info(cube.map { it > 0 }.toBinaryString())
-    }
-    // return true
-
-    logger.info("Encoding DNF naively...")
-    encodeDnfTree(hardCubes)
-    val fileCnfMerged = File("data/hard/cnf_hard_merged.cnf")
-    fileCnfMerged.parentFile.mkdirs()
-    dumpDimacs(fileCnfMerged)
-    // =====
+    // // =====
+    // encodeMiter()
+    // logger.info("Dumping hard instances...")
+    // val hard = listOf(
+    //     50 to 0,
+    //     51 to 6,
+    //     51 to 21,
+    //     51 to 32,
+    //     51 to 52,
+    //     51 to 74,
+    //     53 to 6,
+    //     385 to 20,
+    // )
+    // val hardCubes: MutableList<List<Lit>> = mutableListOf()
+    // for ((indexUnit, indexLeaf) in hard) {
+    //     val node = partition[indexUnit]
+    //     val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
+    //     val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
+    //     val leaf = leaves[indexLeaf]
+    //     val assumptions = (units.size until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
+    //     val fileCnf = File("data/hard/cnf_hard_${indexUnit}_${indexLeaf}.cnf")
+    //     fileCnf.parentFile.mkdirs()
+    //     logger.info("Dumping hard instance $indexUnit/$indexLeaf to '$fileCnf'...")
+    //     dumpDimacs(fileCnf)
+    //     fileCnf.appendingSink().buffer().useWith {
+    //         writeln("c Units (${units.size})")
+    //         for (lit in units) {
+    //             writeln("$lit 0")
+    //         }
+    //         writeln("c Assumptions (${assumptions.size})")
+    //         for (lit in assumptions) {
+    //             writeln("$lit 0")
+    //         }
+    //     }
+    //     hardCubes.add(units + assumptions)
+    // }
+    //
+    // logger.info("Hard cubes:")
+    // for (cube in hardCubes) {
+    //     logger.info(cube.map { it > 0 }.toBinaryString())
+    // }
+    // // return true
+    //
+    // logger.info("Encoding DNF naively...")
+    // encodeDnfTree(hardCubes)
+    // val fileCnfMerged = File("data/hard/cnf_hard_merged.cnf")
+    // fileCnfMerged.parentFile.mkdirs()
+    // dumpDimacs(fileCnfMerged)
+    // // =====
     // return true
 
     data class TimingInfo(
@@ -1195,6 +1194,242 @@ internal fun Solver.`check circuits equivalence using method 10`(
     return true
 }
 
+internal fun Solver.`check circuits equivalence using method 11`(
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using method 10...")
+
+    val sampleSize = 10000
+    val randomSeed = 42
+    val random = Random(randomSeed)
+    logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
+    val pTableLeft = aigLeft.computePTable(sampleSize, random)
+    val pTableRight = aigRight.computePTable(sampleSize, random)
+    val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
+    val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    fun computeLevels(aig: Aig): List<List<Int>> {
+        // last level is all outputs
+        // 0-th level is probably all inputs
+
+        val levels = List(aig.layers.size) { mutableSetOf<Int>() }
+        // levels.last().addAll(aig.outputIds)
+
+        for (id in aig.mapping.keys) {
+            val layerId = aig.layerIndex(id)
+            levels[layerId].add(id)
+            if (id in aig.outputIds) {
+                check(aig.parents(id).isEmpty())
+                for (i in (layerId + 1) until aig.layers.size) {
+                    levels[i].add(id)
+                }
+            }
+            for (parentId in aig.parents(id).map { it.id }) {
+                val parentLayerId = aig.layerIndex(parentId)
+                for (i in (layerId + 1) until parentLayerId) {
+                    levels[i].add(id)
+                }
+            }
+        }
+
+        return levels.map { it.toList() }
+    }
+
+    fun getBest(levels: List<List<Int>>, aig:Aig, pTable: Map<Int, Double>):List<Int> {
+        return levels.maxByOrNull { level ->
+            val dises = level.map {
+                val midpoint = if (aig.inputIds.contains(it)) 0.5 else 0.25
+                disbalance(pTable.getValue(it), midpoint = midpoint)
+            }
+            val geomeanDis = dises.geomean()
+            geomeanDis / level.size
+        }!!
+    }
+
+    fun pprintLevels(aig: Aig, levels: List<List<Int>>, pTable: Map<Int, Double>) {
+        for ((index, level) in levels.withIndex()) {
+            val dises = level.map {
+                val midpoint = if (aig.inputIds.contains(it)) 0.5 else 0.25
+                disbalance(pTable.getValue(it), midpoint = midpoint)
+            }
+            val geomeanDis = dises.geomean()
+            println(
+                "Level #$index of size ${level.size}: ${
+                    level.count { aig.inputIds.contains(it) }
+                } inputs, ${
+                    level.count { aig.outputIds.contains(it) }
+                } outputs, geomean(dis)=%.3f, geomean(dis)/size*1000=%.3f"
+                    .format(geomeanDis, geomeanDis / level.size * 1000.0)
+            )
+        }
+    }
+
+    val levelsLeft = computeLevels(aigLeft)
+    val levelsRight = computeLevels(aigRight)
+
+    logger.info("Levels (${levelsLeft.size}) in Left AIG:")
+    pprintLevels(aigLeft, levelsLeft, pTableLeft)
+    logger.info("Levels (${levelsRight.size}) in Right AIG:")
+    pprintLevels(aigLeft, levelsRight, pTableRight)
+
+    val levelLeft = getBest(levelsLeft, aigLeft, pTableLeft)
+    val levelRight = getBest(levelsRight, aigRight, pTableRight)
+    logger.info("Best Left level #${levelsLeft.indexOf(levelLeft)} of size ${levelLeft.size}): $levelLeft")
+    logger.info("Best Right level #${levelsRight.indexOf(levelRight)} of size ${levelRight.size}): $levelRight")
+
+    // val finalLevelLeft = levelLeft.sample(10, Random(1))
+    // val finalLevelRight = levelRight.sample(11, Random(2))
+    // logger.info("Using Left level #${levelsLeft.indexOf(levelLeft)} of size ${levelLeft.size}): $levelLeft")
+    // logger.info("Using Right level #${levelsRight.indexOf(levelRight)} of size ${levelRight.size}): $levelRight")
+
+    // logger.info("Left bucket:")
+    // val megaBucketLeft = buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, finalLevelLeft)
+    //
+    // logger.info("Right bucket:")
+    // val megaBucketRight = buildDecomposition(aigRight, pTableRight, andGateValueRight, finalLevelRight)
+
+    check(levelLeft.size == 28)
+    check(levelRight.size == 28)
+    val bucketsLeft = levelLeft.windowed(14, 14).map { ids ->
+        logger.info("One of left buckets:")
+        buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+    }
+    val bucketsRight = levelRight.windowed(14, 14).map { ids ->
+        logger.info("One of right buckets:")
+        buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+    }
+    val megaBucketLeft = mergeBucketsTree(bucketsLeft)
+    val megaBucketRight = mergeBucketsTree(bucketsRight)
+
+    logger.info {
+        "Left bucket: (lits: ${megaBucketLeft.lits.size}, domain: ${megaBucketLeft.domain.size}, saturation: %.3f%%))"
+            .format(megaBucketLeft.saturation * 100.0)
+    }
+    logger.info {
+        "Right bucket: (lits: ${megaBucketRight.lits.size}, domain: ${megaBucketRight.domain.size}, saturation: %.3f%%))"
+            .format(megaBucketRight.saturation * 100.0)
+    }
+
+    val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight))
+        .map { lits -> lits.sortedBy { lit -> lit.absoluteValue } }
+    logger.info("Total decomposition size: ${decomposition.size}")
+
+    val n = megaBucketLeft.lits.size + megaBucketRight.lits.size
+    val permutation = (0 until n).shuffled(Random(42))
+    val decompositionShuffled = decomposition.map { lits ->
+        permutation.map { i -> lits[i] }
+    }
+    val cubes = decompositionShuffled.map { lits -> lits.map { lit -> lit > 0 } }
+    val varsShuffled = decompositionShuffled.first().map { lit -> lit.absoluteValue }
+
+    logger.info("Building trie...")
+    val trie = buildTrie(cubes)
+    logger.info("Done building trie")
+
+    val limit = 500
+    logger.info("Performing trie.dfsLimited($limit)...")
+    val partition = trie.dfsLimited(limit).toList()
+    println("trie.dfsLimited($limit): (total ${partition.size})")
+    for (node in partition.take(10)) {
+        println("  - ${node.cube.toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
+    }
+
+    data class TimingInfo(
+        val indexUnit: Int,
+        val indexLeaf: Int,
+        val time: Double,
+    )
+
+    val timeStartAll = timeNow()
+    val times: MutableList<TimingInfo> = mutableListOf()
+    logger.info("Solving in ${partition.size} iterations...")
+    for ((indexUnit, node) in partition.withIndex()) {
+        val timeStartIter = timeNow()
+        reset()
+        encodeAigs(aigLeft, aigRight)
+        encodeMiter()
+
+        val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
+        for (lit in units) {
+            addClause(lit)
+        }
+
+        val k = units.size
+        val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
+
+        logger.info("Iteration #${indexUnit + 1}: ${leaves.size} leaves")
+        if (leaves.isEmpty()) {
+            logger.debug("Solving iteration #${indexUnit + 1}/${partition.size} with ${units.size} units and without assumptions...")
+            val (res, timeSolve) = measureTimeWithResult {
+                solve()
+            }
+            times.add(TimingInfo(indexUnit, 0, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+        } else for ((indexLeaf, leaf) in leaves.withIndex()) {
+            val assumptions = (k until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
+            val (res, timeSolve) = measureTimeWithResult {
+                val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
+                    solve(assumptions)
+                }
+                if (isTimeout) {
+                    logger.warn("Timeout on indexUnit=$indexUnit, indexLeaf=$indexLeaf")
+                }
+                isSat
+            }
+            if (timeSolve.seconds > 0.5) {
+                logger.debug(
+                    "Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs"
+                        .format(timeSolve.seconds)
+                )
+            }
+            times.add(TimingInfo(indexUnit, indexLeaf, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+        }
+        logger.info {
+            "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+                .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+        }
+    }
+    logger.info("Max times:")
+    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(100)) {
+        logger.info("  - %.3fs on $indexUnit/$indexLeaf".format(time))
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
 fun checkEquivalence(
     aigLeft: Aig,
     aigRight: Aig,
@@ -1226,6 +1461,7 @@ fun checkEquivalence(
             )
             "dec-layer" -> `check circuits equivalence using layer-wise decomposition`(aigLeft, aigRight)
             "m10" -> `check circuits equivalence using method 10`(aigLeft, aigRight)
+            "m11" -> `check circuits equivalence using method 11`(aigLeft, aigRight)
             "domain" -> `check circuits equivalence using domain-based method`(aigLeft, aigRight)
             else -> TODO("Method '$method'")
         }
@@ -1247,26 +1483,12 @@ private fun loadPTable(aig: Aig, path: String) {
 }
 
 fun main() {
-    val cubes = listOf(
-        listOf(1,2,3),
-        listOf(1,-2,3),
-        listOf(-1,-2,-3),
-    )
-    CadicalSolver().encodeDnfTree(cubes)
-
-    return
-
-
-
     val timeStart = timeNow()
-
-    // val filenameLeft = "data/instances/manual/aag/eq.aag"
-    // val filenameRight = "data/instances/manual/aag/eq-same.aag"
 
     val left = "BubbleSort"
     val right = "PancakeSort"
     // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "8_4"
+    val param = "7_4"
     val aag = "fraag" // "aag" or "fraag"
 
     val nameLeft = "${left}_${param}"
@@ -1282,8 +1504,8 @@ fun main() {
     val solverProvider = { CadicalSolver() }
     // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec-layer", "dec-dis", "domain"
     // val method = "miter"
-    val method = "dec-dis-trie"
-    // val method = "m10"
+    // val method = "dec-dis-trie"
+    val method = "m11"
 
     loadPTable(aigLeft, "data/instances/$left/ptable/${nameLeft}_$aag.json")
     loadPTable(aigRight, "data/instances/$right/ptable/${nameRight}_$aag.json")
