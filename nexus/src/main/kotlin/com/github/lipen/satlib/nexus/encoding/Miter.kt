@@ -23,7 +23,7 @@ internal fun Solver.encodeMiter() {
     val xorValue = context("xorValue") {
         newBoolVarArray(Y)
     }
-    val miterOrLadderValue = newBoolVarArray(Y - 1)
+    // val miterOrLadderValue = newBoolVarArray(Y - 1)
 
     /* Constraints */
 

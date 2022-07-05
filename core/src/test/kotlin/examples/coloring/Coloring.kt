@@ -8,10 +8,15 @@ import com.github.lipen.satlib.core.eq
 import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.op.neqv
 import com.github.lipen.satlib.solver.GlucoseSolver
+import com.github.lipen.satlib.solver.MockSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
+import com.github.lipen.satlib.utils.writeln
 import examples.utils.secondsSince
 import examples.utils.timeNow
+import okio.buffer
+import okio.sink
+import java.io.File
 
 object GlobalsColoring {
     val solverProvider: () -> Solver = {
@@ -42,6 +47,7 @@ private fun Solver.declareVariables(
     context["edges"] = edges.map { (a, b) -> if (a <= b) Pair(a, b) else Pair(b, a) }.distinct()
 
     // Variables
+    comment("'color' variable")
     val color = context("color") { newIntVarArray(V) { 1..k } }
 }
 
@@ -54,11 +60,13 @@ private fun Solver.declareConstraints() {
 
     val color: IntVarArray = context["color"]
 
+    comment("Coloring constraints")
     // (color[a] = c) -> (color[b] != c)
     for ((a, b) in edges) {
         neqv(color[a], color[b])
     }
 
+    comment("Aux constraints")
     // [aux]
     // (color[1] = 1)
     addClause(color[1] eq 1)
@@ -88,19 +96,39 @@ fun main() {
     )
 
     GlobalsColoring.solverProvider().useWith {
-        declareVariables(V, k, edges)
-        declareConstraints()
+        val outerSolver = this
+        File("coloring.cnf").sink().buffer().useWith {
+            MockSolver(
+                __newLiteral = { outerSolver.newLiteral() },
+                __addClause = {
+                    println("Add clause $it")
+                    writeln(it.joinToString(" ") + " 0")
+                    outerSolver.addClause(it)
+                },
+                __comment = {
+                    println("Comment \"$it\"")
+                    writeln("c $it")
+                    outerSolver.comment(it)
+                },
+                __solve = { outerSolver.solve() },
+                __getModel = { outerSolver.getModel() },
+                __close = { outerSolver.close() },
+            ).useWith {
+                declareVariables(V, k, edges)
+                declareConstraints()
 
-        println("Solving...")
-        if (solve()) {
-            println("SAT for k = $k in %.3fs".format(secondsSince(timeStart)))
+                println("Solving...")
+                if (solve()) {
+                    println("SAT for k = $k in %.3fs".format(secondsSince(timeStart)))
 
-            val model = getModel()
-            val color = context.convertIntVarArray("color", model)
+                    val model = getModel()
+                    val color = context.convertIntVarArray("color", model)
 
-            println("Graph Coloring: ${(1..V).map { v -> color[v] }}")
-        } else {
-            println("UNSAT for k = $k in %.3fs".format(secondsSince(timeStart)))
+                    println("Graph Coloring: ${(1..V).map { v -> color[v] }}")
+                } else {
+                    println("UNSAT for k = $k in %.3fs".format(secondsSince(timeStart)))
+                }
+            }
         }
     }
 

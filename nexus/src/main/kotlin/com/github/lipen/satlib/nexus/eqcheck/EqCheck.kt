@@ -13,9 +13,15 @@ import com.github.lipen.satlib.nexus.aig.shadow
 import com.github.lipen.satlib.nexus.encoding.encodeAigs
 import com.github.lipen.satlib.nexus.encoding.encodeMiter
 import com.github.lipen.satlib.nexus.encoding.encodeOutputMergers
+import com.github.lipen.satlib.nexus.utils.bit
 import com.github.lipen.satlib.nexus.utils.cartesianProduct
 import com.github.lipen.satlib.nexus.utils.declare
 import com.github.lipen.satlib.nexus.utils.geomean
+import com.github.lipen.satlib.nexus.utils.iffMaj3
+import com.github.lipen.satlib.nexus.utils.iffXor2
+import com.github.lipen.satlib.nexus.utils.iffXor3
+import com.github.lipen.satlib.nexus.utils.implyNand
+import com.github.lipen.satlib.nexus.utils.isEven
 import com.github.lipen.satlib.nexus.utils.maybeFreeze
 import com.github.lipen.satlib.nexus.utils.maybeMelt
 import com.github.lipen.satlib.nexus.utils.maybeNumberOfConflicts
@@ -23,26 +29,32 @@ import com.github.lipen.satlib.nexus.utils.maybeNumberOfDecisions
 import com.github.lipen.satlib.nexus.utils.maybeNumberOfPropagations
 import com.github.lipen.satlib.nexus.utils.mean
 import com.github.lipen.satlib.nexus.utils.pow
-import com.github.lipen.satlib.nexus.utils.sample
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toBinaryString
 import com.github.lipen.satlib.nexus.utils.toInt
 import com.github.lipen.satlib.op.iffAnd
 import com.github.lipen.satlib.op.iffOr
+import com.github.lipen.satlib.op.implyOr
 import com.github.lipen.satlib.op.runWithTimeout2
 import com.github.lipen.satlib.solver.CadicalSolver
+import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
+import com.github.lipen.satlib.utils.lineSequence
 import com.github.lipen.satlib.utils.useWith
+import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.klock.milliseconds
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import mu.KotlinLogging
+import okio.appendingSink
 import okio.buffer
+import okio.sink
 import okio.source
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.PriorityQueue
 import kotlin.io.path.exists
@@ -51,6 +63,8 @@ import kotlin.math.round
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
+
+val globalOptions: MutableMap<String, String> = mutableMapOf()
 
 internal fun Solver.`check circuits equivalence using miter`(
     aigLeft: Aig,
@@ -360,8 +374,8 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     val pTableRight = aigRight.computePTable(sampleSize, random)
     val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
     val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
-    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
-    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id), .25) }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id), .25) }
 
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
@@ -427,9 +441,38 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     val megaBucketLeft = mergeBucketsTree(bucketsLeft)
     val megaBucketRight = mergeBucketsTree(bucketsRight)
 
+    val idsLeft = megaBucketLeft.lits.map { lit -> aigLeft.andGateIds[andGateValueLeft.values.indexOf(lit)] }
+    val idsRight = megaBucketRight.lits.map { lit -> aigRight.andGateIds[andGateValueRight.values.indexOf(lit)] }
+    logger.debug { "Gates in left mega-bucket: $idsLeft" }
+    logger.debug { "Gates in right mega-bucket: $idsRight" }
+
     val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight))
         .map { lits -> lits.sortedBy { lit -> lit.absoluteValue } }
     logger.info("Total decomposition size: ${decomposition.size}")
+
+    // // ==================
+    // run {
+    //     encodeMiter()
+    //     val dataDir = File("data/icnf")
+    //     dataDir.mkdirs()
+    //     val cnfFile = dataDir.resolve("temp.cnf")
+    //     dumpDimacs(cnfFile)
+    //     val icnfFile = dataDir.resolve("decomposition.icnf")
+    //     cnfFile.source().buffer().use { src ->
+    //         icnfFile.sink().buffer().useWith {
+    //             writeln("p inccnf")
+    //             for (line in src.lineSequence().drop(1)) {
+    //                 writeln(line)
+    //             }
+    //             for (lits in decomposition) {
+    //                 writeln("a ${lits.joinToString(" ")} 0")
+    //             }
+    //         }
+    //     }
+    //     // cnfFile.delete()
+    // }
+    // return true
+    // // ==================
 
     val n = megaBucketLeft.lits.size + megaBucketRight.lits.size
     val permutation = (0 until n).shuffled(Random(42))
@@ -451,57 +494,6 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
         println("  - ${node.cube.toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
     }
 
-    // // =====
-    // encodeMiter()
-    // logger.info("Dumping hard instances...")
-    // val hard = listOf(
-    //     50 to 0,
-    //     51 to 6,
-    //     51 to 21,
-    //     51 to 32,
-    //     51 to 52,
-    //     51 to 74,
-    //     53 to 6,
-    //     385 to 20,
-    // )
-    // val hardCubes: MutableList<List<Lit>> = mutableListOf()
-    // for ((indexUnit, indexLeaf) in hard) {
-    //     val node = partition[indexUnit]
-    //     val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
-    //     val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
-    //     val leaf = leaves[indexLeaf]
-    //     val assumptions = (units.size until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
-    //     val fileCnf = File("data/hard/cnf_hard_${indexUnit}_${indexLeaf}.cnf")
-    //     fileCnf.parentFile.mkdirs()
-    //     logger.info("Dumping hard instance $indexUnit/$indexLeaf to '$fileCnf'...")
-    //     dumpDimacs(fileCnf)
-    //     fileCnf.appendingSink().buffer().useWith {
-    //         writeln("c Units (${units.size})")
-    //         for (lit in units) {
-    //             writeln("$lit 0")
-    //         }
-    //         writeln("c Assumptions (${assumptions.size})")
-    //         for (lit in assumptions) {
-    //             writeln("$lit 0")
-    //         }
-    //     }
-    //     hardCubes.add(units + assumptions)
-    // }
-    //
-    // logger.info("Hard cubes:")
-    // for (cube in hardCubes) {
-    //     logger.info(cube.map { it > 0 }.toBinaryString())
-    // }
-    // // return true
-    //
-    // logger.info("Encoding DNF naively...")
-    // encodeDnfTree(hardCubes)
-    // val fileCnfMerged = File("data/hard/cnf_hard_merged.cnf")
-    // fileCnfMerged.parentFile.mkdirs()
-    // dumpDimacs(fileCnfMerged)
-    // // =====
-    // return true
-
     data class TimingInfo(
         val indexUnit: Int,
         val indexLeaf: Int,
@@ -513,6 +505,10 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
     logger.info("Solving in ${partition.size} iterations...")
 
     for ((indexUnit, node) in partition.withIndex()) {
+        if (indexUnit != 50) {
+            continue
+        }
+
         val timeStartIter = timeNow()
         reset()
         encodeAigs(aigLeft, aigRight)
@@ -539,6 +535,15 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
             }
         } else for ((indexLeaf, leaf) in leaves.withIndex()) {
             val assumptions = (k until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
+            logger.debug {
+                "Iteration $indexUnit/$indexUnit with units=$units, assumptions=$assumptions"
+            }
+            // logger.debug {
+            //     "indexUnit/indexLeaf=$indexUnit/$indexLeaf, Units+Assumptions: " +
+            //         units.map { it > 0 }.toBinaryString() +
+            //         "+" +
+            //         assumptions.map { it > 0 }.toBinaryString()
+            // }
             val (res, timeSolve) = measureTimeWithResult {
                 val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
                     solve(assumptions)
@@ -548,10 +553,12 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
                 }
                 isSat
             }
-            logger.debug(
-                "Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs"
-                    .format(timeSolve.seconds)
-            )
+            if (timeSolve > 500.milliseconds) {
+                logger.debug {
+                    "Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs"
+                        .format(timeSolve.seconds)
+                }
+            }
             times.add(TimingInfo(indexUnit, indexLeaf, timeSolve.seconds))
             if (res) {
                 logger.warn("Circuits are NOT equivalent!")
@@ -570,7 +577,7 @@ internal fun Solver.`check circuits equivalence using disbalance-based decomposi
         // }
     }
     logger.info("Max times:")
-    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(500)) {
+    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(50)) {
         logger.info("  - %.3fs on $indexUnit/$indexLeaf".format(time))
     }
 
@@ -1198,7 +1205,7 @@ internal fun Solver.`check circuits equivalence using method 11`(
     aigLeft: Aig,
     aigRight: Aig,
 ): Boolean {
-    logger.info("Checking equivalence using method 10...")
+    logger.info("Checking equivalence using method 11...")
 
     val sampleSize = 10000
     val randomSeed = 42
@@ -1208,8 +1215,8 @@ internal fun Solver.`check circuits equivalence using method 11`(
     val pTableRight = aigRight.computePTable(sampleSize, random)
     val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
     val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
-    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
-    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id), .25) }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id), .25) }
 
     declare(logger) {
         encodeAigs(aigLeft, aigRight)
@@ -1260,59 +1267,96 @@ internal fun Solver.`check circuits equivalence using method 11`(
         return levels.map { it.toList() }
     }
 
-    fun getBest(levels: List<List<Int>>, aig:Aig, pTable: Map<Int, Double>):List<Int> {
+    fun getBest(levels: List<List<Int>>, aig: Aig, pTable: Map<Int, Double>): List<Int> {
         return levels.maxByOrNull { level ->
-            val dises = level.map {
-                val midpoint = if (aig.inputIds.contains(it)) 0.5 else 0.25
-                disbalance(pTable.getValue(it), midpoint = midpoint)
+            val dises = level.map { id ->
+                val midpoint = if (id in aig.inputIds) 0.5 else 0.25
+                disbalance(pTable.getValue(id), midpoint = midpoint)
             }
             val geomeanDis = dises.geomean()
             geomeanDis / level.size
         }!!
     }
 
+    fun pprintLevel(aig: Aig, index: Int, level: List<Int>, pTable: Map<Int, Double>) {
+        val dises = level.map { id ->
+            val midpoint = if (id in aig.inputIds) 0.5 else 0.25
+            disbalance(pTable.getValue(id), midpoint = midpoint)
+        }
+        val geomeanDis = dises.geomean()
+        println(
+            "Level #$index of size ${level.size}: ${
+                level.count { aig.inputIds.contains(it) }
+            } inputs, ${
+                level.count { aig.outputIds.contains(it) }
+            } outputs, geomean(dis)=%.3f, geomean(dis)/size*1000=%.3f"
+                .format(geomeanDis, geomeanDis / level.size * 1000.0)
+        )
+    }
+
     fun pprintLevels(aig: Aig, levels: List<List<Int>>, pTable: Map<Int, Double>) {
         for ((index, level) in levels.withIndex()) {
-            val dises = level.map {
-                val midpoint = if (aig.inputIds.contains(it)) 0.5 else 0.25
-                disbalance(pTable.getValue(it), midpoint = midpoint)
-            }
-            val geomeanDis = dises.geomean()
-            println(
-                "Level #$index of size ${level.size}: ${
-                    level.count { aig.inputIds.contains(it) }
-                } inputs, ${
-                    level.count { aig.outputIds.contains(it) }
-                } outputs, geomean(dis)=%.3f, geomean(dis)/size*1000=%.3f"
-                    .format(geomeanDis, geomeanDis / level.size * 1000.0)
-            )
+            pprintLevel(aig, index, level, pTable)
         }
     }
+
+    // val bucketSize = 12
+    // val numberOfBuckets = Pair(1, 1)
+    // // val numberOfBuckets = Pair(2, 2)
+    // // val numberOfBucketsCompute = (100 / bucketSize)
+    // val numberOfBucketsCompute = 5
+    //
+    // val bucketsLeft = run {
+    //     idsSortedByDisLeft.asSequence()
+    //         .windowed(bucketSize, bucketSize)
+    //         .take(numberOfBucketsCompute)
+    //         .mapIndexed { index, ids ->
+    //             logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
+    //             buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+    //         }
+    //         .sortedBy { it.saturation }
+    //         .take(numberOfBuckets.first)
+    //         .toList()
+    // }
+    //
+    // val bucketsRight = run {
+    //     idsSortedByDisRight.asSequence()
+    //         .windowed(bucketSize, bucketSize)
+    //         .take(numberOfBucketsCompute)
+    //         .mapIndexed { index, ids ->
+    //             logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
+    //             buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+    //         }
+    //         .sortedBy { it.saturation }
+    //         .take(numberOfBuckets.second)
+    //         .toList()
+    // }
+    //
+    // logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.joinToString("+") { it.domain.size.toString() }}")
+    // logger.info("Right buckets: ${bucketsRight.size} = ${bucketsRight.joinToString("+") { it.domain.size.toString() }}")
+    // logger.info {
+    //     "Estimated decomposition size: ${
+    //         (bucketsLeft + bucketsRight).map { it.domain.size.toLong() }.reduce(Long::times)
+    //     }"
+    // }
 
     val levelsLeft = computeLevels(aigLeft)
     val levelsRight = computeLevels(aigRight)
 
-    logger.info("Levels (${levelsLeft.size}) in Left AIG:")
-    pprintLevels(aigLeft, levelsLeft, pTableLeft)
-    logger.info("Levels (${levelsRight.size}) in Right AIG:")
-    pprintLevels(aigLeft, levelsRight, pTableRight)
+    // logger.info("Levels (${levelsLeft.size}) in Left AIG:")
+    // pprintLevels(aigLeft, levelsLeft, pTableLeft)
+    // logger.info("Levels (${levelsRight.size}) in Right AIG:")
+    // pprintLevels(aigLeft, levelsRight, pTableRight)
 
     val levelLeft = getBest(levelsLeft, aigLeft, pTableLeft)
     val levelRight = getBest(levelsRight, aigRight, pTableRight)
-    logger.info("Best Left level #${levelsLeft.indexOf(levelLeft)} of size ${levelLeft.size}): $levelLeft")
-    logger.info("Best Right level #${levelsRight.indexOf(levelRight)} of size ${levelRight.size}): $levelRight")
 
-    // val finalLevelLeft = levelLeft.sample(10, Random(1))
-    // val finalLevelRight = levelRight.sample(11, Random(2))
-    // logger.info("Using Left level #${levelsLeft.indexOf(levelLeft)} of size ${levelLeft.size}): $levelLeft")
-    // logger.info("Using Right level #${levelsRight.indexOf(levelRight)} of size ${levelRight.size}): $levelRight")
+    logger.info { "Best Left level:" }
+    pprintLevel(aigLeft, levelsLeft.indexOf(levelLeft), levelLeft, pTableLeft)
+    logger.info { "Best Right level" }
+    pprintLevel(aigRight, levelsRight.indexOf(levelRight), levelRight, pTableRight)
 
-    // logger.info("Left bucket:")
-    // val megaBucketLeft = buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, finalLevelLeft)
-    //
-    // logger.info("Right bucket:")
-    // val megaBucketRight = buildDecomposition(aigRight, pTableRight, andGateValueRight, finalLevelRight)
-
+    // ==========
     check(levelLeft.size == 28)
     check(levelRight.size == 28)
     val bucketsLeft = levelLeft.windowed(14, 14).map { ids ->
@@ -1323,20 +1367,59 @@ internal fun Solver.`check circuits equivalence using method 11`(
         logger.info("One of right buckets:")
         buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
     }
-    val megaBucketLeft = mergeBucketsTree(bucketsLeft)
-    val megaBucketRight = mergeBucketsTree(bucketsRight)
+    // ==========
+
+    var megaBucketLeft = mergeBucketsTree(bucketsLeft)
+    var megaBucketRight = mergeBucketsTree(bucketsRight)
+
+    fun Aig.computeMetric(idsChoose: List<Int>, idsTaken: List<Int>): Map<Int, Int> =
+        idsChoose.associateWith { id ->
+            (cone(id) + shadow(id)).intersect(idsTaken.toSet()).size
+        }
+
+    fun qwerty() {
+        val idsLeft = megaBucketLeft.lits.map { lit -> aigLeft.andGateIds[andGateValueLeft.values.indexOf(lit)] }
+        val idsRight = megaBucketRight.lits.map { lit -> aigRight.andGateIds[andGateValueRight.values.indexOf(lit)] }
+        val metricLeft: Map<Int, Int> = aigLeft.computeMetric(levelLeft - idsLeft, idsLeft)
+        val metricRight: Map<Int, Int> = aigRight.computeMetric(levelRight - idsRight, idsRight)
+        val (bestIdLeft, bestMetricLeft) = metricLeft.minByOrNull { it.value }!!
+        val (bestIdRight, bestMetricRight) = metricRight.minByOrNull { it.value }!!
+        val bestLitLeft = andGateValueLeft[aigLeft.andGateIds.indexOf(bestIdLeft) + 1]
+        val bestLitRight = andGateValueRight[aigRight.andGateIds.indexOf(bestIdRight) + 1]
+
+        logger.debug {
+            "Extending left bucket with gate id=${bestIdLeft}, metric=${bestMetricLeft}, lit=${bestLitLeft}"
+        }
+        megaBucketLeft = mergeBuckets(megaBucketLeft, Bucket(listOf(bestLitLeft), listOf(0, 1)))
+        logger.debug {
+            "New left bucket: (lits: ${megaBucketLeft.lits.size}, domain: ${megaBucketLeft.domain.size}, saturation: %.3f%%))"
+                .format(megaBucketLeft.saturation * 100.0)
+        }
+        logger.debug {
+            "Extending right bucket with gate id=${bestIdRight}, metric=${bestMetricRight}, lit=${bestLitRight}..."
+        }
+        megaBucketRight = mergeBuckets(megaBucketRight, Bucket(listOf(bestLitRight), listOf(0, 1)))
+        logger.debug {
+            "New right bucket: (lits: ${megaBucketRight.lits.size}, domain: ${megaBucketRight.domain.size}, saturation: %.3f%%))"
+                .format(megaBucketRight.saturation * 100.0)
+        }
+    }
+
+    logger.info("Extending...")
+    repeat(10) {
+        qwerty()
+    }
 
     logger.info {
-        "Left bucket: (lits: ${megaBucketLeft.lits.size}, domain: ${megaBucketLeft.domain.size}, saturation: %.3f%%))"
+        "Left mega-bucket: (lits: ${megaBucketLeft.lits.size}, domain: ${megaBucketLeft.domain.size}, saturation: %.3f%%))"
             .format(megaBucketLeft.saturation * 100.0)
     }
     logger.info {
-        "Right bucket: (lits: ${megaBucketRight.lits.size}, domain: ${megaBucketRight.domain.size}, saturation: %.3f%%))"
+        "Right mega-bucket: (lits: ${megaBucketRight.lits.size}, domain: ${megaBucketRight.domain.size}, saturation: %.3f%%))"
             .format(megaBucketRight.saturation * 100.0)
     }
 
-    val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight))
-        .map { lits -> lits.sortedBy { lit -> lit.absoluteValue } }
+    val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight)).toList()
     logger.info("Total decomposition size: ${decomposition.size}")
 
     val n = megaBucketLeft.lits.size + megaBucketRight.lits.size
@@ -1397,7 +1480,7 @@ internal fun Solver.`check circuits equivalence using method 11`(
             val assumptions = (k until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
             val (res, timeSolve) = measureTimeWithResult {
                 val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
-                    solve(assumptions)
+                    solve(assumptions.sorted())
                 }
                 if (isTimeout) {
                     logger.warn("Timeout on indexUnit=$indexUnit, indexLeaf=$indexLeaf")
@@ -1430,13 +1513,1085 @@ internal fun Solver.`check circuits equivalence using method 11`(
     return true
 }
 
+internal fun Solver.`check circuits equivalence using method 12`(
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using method 12...")
+
+    val sampleSize = 10000
+    val randomSeed = 42
+    val random = Random(randomSeed)
+    logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
+    val pTableLeft = aigLeft.computePTable(sampleSize, random)
+    val pTableRight = aigRight.computePTable(sampleSize, random)
+    val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
+    val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id -> -disbalance(pTableLeft.getValue(id)) }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id -> -disbalance(pTableRight.getValue(id)) }
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    fun computeBuckets(
+        aig: Aig,
+        pTable: Map<Int, Double>,
+        andGateValue: BoolVarArray,
+        bucketSize: Int,
+        numberOfBuckets: Int,
+        idsSortedByDis: List<Int>,
+    ): List<Bucket> {
+        return idsSortedByDis.asSequence()
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBuckets)
+            .mapIndexed { index, ids ->
+                logger.info("Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aig, pTable, andGateValue, ids)
+            }
+            // .sortedBy { it.saturation }
+            .toList()
+    }
+
+    val bucketSize = 14
+    val numberOfBuckets = 5
+
+    logger.info("Computing Left buckets...")
+    val bucketsLeft = computeBuckets(
+        aigLeft,
+        pTableLeft,
+        andGateValueLeft,
+        bucketSize,
+        numberOfBuckets,
+        idsSortedByDisLeft
+    )
+    logger.info("Computing Right buckets...")
+    val bucketsRight = computeBuckets(
+        aigRight,
+        pTableRight,
+        andGateValueRight,
+        bucketSize,
+        numberOfBuckets,
+        idsSortedByDisRight
+    )
+
+    logger.info("Left buckets: ${bucketsLeft.size} = ${bucketsLeft.map { it.domain.size }}")
+    logger.info("Right buckets: ${bucketsRight.size} = ${bucketsRight.map { it.domain.size }}")
+    logger.info(
+        "Estimated decomposition size: ${
+            (bucketsLeft + bucketsRight).map { it.domain.size.toLong() }.reduce(Long::times)
+        }"
+    )
+
+    declare(logger) {
+        encodeMiter()
+    }
+
+    for (bucketIndex in listOf(0, 1, 2)) {
+        logger.info("Bucket index = $bucketIndex")
+        val bucketLeft = bucketsLeft[bucketIndex]
+        val bucketRight = bucketsRight[bucketIndex]
+
+        logger.info {
+            "Left bucket: (lits: ${bucketLeft.lits.size}, domain: ${bucketLeft.domain.size}, saturation: %.3f%%))"
+                .format(bucketLeft.saturation * 100.0)
+        }
+        logger.info {
+            "Right bucket: (lits: ${bucketRight.lits.size}, domain: ${bucketRight.domain.size}, saturation: %.3f%%))"
+                .format(bucketRight.saturation * 100.0)
+        }
+
+        val decomposition = bucketsDecomposition(listOf(bucketLeft, bucketRight))
+            .map { lits -> lits.sortedBy { lit -> lit.absoluteValue } }
+            .toList()
+        logger.info("Total decomposition size: ${decomposition.size}")
+
+        data class TimingInfo(
+            val index: Int,
+            val time: Double,
+        )
+
+        val timeStartAll = timeNow()
+        val times: MutableList<TimingInfo> = mutableListOf()
+        logger.info("Solving...")
+
+        for ((index, assumptions) in decomposition.withIndex()) {
+            val timeStartIter = timeNow()
+            val (res, timeSolve) = measureTimeWithResult {
+                val (isSat, isTimeout) = runWithTimeout2(10 * 1000) {
+                    solve(assumptions)
+                }
+                if (isTimeout) {
+                    logger.warn("Timeout on index=$index")
+                }
+                isSat
+            }
+            times.add(TimingInfo(index, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+            logger.info {
+                "Iteration #${index + 1}/${decomposition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+                    .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+            }
+        }
+        logger.info("Max times:")
+        for ((index, time) in times.sortedByDescending { it.time }.take(50)) {
+            logger.info("  - %.3fs on index=$index".format(time))
+        }
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
+internal fun Solver.`check circuits equivalence using method 13`(
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using method 13...")
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    declare(logger) {
+        encodeMiter()
+    }
+
+    dumpDimacs(File("cnf-miter.cnf"))
+
+    val Y: Int = context["Y"]
+    check(isEven(Y))
+    val xorValue: BoolVarArray = context["xorValue"]
+
+    val F = Y / 2
+    val mergedOutputsXorValue = newBoolVarArray(F)
+    for (f in 1..F) {
+        iffXor2(
+            mergedOutputsXorValue[f],
+            xorValue[2 * (f - 1) + 1],
+            xorValue[2 * (f - 1) + 1 + 1],
+        )
+    }
+    logger.debug { "mergedOutputsXorValue = ${mergedOutputsXorValue.values}" }
+
+    // Freeze variables
+    for (f in 1..F) {
+        maybeFreeze(mergedOutputsXorValue[f])
+    }
+
+    data class TimingInfo(
+        val t: Long,
+        val time: Double,
+    )
+
+    val timeStartAll = timeNow()
+    val times: MutableList<TimingInfo> = mutableListOf()
+    logger.info("Solving...")
+    val useAssumptions = false
+
+    val fileIcnf = File("cubes.icnf")
+    dumpDimacs(fileIcnf)
+    fileIcnf.appendingSink().buffer().useWith {
+        for (t in 0 until 2L.pow(F)) {
+            val assumptions = (1..F).map { f ->
+                mergedOutputsXorValue[f] sign t.bit(F - (f - 1) - 1)
+            }
+            writeln("a ${assumptions.joinToString(" ")} 0")
+        }
+    }
+    // return true
+
+    for (t in 0 until 2L.pow(F)) {
+        if (!useAssumptions) {
+            reset()
+            encodeAigs(aigLeft, aigRight)
+            encodeMiter()
+            newBoolVarArray(F)
+            for (f in 1..F) {
+                iffXor2(
+                    mergedOutputsXorValue[f],
+                    xorValue[2 * (f - 1) + 1],
+                    xorValue[2 * (f - 1) + 1 + 1],
+                )
+            }
+        }
+
+        val assumptions = (1..F).map { f ->
+            mergedOutputsXorValue[f] sign t.bit(F - (f - 1) - 1)
+        }
+
+        val (res, timeSolve) = measureTimeWithResult {
+            val (isSat, isTimeout) = runWithTimeout2(500 * 1000) {
+                if (useAssumptions) {
+                    solve(assumptions)
+                } else {
+                    for (lit in assumptions) {
+                        addClause(lit)
+                    }
+                    solve()
+                }
+            }
+            if (isTimeout) {
+                logger.warn("Timeout on t=$t)")
+            }
+            isSat
+        }
+        times.add(TimingInfo(t, timeSolve.seconds))
+        if (res) {
+            logger.warn("Circuits are NOT equivalent!")
+            return false
+        }
+        if (timeSolve.seconds > 1.0) {
+            logger.info {
+                "Iteration t=${t + 1}/${2L.pow(F)} done in %.3fs (total solve: %.3fs, total wall: %.3fs)"
+                    .format(timeSolve.seconds, times.sumOf { it.time }, secondsSince(timeStartAll))
+            }
+            logger.debug { "t = $t, cube = $assumptions" }
+        }
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
+internal fun Solver.`check circuits equivalence using method 14`(
+    name: String,
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence for $name using method 14...")
+
+    check("type" in globalOptions) { "Global option 'type' must be set for m14" }
+    check("funs" in globalOptions) { "Global option 'funs' must be set for m14" }
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    declare(logger) {
+        encodeMiter()
+    }
+
+    // dumpDimacs(File("cnf-miter.cnf"))
+
+    val X: Int = context["X"]
+    check(isEven(X))
+    val inputValue: BoolVarArray = context["inputValue"]
+
+    // type: "pairs", "triples"
+    // val type = globalOptions.getOrDefault("type", "pairs")
+    val type = globalOptions.getValue("type")
+
+    // funs: "xor", "and", "nand-or", "maj"
+    // val funs = globalOptions.getOrDefault("funs", "xor")
+    val funs = globalOptions.getValue("funs")
+
+    val F = when (type) {
+        "pairs" -> X / 2
+        "triples" -> X / 3
+        else -> error("Bad type '$type'")
+    }
+    logger.info("X = $X, F = $F, 2^F = ${2L.pow(F)}")
+    val mergedInputValue = newBoolVarArray(F)
+    for (f in 1..F) {
+        when (type) {
+            "pairs" -> {
+                when (funs) {
+                    "xor" -> {
+                        iffXor2(
+                            mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                    }
+                    "and" -> {
+                        iffAnd(
+                            mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                    }
+                    "nand-or" -> {
+                        implyNand(
+                            mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                        implyOr(
+                            -mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                    }
+                    else -> error("Bad functions '$funs' for type '$type'")
+                }
+            }
+            "triples" -> {
+                when (funs) {
+                    "xor" -> {
+                        iffXor3(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    "and" -> {
+                        iffAnd(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    "nand-or" -> {
+                        implyNand(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                        implyOr(
+                            -mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    "maj" -> {
+                        iffMaj3(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    else -> error("Bad functions '$funs' for type '$type'")
+                }
+            }
+            else -> error("Bad type '$type'")
+        }
+    }
+    logger.debug { "mergedInputValue = ${mergedInputValue.values}" }
+
+    // val fileIcnf = File("dec_${name}_merge-in_${type}-${funs}.icnf")
+    // dumpDimacs(fileIcnf)
+    // fileIcnf.appendingSink().buffer().useWith {
+    //     for (t in 0 until 2L.pow(F)) {
+    //         val assumptions = (1..F).map { f ->
+    //             mergedInputValue[f] sign t.bit(F - (f - 1) - 1)
+    //         }
+    //         writeln("a ${assumptions.joinToString(" ")} 0")
+    //     }
+    // }
+    // return true
+
+    val fileCnf = File("cnf_${name}_merge-in_${type}-${funs}.cnf")
+    dumpDimacs(fileCnf)
+    fileCnf.appendingSink().buffer().useWith {
+        writeln("c mergedInputValue: ${mergedInputValue.shape.asList()}")
+        writeln("c mergedInputValue = ${mergedInputValue.values}")
+    }
+    return true
+
+    // Freeze variables
+    for (f in 1..F) {
+        maybeFreeze(mergedInputValue[f])
+    }
+
+    data class TimingInfo(
+        val t: Long,
+        val time: Double,
+    )
+
+    val timeStartAll = timeNow()
+    val times: MutableList<TimingInfo> = mutableListOf()
+    logger.info("Solving...")
+
+    for (t in 0 until 2L.pow(F)) {
+        val assumptions = (1..F).map { f ->
+            mergedInputValue[f] sign t.bit(F - (f - 1) - 1)
+        }
+
+        val (res, timeSolve) = measureTimeWithResult {
+            val (isSat, isTimeout) = runWithTimeout2(500 * 1000) {
+                solve(assumptions)
+            }
+            if (isTimeout) {
+                logger.warn("Timeout on t=$t)")
+            }
+            isSat
+        }
+        times.add(TimingInfo(t, timeSolve.seconds))
+        if (res) {
+            logger.warn("Circuits are NOT equivalent!")
+            return false
+        }
+        if (timeSolve.seconds > 1.0) {
+            logger.info {
+                "Iteration t=${t + 1}/${2L.pow(F)} done in %.3fs (total solve: %.3fs, total wall: %.3fs)"
+                    .format(timeSolve.seconds, times.sumOf { it.time }, secondsSince(timeStartAll))
+            }
+            logger.debug { "t = $t, cube = $assumptions" }
+        }
+    }
+    logger.info("Max times:")
+    for ((t, time) in times.sortedByDescending { it.time }.take(50)) {
+        logger.info("  - %.3fs on index=$t".format(time))
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
+internal fun Solver.`check circuits equivalence using method 15`(
+    name: String,
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence for $name using method 15...")
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    declare(logger) {
+        encodeMiter()
+    }
+
+    // dumpDimacs(File("cnf-miter.cnf"))
+
+    val X: Int = context["X"]
+    check(isEven(X))
+    val inputValue: BoolVarArray = context["inputValue"]
+
+    // type: "pairs", "triples"
+    val type = "triples"
+
+    // funs1: "xor", "and", "nand-or", "maj"
+    // Note: "maj" is only for "triples"
+    val funs1 = "maj"
+
+    val F = when (type) {
+        "pairs" -> X / 2
+        "triples" -> X / 3
+        else -> error("Bad type '$type'")
+    }
+    logger.info("X = $X, F = $F, 2^F = ${2L.pow(F)}")
+    val mergedInputValue = newBoolVarArray(F)
+    for (f in 1..F) {
+        when (type) {
+            "pairs" -> {
+                when (funs1) {
+                    "xor" -> {
+                        iffXor2(
+                            mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                    }
+                    "and" -> {
+                        iffAnd(
+                            mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                    }
+                    "nand-or" -> {
+                        implyNand(
+                            mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                        implyOr(
+                            -mergedInputValue[f],
+                            inputValue[2 * (f - 1) + 1 + 0],
+                            inputValue[2 * (f - 1) + 1 + 1],
+                        )
+                    }
+                    else -> error("Bad functions '$funs1' for type '$type'")
+                }
+            }
+            "triples" -> {
+                when (funs1) {
+                    "xor" -> {
+                        iffXor3(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    "and" -> {
+                        iffAnd(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    "nand-or" -> {
+                        implyNand(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                        implyOr(
+                            -mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    "maj" -> {
+                        iffMaj3(
+                            mergedInputValue[f],
+                            inputValue[3 * (f - 1) + 1 + 0],
+                            inputValue[3 * (f - 1) + 1 + 1],
+                            inputValue[3 * (f - 1) + 1 + 2],
+                        )
+                    }
+                    else -> error("Bad functions '$funs1' for type '$type'")
+                }
+            }
+            else -> error("Bad type '$type'")
+        }
+    }
+    logger.debug { "mergedInputValue = ${mergedInputValue.values}" }
+
+    // funs2: "xor", "and", "nand-or"
+    val funs2 = "and"
+
+    val G = F / 2
+    logger.info("X = $X, G = $G, 2^G = ${2L.pow(G)}")
+    val mergedMergersValue = newBoolVarArray(G)
+    for (g in 1..G) {
+        when (funs2) {
+            "xor" -> {
+                iffXor2(
+                    mergedMergersValue[g],
+                    mergedInputValue[2 * (g - 1) + 1 + 0],
+                    mergedInputValue[2 * (g - 1) + 1 + 1],
+                )
+            }
+            "and" -> {
+                iffAnd(
+                    mergedMergersValue[g],
+                    mergedInputValue[2 * (g - 1) + 1 + 0],
+                    mergedInputValue[2 * (g - 1) + 1 + 1],
+                )
+            }
+            "nand-or" -> {
+                implyNand(
+                    mergedMergersValue[g],
+                    mergedInputValue[2 * (g - 1) + 1 + 0],
+                    mergedInputValue[2 * (g - 1) + 1 + 1],
+                )
+                implyOr(
+                    -mergedMergersValue[g],
+                    mergedInputValue[2 * (g - 1) + 1 + 0],
+                    mergedInputValue[2 * (g - 1) + 1 + 1],
+                )
+            }
+            else -> error("Bad functions '$funs2'")
+        }
+    }
+
+    val fileIcnf = File("decomposition_merged-inputs_${type}-${funs1}_pairs-${funs2}.icnf")
+    dumpDimacs(fileIcnf)
+    fileIcnf.appendingSink().buffer().useWith {
+        for (t in 0 until 2L.pow(G)) {
+            val assumptions = (1..G).map { g ->
+                mergedMergersValue[g] sign t.bit(G - (g - 1) - 1)
+            }
+            writeln("a ${assumptions.joinToString(" ")} 0")
+        }
+    }
+    return true
+
+    // Freeze variables
+    for (f in 1..F) {
+        maybeFreeze(mergedInputValue[f])
+    }
+
+    data class TimingInfo(
+        val t: Long,
+        val time: Double,
+    )
+
+    val timeStartAll = timeNow()
+    val times: MutableList<TimingInfo> = mutableListOf()
+    logger.info("Solving...")
+
+    for (t in 0 until 2L.pow(F)) {
+        val assumptions = (1..F).map { f ->
+            mergedInputValue[f] sign t.bit(F - (f - 1) - 1)
+        }
+
+        val (res, timeSolve) = measureTimeWithResult {
+            val (isSat, isTimeout) = runWithTimeout2(500 * 1000) {
+                solve(assumptions)
+            }
+            if (isTimeout) {
+                logger.warn("Timeout on t=$t)")
+            }
+            isSat
+        }
+        times.add(TimingInfo(t, timeSolve.seconds))
+        if (res) {
+            logger.warn("Circuits are NOT equivalent!")
+            return false
+        }
+        if (timeSolve.seconds > 1.0) {
+            logger.info {
+                "Iteration t=${t + 1}/${2L.pow(F)} done in %.3fs (total solve: %.3fs, total wall: %.3fs)"
+                    .format(timeSolve.seconds, times.sumOf { it.time }, secondsSince(timeStartAll))
+            }
+            logger.debug { "t = $t, cube = $assumptions" }
+        }
+    }
+    logger.info("Max times:")
+    for ((t, time) in times.sortedByDescending { it.time }.take(50)) {
+        logger.info("  - %.3fs on index=$t".format(time))
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
+internal fun Solver.`check circuits equivalence using bucket-decomposition with balanced gates`(
+    name:String,
+    aigLeft: Aig,
+    aigRight: Aig,
+): Boolean {
+    logger.info("Checking equivalence using disbalance-based decomposition (with Trie)...")
+
+    val sampleSize = 10000
+    val randomSeed = 42
+    val random = Random(randomSeed)
+    logger.info("Computing p-tables using sampleSize=$sampleSize and randomSeed=$randomSeed...")
+    val pTableLeft = aigLeft.computePTable(sampleSize, random)
+    val pTableRight = aigRight.computePTable(sampleSize, random)
+    // val idsSortedByPLeft = aigLeft.mapping.keys.sortedBy { id -> pTableLeft.getValue(id) }
+    // val idsSortedByPRight = aigRight.mapping.keys.sortedBy { id -> pTableRight.getValue(id) }
+    val idsSortedByDisLeft = aigLeft.mapping.keys.sortedBy { id ->
+        val mid = when {
+            id in aigLeft.inputIds -> 0.5
+            id in aigLeft.andGateIds -> 0.5
+            else -> error("Bad gate with id=$id")
+        }
+        disbalance(pTableLeft.getValue(id), midpoint = mid)
+    }
+    val idsSortedByDisRight = aigRight.mapping.keys.sortedBy { id ->
+        val mid = when {
+            id in aigRight.inputIds -> 0.5
+            id in aigRight.andGateIds -> 0.5
+            else -> error("Bad gate with id=$id")
+        }
+        disbalance(pTableRight.getValue(id), midpoint = mid)
+    }
+
+    declare(logger) {
+        encodeAigs(aigLeft, aigRight)
+    }
+
+    val GL: Int = context["left.G"]
+    val GR: Int = context["right.G"]
+    val inputValue: BoolVarArray = context["inputValue"]
+    val andGateValueLeft: BoolVarArray = context["left.andGateValue"]
+    val andGateValueRight: BoolVarArray = context["right.andGateValue"]
+
+    // Freeze variables
+    for (g in 1..GL) {
+        maybeFreeze(andGateValueLeft[g])
+    }
+    for (g in 1..GR) {
+        maybeFreeze(andGateValueRight[g])
+    }
+
+    logger.info("Variables in Left AIG sorted by disbalance:")
+    for (i in 0 until 50) {
+        val id = idsSortedByDisLeft[i]
+        val lit = if (id in aigLeft.inputIds) {
+            inputValue[aigLeft.inputIds.indexOf(id) + 1]
+        } else {
+            andGateValueLeft[aigLeft.andGateIds.indexOf(id) + 1]
+        }
+        val mid = when {
+            id in aigLeft.inputIds -> 0.5
+            // id in aigLeft.andGateIds -> 0.25
+            id in aigLeft.andGateIds -> 0.5
+            else -> error("Bad gate with id=$id")
+        }
+        val dis = disbalance(pTableLeft.getValue(id), midpoint = mid)
+        println("[$i] (${if (id in aigLeft.inputIds) "input" else "gate"}) id: $id, lit: $lit, dis: %.3f".format(dis))
+    }
+    logger.info("Variables in Right AIG sorted by disbalance:")
+    for (i in 0 until 50) {
+        val id = idsSortedByDisRight[i]
+        val lit = if (id in aigRight.inputIds) {
+            inputValue[aigRight.inputIds.indexOf(id) + 1]
+        } else {
+            andGateValueRight[aigRight.andGateIds.indexOf(id) + 1]
+        }
+        val mid = when {
+            id in aigRight.inputIds -> 0.5
+            // id in aigRight.andGateIds -> 0.25
+            id in aigRight.andGateIds -> 0.5
+            else -> error("Bad gate with id=$id")
+        }
+        val dis = disbalance(pTableRight.getValue(id), midpoint = mid)
+        println("[$i] (${if (id in aigRight.inputIds) "input" else "gate"}) id: $id, lit: $lit, dis: %.3f".format(dis))
+    }
+
+    logger.info("Pre-solving...")
+    val (isSatMain, timeSolveMain) = measureTimeWithResult { solve() }
+    logger.info("${if (isSatMain) "SAT" else "UNSAT"} in %.3fs".format(timeSolveMain.seconds))
+    if (!isSatMain) error("Unexpected UNSAT")
+
+    val bucketSize = 5
+    val numberOfBuckets = Pair(1, 1)
+    // val numberOfBucketsCompute = (100 / bucketSize)
+    val numberOfBucketsCompute = 5
+
+    val bucketsLeft = run {
+        idsSortedByDisLeft.asSequence()
+            .filter { it in aigLeft.andGateIds }
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBucketsCompute)
+            .mapIndexed { index, ids ->
+                logger.info("(Left) Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aigLeft, pTableLeft, andGateValueLeft, ids)
+            }
+            .sortedBy { -it.saturation }
+            // .drop(numberOfBuckets.first)
+            .take(numberOfBuckets.first)
+            .toList()
+    }
+
+    val bucketsRight = run {
+        idsSortedByDisRight.asSequence()
+            .filter { it in aigRight.andGateIds }
+            .windowed(bucketSize, bucketSize)
+            .take(numberOfBucketsCompute)
+            .mapIndexed { index, ids ->
+                logger.info("(Right) Bucket #${index + 1} (size=${ids.size})")
+                buildDecomposition(aigRight, pTableRight, andGateValueRight, ids)
+            }
+            .sortedBy { -it.saturation }
+            // .drop(numberOfBuckets.second)
+            .take(numberOfBuckets.second)
+            .toList()
+    }
+
+    logger.info("Left buckets: ${bucketsLeft.size} = ${
+        bucketsLeft.joinToString("+") { it.domain.size.toString() }
+    } (${
+        bucketsLeft.joinToString("+") { "%.3f%%".format(it.saturation) }
+    })")
+    logger.info("Right buckets: ${bucketsRight.size} = ${
+        bucketsRight.joinToString("+") { it.domain.size.toString() }
+    } (${
+        bucketsRight.joinToString("+") { "%.3f%%".format(it.saturation) }
+    })")
+    logger.info(
+        "Estimated decomposition size: ${
+            (bucketsLeft + bucketsRight).map { it.domain.size.toLong() }.reduce(Long::times)
+        }"
+    )
+
+    val megaBucketLeft = mergeBucketsTree(bucketsLeft)
+    val megaBucketRight = mergeBucketsTree(bucketsRight)
+
+    logger.info("Building decomposition of size ${megaBucketLeft.domain.size.toLong() * megaBucketRight.domain.size}...")
+    val decomposition = bucketsDecomposition(listOf(megaBucketLeft, megaBucketRight))
+        .map { it.sortedBy { it.absoluteValue } }
+    // logger.info("Total decomposition size: ${decomposition.size}")
+
+    // ============
+    // val fileIcnf = File("cnf-with-cubes.icnf")
+    // CadicalSolver().useWith {
+    //     encodeAigs(aigLeft, aigRight)
+    //     encodeMiter()
+    //     dumpDimacs(fileIcnf)
+    //     fileIcnf.appendingSink().buffer().useWith {
+    //         for (cube in decomposition) {
+    //             writeln("a ${cube.joinToString(" ")} 0")
+    //         }
+    //     }
+    // }
+    val fileCnf = File("cnf_${name}_miter.cnf")
+    val variables = (megaBucketLeft.lits + megaBucketRight.lits).toSet().sorted()
+    CadicalSolver().useWith {
+        encodeAigs(aigLeft, aigRight)
+        encodeMiter()
+        dumpDimacs(fileCnf)
+        fileCnf.appendingSink().buffer().useWith {
+            writeln("c vars = $variables")
+        }
+    }
+    val fileCubes = File("cubes_${name}_balanced_${bucketSize}_${bucketSize}.txt")
+    fileCubes.sink().buffer().useWith {
+        for (cube in decomposition) {
+            writeln(cube.joinToString(" "))
+        }
+    }
+    return true
+    // ============
+
+    logger.info("Shuffling...")
+    val n = megaBucketLeft.lits.size + megaBucketRight.lits.size
+    val permutation = (0 until n).shuffled(Random(42))
+    val decompositionShuffled = decomposition.map { lits ->
+        permutation.map { i -> lits[i] }
+    }
+    var varsShuffled: List<Lit> = emptyList()
+    val cubes = decompositionShuffled.map { lits ->
+        varsShuffled = lits.map { lit -> lit.absoluteValue }
+        lits.map { lit -> lit > 0 }
+    }
+    // val varsShuffled = decompositionShuffled.first().map { lit -> lit.absoluteValue }
+
+    logger.info("Building trie...")
+    val trie = buildTrie(cubes.asIterable())
+    logger.info("Done building trie")
+
+    val limit = 1
+    logger.info("Performing trie.dfsLimited($limit)...")
+    val partition = trie.dfsLimited(limit).toList()
+    println("trie.dfsLimited($limit): (total ${partition.size})")
+    for (node in partition.take(10)) {
+        println("  - ${node.cube.toBinaryString().padEnd(n, '.')} (leaves: ${node.leaves})")
+    }
+
+    // // =====
+    // encodeMiter()
+    // logger.info("Dumping hard instances...")
+    // // val hard = listOf(
+    // //     50 to 0,
+    // //     51 to 6,
+    // //     51 to 21,
+    // //     51 to 32,
+    // //     51 to 52,
+    // //     51 to 74,
+    // //     53 to 6,
+    // //     385 to 20,
+    // // )
+    // val hard = listOf(
+    //     542 to 120,
+    //     542 to 525,
+    //     1057 to 151,
+    //     542 to 430,
+    //     560 to 201,
+    //     542 to 481,
+    //     542 to 520,
+    //     1057 to 250,
+    //     2080 to 320,
+    //     1375 to 520,
+    // )
+    // val hardCubes: MutableList<List<Lit>> = mutableListOf()
+    // val hardDir = File("data/hard2")
+    // hardDir.mkdirs()
+    // for ((indexUnit, indexLeaf) in hard) {
+    //     val node = partition[indexUnit]
+    //     val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
+    //     val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
+    //     val leaf = leaves[indexLeaf]
+    //     val assumptions = (units.size until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
+    //     val fileCnf = hardDir.resolve("cnf_hard_${indexUnit}_${indexLeaf}.cnf")
+    //     logger.info("Dumping hard instance $indexUnit/$indexLeaf to '$fileCnf'...")
+    //     dumpDimacs(fileCnf)
+    //     fileCnf.appendingSink().buffer().useWith {
+    //         writeln("c Units (${units.size})")
+    //         for (lit in units) {
+    //             writeln("$lit 0")
+    //         }
+    //         writeln("c Assumptions (${assumptions.size})")
+    //         for (lit in assumptions) {
+    //             writeln("$lit 0")
+    //         }
+    //     }
+    //     hardCubes.add(units + assumptions)
+    // }
+    //
+    // logger.info("Hard cubes:")
+    // for (cube in hardCubes) {
+    //     logger.info(cube.map { it > 0 }.toBinaryString())
+    // }
+    // // return true
+    //
+    // // logger.info("Encoding DNF...")
+    // // encodeDnf(hardCubes)
+    // // val fileCnfMerged = hardDir.resolve("cnf_hard_merged.cnf")
+    // // dumpDimacs(fileCnfMerged)
+    // // // =====
+    // return true
+
+    data class TimingInfo(
+        val indexUnit: Int,
+        val indexLeaf: Int,
+        val time: Double,
+    )
+
+    val timeStartAll = timeNow()
+    val times: MutableList<TimingInfo> = mutableListOf()
+    logger.info("Solving in ${partition.size} iterations...")
+
+    for ((indexUnit, node) in partition.withIndex()) {
+        val timeStartIter = timeNow()
+        reset()
+        encodeAigs(aigLeft, aigRight)
+        encodeMiter()
+
+        val numberOfConflictsStart = maybeNumberOfConflicts()
+
+        val units = node.cube.mapIndexed { i, b -> varsShuffled[i] sign b }
+        for (lit in units) {
+            addClause(lit)
+        }
+
+        val k = units.size
+        val leaves = node.dfs().drop(1).filter { it.isLeaf() }.toList()
+
+        logger.info("Iteration #${indexUnit + 1}: ${leaves.size} leaves")
+        if (leaves.isEmpty()) {
+            logger.debug("Solving iteration #${indexUnit + 1}/${partition.size} with ${units.size} units and without assumptions...")
+            val (res, timeSolve) = measureTimeWithResult {
+                solve()
+            }
+            times.add(TimingInfo(indexUnit, 0, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+        } else for ((indexLeaf, leaf) in leaves.withIndex()) {
+            val assumptions = (k until leaf.cube.size).map { i -> varsShuffled[i] sign leaf.cube[i] }
+            val (res, timeSolve) = measureTimeWithResult {
+                val (isSat, isTimeout) = runWithTimeout2(30 * 1000) {
+                    solve(assumptions.sorted())
+                }
+                if (isTimeout) {
+                    logger.warn("Timeout on indexUnit=$indexUnit, indexLeaf=$indexLeaf")
+                }
+                isSat
+            }
+            if (timeSolve.seconds > 0.5) {
+                logger.debug(
+                    "Solved iteration #${indexUnit + 1}/${partition.size}, leaf ${indexLeaf + 1}/${leaves.size} with ${units.size} units and ${assumptions.size} assumptions in %.3fs"
+                        .format(timeSolve.seconds)
+                )
+            }
+            times.add(TimingInfo(indexUnit, indexLeaf, timeSolve.seconds))
+            if (res) {
+                logger.warn("Circuits are NOT equivalent!")
+                return false
+            }
+        }
+        val confls = maybeNumberOfConflicts() - numberOfConflictsStart
+        logger.info {
+            "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs] confls=${confls}"
+                .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+        }
+        // if (indexUnit == 0 || (indexUnit + 1) % 100 == 0 || secondsSince(timeStartIter) > 2) {
+        //     logger.info {
+        //         "Iteration #${indexUnit + 1}/${partition.size} done in %.3fs [total solve: %.3fs, total wall: %.3fs]"
+        //             .format(secondsSince(timeStartIter), times.sumOf { it.time }, secondsSince(timeStartAll))
+        //     }
+        // }
+    }
+    logger.info("Max times:")
+    for ((indexUnit, indexLeaf, time) in times.sortedByDescending { it.time }.take(100)) {
+        logger.info("  - %.3fs on $indexUnit/$indexLeaf".format(time))
+    }
+
+    logger.info("Circuits are equivalent!")
+    return true
+}
+
 fun checkEquivalence(
+    name: String,
     aigLeft: Aig,
     aigRight: Aig,
     solverProvider: () -> Solver,
     method: String,
 ): Boolean {
-    logger.info("Preparing to check the equivalence using '$method' method...")
+    logger.info("Preparing to check the equivalence for $name using '$method' method...")
     logger.info("Left circuit: $aigLeft")
     logger.info("Right circuit: $aigRight")
 
@@ -1462,15 +2617,22 @@ fun checkEquivalence(
             "dec-layer" -> `check circuits equivalence using layer-wise decomposition`(aigLeft, aigRight)
             "m10" -> `check circuits equivalence using method 10`(aigLeft, aigRight)
             "m11" -> `check circuits equivalence using method 11`(aigLeft, aigRight)
+            "m12" -> `check circuits equivalence using method 12`(aigLeft, aigRight)
+            "m13" -> `check circuits equivalence using method 13`(aigLeft, aigRight)
+            "m14" -> `check circuits equivalence using method 14`(name, aigLeft, aigRight)
+            "m15" -> `check circuits equivalence using method 15`(name, aigLeft, aigRight)
             "domain" -> `check circuits equivalence using domain-based method`(aigLeft, aigRight)
+            "dec-bal" -> `check circuits equivalence using bucket-decomposition with balanced gates`(name,aigLeft, aigRight)
             else -> TODO("Method '$method'")
         }
     }
 }
 
-private fun loadPTable(aig: Aig, path: String) {
-    @Suppress("NAME_SHADOWING")
-    val path = Paths.get(path)
+internal fun loadPTable(aig: Aig, path: String) {
+    loadPTable(aig, Paths.get(path))
+}
+
+internal fun loadPTable(aig: Aig, path: Path) {
     if (path.exists()) {
         logger.debug { "Loading p-table from '$path'..." }
         val pTable = path.source().buffer().inputStream().use { input ->
@@ -1487,8 +2649,8 @@ fun main() {
 
     val left = "BubbleSort"
     val right = "PancakeSort"
-    // Params: 4_3, 5_4, 6_4, 7_4, 10_4, 10_8, 10_16, 20_8
-    val param = "7_4"
+    val param = "8_4"
+    val name = "BvP_$param"
     val aag = "fraag" // "aag" or "fraag"
 
     val nameLeft = "${left}_${param}"
@@ -1502,15 +2664,17 @@ fun main() {
     // val solverProvider = { GlucoseSolver() }
     // val solverProvider = { CryptoMiniSatSolver() }
     val solverProvider = { CadicalSolver() }
-    // Methods: "miter", "merge-eq", "merge-xor", "conj", "dec-layer", "dec-dis", "domain"
-    // val method = "miter"
-    // val method = "dec-dis-trie"
-    val method = "m11"
+    // val method = "m14"
+    // val method = "dec-bal"
+    val method = "dec-dis-trie"
+
+    globalOptions["type"] = "pairs"
+    globalOptions["funs"] = "xor"
 
     loadPTable(aigLeft, "data/instances/$left/ptable/${nameLeft}_$aag.json")
     loadPTable(aigRight, "data/instances/$right/ptable/${nameRight}_$aag.json")
 
-    checkEquivalence(aigLeft, aigRight, solverProvider, method)
+    checkEquivalence(name, aigLeft, aigRight, solverProvider, method)
 
     logger.info("All done in %.3f s".format(secondsSince(timeStart)))
 }

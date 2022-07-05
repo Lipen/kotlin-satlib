@@ -5,9 +5,11 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.lipen.satlib.nexus.cli.AigToDotCommand
+import com.github.lipen.satlib.nexus.cli.AigsToDotCommand
 import com.github.lipen.satlib.nexus.cli.ComputePTableCommand
 import com.github.lipen.satlib.nexus.cli.EqCheckCommand
 import com.github.lipen.satlib.nexus.cli.EqGatesCommand
+import com.github.lipen.satlib.nexus.cli.MakeMiterCommand
 import com.soywiz.klock.measureTime
 import mu.KotlinLogging
 
@@ -27,7 +29,9 @@ class Nexus(private val args: Array<String> = arrayOf("?")) : CliktCommand() {
             EqGatesCommand(),
             EqCheckCommand(),
             AigToDotCommand(),
+            AigsToDotCommand(),
             ComputePTableCommand(),
+            MakeMiterCommand(),
         )
     }
 

@@ -60,8 +60,8 @@ fun Project.configureKotlinConventions() {
 
     kotlinter {
         ignoreFailures = true
-        experimentalRules = true
-        disabledRules = arrayOf("import-ordering")
+        // experimentalRules = true
+        disabledRules = arrayOf("import-ordering", "indent")
     }
 
     java {

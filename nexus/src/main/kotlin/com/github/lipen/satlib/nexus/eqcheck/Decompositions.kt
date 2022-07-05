@@ -23,7 +23,7 @@ import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
-internal fun disbalance(p: Double, midpoint: Double = 0.25): Double {
+internal fun disbalance(p: Double, midpoint: Double = 0.5): Double {
     return if (p <= midpoint) (midpoint - p) / midpoint
     else (p - midpoint) / (1 - midpoint)
 }

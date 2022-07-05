@@ -167,6 +167,10 @@ data class Ref(
         return "${if (negated) "~" else ""}@$id"
     }
 
+    fun toInt(): Int {
+        return if (negated) -id else id
+    }
+
     companion object {
         fun fromLiteral(lit: Int): Ref {
             require(lit > 0)

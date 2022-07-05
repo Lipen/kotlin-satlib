@@ -5,6 +5,7 @@ import com.github.lipen.satlib.solver.CadicalSolver
 import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
 import mu.KLogger
 import mu.KotlinLogging
 
@@ -40,11 +41,43 @@ fun Solver.implyXor2(lhs: Lit, a: Lit, b: Lit) {
     addClause(-lhs, -a, -b)
 }
 
+/** [lhs] => `NAND`([rhs]) */
+fun Solver.implyNand(lhs: Lit, vararg rhs: Lit) {
+    addClause {
+        yield(-lhs)
+        for (lit in rhs) {
+            yield(-lit)
+        }
+    }
+}
+
 /** [lhs] <=> ([a] `XOR` [b]) */
 fun Solver.iffXor2(lhs: Lit, a: Lit, b: Lit) {
     implyXor2(lhs, a, b)
     addClause(lhs, a, -b)
     addClause(lhs, -a, b)
+}
+
+/** [lhs] <=> ([a] `XOR` [b] `XOR` [c]) */
+fun Solver.iffXor3(lhs: Lit, a: Lit, b: Lit, c: Lit) {
+    addClause(-lhs, -a, -b, c)
+    addClause(-lhs, -a, b, -c)
+    addClause(-lhs, a, -b, -c)
+    addClause(-lhs, a, b, c)
+    addClause(lhs, -a, -b, -c)
+    addClause(lhs, -a, b, c)
+    addClause(lhs, a, -b, c)
+    addClause(lhs, a, b, -c)
+}
+
+/** [lhs] <=> ([a] `XOR` [b] `XOR` [c]) */
+fun Solver.iffMaj3(lhs: Lit, a:Lit, b:Lit, c:Lit) {
+    addClause(-lhs, a, b)
+    addClause(-lhs, a, c)
+    addClause(-lhs, b, c)
+    addClause(lhs, -a, -b)
+    addClause(lhs, -a, -c)
+    addClause(lhs, -b, -c)
 }
 
 internal inline fun Solver.declare(
