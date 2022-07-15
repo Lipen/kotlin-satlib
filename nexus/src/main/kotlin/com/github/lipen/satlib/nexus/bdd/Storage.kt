@@ -1,8 +1,7 @@
 package com.github.lipen.satlib.nexus.bdd
 
 internal class Storage(capacity: Int) {
-    // private val dataOccupied = java.util.BitSet(capacity)
-    private val dataOccupied = BooleanArray(capacity)
+    private val dataOccupied = java.util.BitSet(capacity)
     private val dataVar = IntArray(capacity)
     private val dataLow = IntArray(capacity)
     private val dataHigh = IntArray(capacity)
