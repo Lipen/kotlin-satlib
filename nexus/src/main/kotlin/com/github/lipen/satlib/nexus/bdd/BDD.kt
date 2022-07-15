@@ -542,6 +542,12 @@ class BDD(
         }
     }
 
+    fun applyEq(u: Ref, v: Ref): Ref {
+        logger.debug { "applyEq(u = $u, v = $v)" }
+
+        return -applyXor(u, v)
+    }
+
     private fun _descendants(node: Ref, visited: MutableSet<Int>) {
         val i = node.index.absoluteValue
         if (visited.add(i)) {

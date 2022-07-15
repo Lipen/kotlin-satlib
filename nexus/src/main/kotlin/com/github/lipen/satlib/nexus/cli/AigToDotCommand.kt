@@ -167,7 +167,7 @@ class AigToDotCommand : CliktCommand() {
                     val (t, f) = p
                     val saturation = getP(t, f) // saturation
                     check(saturation in 0.0..1.0)
-                    val mid = 0.25
+                    val mid = 0.5
                     val power = 3
                     if (saturation > mid) {
                         "style=filled,fillcolor=\"#00ff00${hex(((saturation - mid) / (1 - mid)).pow(power))}\""
