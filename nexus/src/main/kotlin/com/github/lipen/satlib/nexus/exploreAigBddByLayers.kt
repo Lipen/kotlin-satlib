@@ -29,7 +29,7 @@ private data class PseudoNode(
     val children: List<AigRef>,
 )
 
-fun buildBddFromAig(
+fun buildBddFromAigByLayers(
     aig: Aig,
 ) {
     logger.info("Building BDD from AIG...")
@@ -122,6 +122,7 @@ fun buildBddFromAig(
                 // logger.info { "Input node => do nothing" }
                 continue
             }
+
             1 -> {
                 // logger.info { "Identity node" }
                 val child = node.children[0]
@@ -132,6 +133,7 @@ fun buildBddFromAig(
                 // logger.info { "f = ID($child) = $f" }
                 f
             }
+
             2 -> {
                 // logger.info { "AND node" }
                 val left = node.children[0]
@@ -144,6 +146,7 @@ fun buildBddFromAig(
                 // logger.info { "f = ($id == AND($left, $right)) = $f" }
                 f
             }
+
             else -> error("Bad number of children: ${node.children.size}")
         }
         nodeB[convertPseudoId(id)] = f
@@ -195,83 +198,16 @@ fun buildBddFromAig(
     logger.info { "Final bddAnds=$bddAnds, size(bddAnds)=${bdd.descendants(bddAnds).size}" }
     logger.info { "Final bddIds=$bddIds, size(bddIds)=${bdd.descendants(bddIds).size}" }
     logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
-
-    // val Bs: MutableMap<Int, BddRef> = mutableMapOf()
-    // val timeStart = timeNow()
-    //
-    // for ((i, layer) in pseudoLayers.withIndex()) {
-    //     logger.info { "Processing pseudo-layer #$i" }
-    //     val timeStartBuildB = timeNow()
-    //     var B = bdd.one
-    //     for (id in layer) {
-    //         val timeStartProcessNode = timeNow()
-    //         val node = pseudoMapping.getValue(id)
-    //         // logger.info { "Processing $node" }
-    //         when (node.children.size) {
-    //             0 -> {
-    //                 // logger.info { "Input node => do nothing" }
-    //             }
-    //             1 -> {
-    //                 // logger.info { "Identity node" }
-    //                 val child = node.children[0]
-    //                 val f = bdd.applyEq(
-    //                     bdd.mkVar(convertPseudoId(id)),
-    //                     bdd.mkVar(convertPseudoAigRef(child))
-    //                 )
-    //                 // logger.info { "f = ID($child) = $f" }
-    //                 B = bdd.applyAnd(B, f)
-    //                 // logger.info { "B = $B" }
-    //             }
-    //             2 -> {
-    //                 // logger.info { "AND node" }
-    //                 val left = node.children[0]
-    //                 val right = node.children[1]
-    //                 val g = bdd.applyAnd(
-    //                     bdd.mkVar(convertPseudoAigRef(left)),
-    //                     bdd.mkVar(convertPseudoAigRef(right))
-    //                 )
-    //                 val f = bdd.applyEq(bdd.mkVar(convertPseudoId(id)), g)
-    //                 // logger.info { "AND($left, $right) = $g" }
-    //                 // logger.info { "f = ($id == AND($left, $right)) = $f" }
-    //                 B = bdd.applyAnd(B, f)
-    //                 // logger.info { "B = $B" }
-    //             }
-    //             else -> error("Bad number of children: ${node.children.size}")
-    //         }
-    //         logger.info {
-    //             "[%.3fs] Processed $node in %.3fs. B[i=$i]=$B (size(B) = ${bdd.descendants(B).size}, bdd.size=${bdd.size})"
-    //                 .format(
-    //                     secondsSince(timeStart),
-    //                     secondsSince(timeStartProcessNode)
-    //                 )
-    //         }
-    //     }
-    //     logger.info {
-    //         "Built B[i=$i] = $B in %.3fs (size = ${bdd.descendants(B).size})"
-    //             .format(secondsSince(timeStartBuildB))
-    //     }
-    //     Bs[i] = B
-    //
-    //     // logger.info { "Collecting garbage..." }
-    //     // bdd.collectGarbage(roots = Bs.values)
-    // }
-    //
-    // logger.info { "Bs:" }
-    // for ((i, B) in Bs) {
-    //     logger.info { "B[i = $i] = $B (size = ${bdd.descendants(B).size}" }
-    // }
-    // logger.info { "Total size of all Bs: ${bdd.descendants(Bs.values).size}" }
-    // logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
 }
 
 fun main() {
     val timeStart = timeNow()
 
-    val filename = "data/instances/BubbleSort/fraag/BubbleSort_3_3.aag"
+    val filename = "data/instances/BubbleSort/fraag/BubbleSort_3_2.aag"
     logger.info { "filename = $filename" }
     val aig = parseAig(filename)
     logger.info { "aig = $aig" }
-    buildBddFromAig(aig)
+    buildBddFromAigByLayers(aig)
 
     logger.info("All done in %.3f s".format(secondsSince(timeStart)))
 }
