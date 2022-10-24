@@ -1,5 +1,7 @@
 package com.github.lipen.satlib.nexus.bdd
 
+import kotlin.math.min
+
 internal class Storage(capacity: Int) {
     private val dataOccupied = java.util.BitSet(capacity)
     private val dataVar = IntArray(capacity)
@@ -7,8 +9,10 @@ internal class Storage(capacity: Int) {
     private val dataHigh = IntArray(capacity)
     private val dataNext = IntArray(capacity)
 
-    var lastIndex: Int = 0
-        private set
+    private var lastIndex: Int = 0
+    private var minFree: Int = 1
+
+    val size: Int get() = lastIndex
     var realSize: Int = 0
         private set
 
@@ -21,8 +25,8 @@ internal class Storage(capacity: Int) {
     fun next(index: Int): Int = dataNext[index]
 
     private fun getFreeIndex(): Int {
-        return ++lastIndex
-        // return (1..lastIndex).firstOrNull { !dataOccupied[it] } ?: ++lastIndex
+        // return ++lastIndex
+        return (minFree..lastIndex).firstOrNull { !dataOccupied[it] } ?: ++lastIndex
     }
 
     internal fun alloc(index: Int) {
@@ -38,13 +42,14 @@ internal class Storage(capacity: Int) {
         require(v > 0)
         require(low != 0)
         require(high != 0)
-        val index = getFreeIndex()
+        val index = minFree
         realSize++
         dataOccupied[index] = true
         dataVar[index] = v
         dataLow[index] = low
         dataHigh[index] = high
         dataNext[index] = next
+        minFree = getFreeIndex()
         return index
     }
 
@@ -52,6 +57,7 @@ internal class Storage(capacity: Int) {
         require(index > 0)
         realSize--
         dataOccupied[index] = false
+        minFree = min(minFree, index)
     }
 
     fun setNext(index: Int, next: Int) {

@@ -29,7 +29,7 @@ private data class PseudoNode(
     val children: List<AigRef>,
 )
 
-fun buildBddFromAigByLayers(
+private fun buildBddFromAigByLayers(
     aig: Aig,
 ) {
     logger.info("Building BDD from AIG...")
@@ -169,10 +169,10 @@ fun buildBddFromAigByLayers(
         val b = nodeB.getValue(bddId)
         bddAnds = bdd.applyAnd(bddAnds, b)
         logger.info {
-            "Added $node (bdd: $bddId, ${node.children.map { convertPseudoAigRef(it) }}) with b=$b in %.2fs, now bddAnds=$bddAnds, size(bddAnds)=${
-                bdd.descendants(
-                    bddAnds
-                ).size
+            "Added $node (bdd: $bddId, ${
+                node.children.map { convertPseudoAigRef(it) }
+            }) with b=$b in %.2fs, now bddAnds=$bddAnds, size(bddAnds)=${
+                bdd.descendants(bddAnds).size
             }, bdd.size=${bdd.size}"
                 .format(secondsSince(timeStartAdd))
         }
@@ -186,10 +186,10 @@ fun buildBddFromAigByLayers(
         val b = nodeB.getValue(bddId)
         bddIds = bdd.applyAnd(bddIds, b)
         logger.info {
-            "Added $node (bdd: $bddId, ${node.children.map { convertPseudoAigRef(it) }}) with b=$b in %.2fs, now bddIds=$bddIds, size(bddIds)=${
-                bdd.descendants(
-                    bddIds
-                ).size
+            "Added $node (bdd: $bddId, ${
+                node.children.map { convertPseudoAigRef(it) }
+            }) with b=$b in %.2fs, now bddIds=$bddIds, size(bddIds)=${
+                bdd.descendants(bddIds).size
             }, bdd.size=${bdd.size}"
                 .format(secondsSince(timeStartAdd))
         }

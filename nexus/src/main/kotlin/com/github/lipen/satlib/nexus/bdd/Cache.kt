@@ -14,11 +14,11 @@ internal class Cache<K, V : Any>(
     inline fun getOrCompute(key: K, default: (K) -> V): V {
         val v = map[key]
         return if (v == null) {
-            logger.debug { "cache miss for '$name' on $key" }
+            // logger.debug { "cache miss for '$name' on $key" }
             misses++
             default(key).also { map[key] = it }
         } else {
-            logger.debug { "cache hit for '$name' on $key" }
+            // logger.debug { "cache hit for '$name' on $key" }
             hits++
             v
         }

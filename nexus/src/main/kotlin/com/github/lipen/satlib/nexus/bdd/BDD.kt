@@ -5,7 +5,7 @@ package com.github.lipen.satlib.nexus.bdd
 import kotlin.math.absoluteValue
 import kotlin.math.min
 
-private val logger = mu.KotlinLogging.logger {}
+// private val logger = mu.KotlinLogging.logger {}
 
 /**
  * [Cantor pairing function](https://en.wikipedia.org/wiki/Pairing_function#Cantor_pairing_function)
@@ -52,7 +52,7 @@ class BDD(
     private val buckets = IntArray(bucketsCapacity)
     internal val storage = Storage(storageCapacity)
 
-    val size: Int get() = storage.lastIndex
+    val size: Int get() = storage.size
     val realSize: Int get() = storage.realSize
 
     fun maxChain(): Int = chains().maxOrNull() ?: 0
@@ -70,7 +70,8 @@ class BDD(
     private val andCache = Cache<Pair<Ref, Ref>, Ref>("AND")
     private val orCache = Cache<Pair<Ref, Ref>, Ref>("OR")
     private val xorCache = Cache<Pair<Ref, Ref>, Ref>("XOR")
-    private val caches = arrayOf(iteCache, andCache, orCache, xorCache)
+    private val sizeCache = Cache<Ref, Int>("SIZE")
+    private val caches = arrayOf(iteCache, andCache, orCache, xorCache, sizeCache)
     val cacheHits: Int
         get() = caches.sumOf { it.hits }
     val cacheMisses: Int
@@ -116,7 +117,7 @@ class BDD(
     }
 
     fun mkNode(v: Int, low: Ref, high: Ref): Ref {
-        logger.debug { "mk(v = $v, low = $low, high = $high)" }
+        //logger.debug { "mk(v = $v, low = $low, high = $high)" }
 
         require(v > 0)
         require(low.index != 0)
@@ -124,24 +125,24 @@ class BDD(
 
         // Handle canonicity
         if (high.negated) {
-            logger.debug { "mk: restoring canonicity" }
+            //logger.debug { "mk: restoring canonicity" }
             return -mkNode(v = v, low = -low, high = -high)
         }
 
         // Handle duplicates
         if (low == high) {
-            logger.debug { "mk: duplicates $low == $high" }
+            //logger.debug { "mk: duplicates $low == $high" }
             return low
         }
 
         val bucketIndex = lookup(v, low, high)
-        logger.debug { "mk: bucketIndex for ($v, $low, $high) is $bucketIndex" }
+        //logger.debug { "mk: bucketIndex for ($v, $low, $high) is $bucketIndex" }
         var index = buckets[bucketIndex]
 
         if (index == 0) {
             // Create new node
             return addNode(v, low, high).also { buckets[bucketIndex] = it.index }
-                .also { logger.debug { "mk: created new node $it" } }
+            // .also { logger.debug { "mk: created new node $it" } }
         }
 
         while (true) {
@@ -149,7 +150,7 @@ class BDD(
 
             if (variable(index) == v && low(index) == low && high(index) == high) {
                 // The node already exists
-                logger.debug { "mk: node $index already exists" }
+                //logger.debug { "mk: node $index already exists" }
                 return Ref(index)
             }
 
@@ -158,10 +159,10 @@ class BDD(
             if (next == 0) {
                 // Create new node and add it to the bucket
                 return addNode(v, low, high).also { storage.setNext(index, it.index) }
-                    .also { logger.debug { "mk: created new node $it after $index" } }
+                // .also { logger.debug { "mk: created new node $it after $index" } }
             } else {
                 // Go to the next node in the bucket
-                logger.debug { "mk: iterating over the bucket to $next" }
+                //logger.debug { "mk: iterating over the bucket to $next" }
                 index = next
             }
         }
@@ -177,27 +178,27 @@ class BDD(
     }
 
     fun collectGarbage(roots: Iterable<Ref>) {
-        logger.debug { "Collecting garbage..." }
+        //logger.debug { "Collecting garbage..." }
 
         caches.forEach { it.map.clear() }
 
         val alive = descendants(roots)
-        logger.debug { "Alive: ${alive.sorted()}" }
+        //logger.debug { "Alive: ${alive.sorted()}" }
 
         for (i in buckets.indices) {
             var index = buckets[i]
 
             if (index != 0) {
-                logger.debug { "Cleaning bucket #$i pointing to $index..." }
+                //logger.debug { "Cleaning bucket #$i pointing to $index..." }
 
                 while (index != 0 && index !in alive) {
                     val next = next(index)
-                    logger.debug { "Dropping $index, next = $next" }
+                    //logger.debug { "Dropping $index, next = $next" }
                     storage.drop(index)
                     index = next
                 }
 
-                logger.debug { "Relinking bucket #$i to $index, next = ${next(index)}" }
+                //logger.debug { "Relinking bucket #$i to $index, next = ${next(index)}" }
                 buckets[i] = index
 
                 var prev = index
@@ -206,16 +207,16 @@ class BDD(
                     while (curr != 0) {
                         if (curr !in alive) {
                             val next = next(curr)
-                            logger.debug { "Dropping $curr, prev = $prev, next = $next" }
+                            //logger.debug { "Dropping $curr, prev = $prev, next = $next" }
                             storage.drop(curr)
                             curr = next
                         } else {
-                            logger.debug { "Keeping $curr, prev = $prev}" }
+                            //logger.debug { "Keeping $curr, prev = $prev}" }
                             break
                         }
                     }
                     if (next(prev) != curr) {
-                        logger.debug { "Relinking next($prev) from ${next(prev)} to $curr" }
+                        //logger.debug { "Relinking next($prev) from ${next(prev)} to $curr" }
                         storage.setNext(prev, curr)
                     }
                     prev = curr
@@ -241,7 +242,7 @@ class BDD(
     }
 
     fun applyIte(f: Ref, g: Ref, h: Ref): Ref {
-        logger.debug { "applyIte(f = $f, g = $g, h = $h)" }
+        //logger.debug { "applyIte(f = $f, g = $g, h = $h)" }
 
         // Terminal cases for ITE(F,G,H):
         // - One variable cases (F is constant)
@@ -260,12 +261,12 @@ class BDD(
 
         // ite(1,G,H) => G
         if (isOne(f)) {
-            logger.debug { "applyIte: f is 1" }
+            //logger.debug { "applyIte: f is 1" }
             return g
         }
         // ite(0,G,H) => H
         if (isZero(f)) {
-            logger.debug { "applyIte: f is 0" }
+            //logger.debug { "applyIte: f is 0" }
             return h
         }
 
@@ -274,54 +275,54 @@ class BDD(
 
         // ite(F,F,H) == ite(F,1,H) == F + H
         if (isTerminal(g) || f == g) {
-            logger.debug { "applyIte: either g is terminal or f == g" }
+            //logger.debug { "applyIte: either g is terminal or f == g" }
             @Suppress("LiftReturnOrAssignment")
             // ite(F,1,0) => F
             if (isZero(h)) {
-                logger.debug { "applyIte: h is 0" }
+                //logger.debug { "applyIte: h is 0" }
                 return f
             }
             // F + H => ~(~F * ~H)
             else {
-                logger.debug { "applyIte: h is not 0" }
+                //logger.debug { "applyIte: h is not 0" }
                 return -applyAnd(-f, -h)
             }
         }
         // ite(F,~F,H) == ite(F,0,H) == ~F * H
         else if (isZero(g) || f == -g) {
-            logger.debug { "applyIte: either g is 0 or f == ~g" }
+            //logger.debug { "applyIte: either g is 0 or f == ~g" }
             @Suppress("LiftReturnOrAssignment")
             // ite(F,0,1) => ~F
             if (isOne(h)) {
-                logger.debug { "applyIte: h is 1" }
+                //logger.debug { "applyIte: h is 1" }
                 return -f
             }
             // ~F * H
             else {
-                logger.debug { "applyIte: h is not 1" }
+                //logger.debug { "applyIte: h is not 1" }
                 return applyAnd(f, h)
             }
         }
 
         // ite(F,G,F) == ite(F,G,0) == F * G
         if (isZero(h) || f == h) {
-            logger.debug { "applyIte: either h is 0 or f == h" }
+            //logger.debug { "applyIte: either h is 0 or f == h" }
             return applyAnd(f, g)
         }
         // ite(F,G,~F) == ite(F,G,1) == ~F + G
         else if (isOne(h) || f == -h) {
-            logger.debug { "applyIte: either h is 1 or f == ~h" }
+            //logger.debug { "applyIte: either h is 1 or f == ~h" }
             return applyAnd(f, -g)
         }
 
         // ite(F,G,G) => G
         if (g == h) {
-            logger.debug { "applyIte: g == h" }
+            //logger.debug { "applyIte: g == h" }
             return g
         }
         // ite(F,G,~G) == F <-> G == F ^ ~G
         else if (g == -h) {
-            logger.debug { "applyIte: g == ~h" }
+            //logger.debug { "applyIte: g == ~h" }
             return applyXor(f, h)
         }
 
@@ -353,49 +354,49 @@ class BDD(
             val j = variable(g)
             val k = variable(h)
             val m = min(i, min(j, k))
-            logger.debug { "applyIte: min variable = $m" }
+            //logger.debug { "applyIte: min variable = $m" }
 
             // cofactors of f,g,h
             val (f0, f1) = topCofactors(f, m)
-            logger.debug { "applyIte: cofactors of f = $f:" }
-            logger.debug { "    f0 = $f0" }
-            logger.debug { "    f1 = $f1" }
+            //logger.debug { "applyIte: cofactors of f = $f:" }
+            //logger.debug { "    f0 = $f0" }
+            //logger.debug { "    f1 = $f1" }
             val (g0, g1) = topCofactors(g, m)
-            logger.debug { "applyIte: cofactors of g = $g:" }
-            logger.debug { "    g0 = $g0" }
-            logger.debug { "    g1 = $g1" }
+            //logger.debug { "applyIte: cofactors of g = $g:" }
+            //logger.debug { "    g0 = $g0" }
+            //logger.debug { "    g1 = $g1" }
             val (h0, h1) = topCofactors(h, m)
-            logger.debug { "applyIte: cofactors of h = $h:" }
-            logger.debug { "    h0 = $h0" }
-            logger.debug { "    h1 = $h1" }
+            //logger.debug { "applyIte: cofactors of h = $h:" }
+            //logger.debug { "    h0 = $h0" }
+            //logger.debug { "    h1 = $h1" }
 
             // cofactors of the resulting node ("then" and "else" branches)
             val t = applyIte(f1, g1, h1)
             val e = applyIte(f0, g0, h0)
 
-            logger.debug { "applyIte: cofactors of res:" }
-            logger.debug { "    t = $t" }
-            logger.debug { "    e = $e" }
+            //logger.debug { "applyIte: cofactors of res:" }
+            //logger.debug { "    t = $t" }
+            //logger.debug { "    e = $e" }
             mkNode(v = m, low = e, high = t).let {
                 if (n) -it else it
             }
         }.also {
-            logger.debug { "applyIte(f = $f, g = $g, h = $h) = $it" }
+            //logger.debug { "applyIte(f = $f, g = $g, h = $h) = $it" }
         }
     }
 
     fun applyAnd_ite(u: Ref, v: Ref): Ref {
-        logger.debug { "applyAnd_ite(u = $u, v = $v)" }
+        //logger.debug { "applyAnd_ite(u = $u, v = $v)" }
         return applyIte(u, v, zero)
     }
 
     fun applyOr_ite(u: Ref, v: Ref): Ref {
-        logger.debug { "applyOr_ite(u = $u, v = $v)" }
+        //logger.debug { "applyOr_ite(u = $u, v = $v)" }
         return applyIte(u, one, v)
     }
 
     private inline fun _apply(u: Ref, v: Ref, f: (Ref, Ref) -> Ref): Ref {
-        logger.debug { "_apply(u = $u, v = $v)" }
+        //logger.debug { "_apply(u = $u, v = $v)" }
 
         require(!isTerminal(u))
         require(!isTerminal(v))
@@ -403,51 +404,51 @@ class BDD(
         val i = variable(u)
         val j = variable(v)
         val m = min(i, j)
-        logger.debug { "_apply($u, $v): min variable = $m" }
+        //logger.debug { "_apply($u, $v): min variable = $m" }
 
         // cofactors of u
         val (u0, u1) = topCofactors(u, m)
-        logger.debug { "_apply($u, $v): cofactors of u = $u:" }
-        logger.debug { "    u0 = $u0 (${getTriplet(u0)})" }
-        logger.debug { "    u1 = $u1 (${getTriplet(u1)})" }
+        //logger.debug { "_apply($u, $v): cofactors of u = $u:" }
+        //logger.debug { "    u0 = $u0 (${getTriplet(u0)})" }
+        //logger.debug { "    u1 = $u1 (${getTriplet(u1)})" }
         // cofactors of v
         val (v0, v1) = topCofactors(v, m)
-        logger.debug { "_apply($u, $v): cofactors of v = $v:" }
-        logger.debug { "    v0 = $v0 (${getTriplet(v0)})" }
-        logger.debug { "    v1 = $v1 (${getTriplet(v1)})" }
+        //logger.debug { "_apply($u, $v): cofactors of v = $v:" }
+        //logger.debug { "    v0 = $v0 (${getTriplet(v0)})" }
+        //logger.debug { "    v1 = $v1 (${getTriplet(v1)})" }
         // cofactors of the resulting node w
         val w0 = f(u0, v0)
         val w1 = f(u1, v1)
-        logger.debug { "_apply($u, $v): cofactors of w:" }
-        logger.debug { "    w0 = $w0 (${getTriplet(w0)})" }
-        logger.debug { "    w1 = $w1 (${getTriplet(w1)})" }
+        //logger.debug { "_apply($u, $v): cofactors of w:" }
+        //logger.debug { "    w0 = $w0 (${getTriplet(w0)})" }
+        //logger.debug { "    w1 = $w1 (${getTriplet(w1)})" }
 
         return mkNode(v = m, low = w0, high = w1).also {
-            logger.debug { "_apply($u, $v): w = $it (${getTriplet(it)})" }
+            //logger.debug { "_apply($u, $v): w = $it (${getTriplet(it)})" }
         }
     }
 
     fun applyAnd(u: Ref, v: Ref): Ref {
-        logger.debug { "applyAnd(u = $u, v = $v)" }
+        //logger.debug { "applyAnd(u = $u, v = $v)" }
 
         if (isZero(u) || isZero(v)) {
-            logger.debug { "applyAnd($u, $v): either u or v is Zero" }
+            //logger.debug { "applyAnd($u, $v): either u or v is Zero" }
             return zero
         }
         if (isOne(u)) {
-            logger.debug { "applyAnd($u, $v): u is One" }
+            //logger.debug { "applyAnd($u, $v): u is One" }
             return v
         }
         if (isOne(v)) {
-            logger.debug { "applyAnd($u, $v): v is One" }
+            //logger.debug { "applyAnd($u, $v): v is One" }
             return u
         }
         if (u == v) {
-            logger.debug { "applyAnd($u, $v): u == v" }
+            //logger.debug { "applyAnd($u, $v): u == v" }
             return u
         }
         if (u == -v) {
-            logger.debug { "applyAnd($u, $v): u == ~v" }
+            //logger.debug { "applyAnd($u, $v): u == ~v" }
             return zero
         }
 
@@ -465,26 +466,26 @@ class BDD(
     }
 
     fun applyOr(u: Ref, v: Ref): Ref {
-        logger.debug { "applyOr(u = $u, v = $v)" }
+        //logger.debug { "applyOr(u = $u, v = $v)" }
 
         if (isOne(u) || isOne(v)) {
-            logger.debug { "applyOr($u, $v): either u or v is One" }
+            //logger.debug { "applyOr($u, $v): either u or v is One" }
             return one
         }
         if (isZero(u)) {
-            logger.debug { "applyOr($u, $v): u is Zero" }
+            //logger.debug { "applyOr($u, $v): u is Zero" }
             return v
         }
         if (isZero(v)) {
-            logger.debug { "applyOr($u, $v): v is Zero" }
+            //logger.debug { "applyOr($u, $v): v is Zero" }
             return u
         }
         if (u == v) {
-            logger.debug { "applyOr($u, $v): u == v" }
+            //logger.debug { "applyOr($u, $v): u == v" }
             return u
         }
         if (u == -v) {
-            logger.debug { "applyOr($u, $v): u == ~v" }
+            //logger.debug { "applyOr($u, $v): u == ~v" }
             return one
         }
 
@@ -502,30 +503,30 @@ class BDD(
     }
 
     fun applyXor(u: Ref, v: Ref): Ref {
-        logger.debug { "applyXor(u = $u, v = $v)" }
+        //logger.debug { "applyXor(u = $u, v = $v)" }
 
         if (isOne(u)) {
-            logger.debug { "applyXor(1, v) = -v" }
+            //logger.debug { "applyXor(1, v) = -v" }
             return -v
         }
         if (isOne(v)) {
-            logger.debug { "applyXor(u, 1) = -u" }
+            //logger.debug { "applyXor(u, 1) = -u" }
             return -u
         }
         if (isZero(u)) {
-            logger.debug { "applyXor(0, v) = v" }
+            //logger.debug { "applyXor(0, v) = v" }
             return v
         }
         if (isZero(v)) {
-            logger.debug { "applyXor(u, 0) = u" }
+            //logger.debug { "applyXor(u, 0) = u" }
             return u
         }
         if (u == v) {
-            logger.debug { "applyXor(x, x) = 0" }
+            //logger.debug { "applyXor(x, x) = 0" }
             return zero
         }
         if (u == -v) {
-            logger.debug { "applyXor(x, -x) = 1" }
+            //logger.debug { "applyXor(x, -x) = 1" }
             return one
         }
 
@@ -543,7 +544,7 @@ class BDD(
     }
 
     fun applyEq(u: Ref, v: Ref): Ref {
-        logger.debug { "applyEq(u = $u, v = $v)" }
+        //logger.debug { "applyEq(u = $u, v = $v)" }
 
         return -applyXor(u, v)
     }
@@ -568,8 +569,14 @@ class BDD(
         return descendants(listOf(node))
     }
 
+    fun size(node: Ref): Int {
+        return sizeCache.getOrCompute(node) {
+            descendants(node).size
+        }
+    }
+
     private fun _exists(node: Ref, j: Int, vars: Set<Int>, cache: Cache<Ref, Ref>): Ref {
-        logger.debug { "_exists($node, $vars) ($node = ${getTriplet(node)})" }
+        //logger.debug { "_exists($node, $vars) ($node = ${getTriplet(node)})" }
         if (isTerminal(node)) {
             return node
         }
@@ -616,21 +623,21 @@ class BDD(
             //     else -> applyOr(low, high)
             // }
         }.also {
-            logger.debug { "_exists($node, $vars) = $it (${getTriplet(it)})" }
+            //logger.debug { "_exists($node, $vars) = $it (${getTriplet(it)})" }
         }
     }
 
     fun exists(node: Ref, vars: Set<Int>): Ref {
-        logger.debug { "exists($node, $vars)" }
+        //logger.debug { "exists($node, $vars)" }
         val cache = Cache<Ref, Ref>("EXISTS($vars)")
         return _exists(node, 0, vars, cache).also {
-            logger.debug { "exists($node, $vars) = $it (${getTriplet(node)})" }
-            logger.debug { "  cache ${cache.name}: hits=${cache.hits}, misses=${cache.misses}" }
+            //logger.debug { "exists($node, $vars) = $it (${getTriplet(node)})" }
+            //logger.debug { "  cache ${cache.name}: hits=${cache.hits}, misses=${cache.misses}" }
         }
     }
 
     fun exists(node: Ref, v: Int): Ref {
-        logger.debug { "exists($node, $v)" }
+        //logger.debug { "exists($node, $v)" }
         return exists(node, setOf(v))
     }
 
