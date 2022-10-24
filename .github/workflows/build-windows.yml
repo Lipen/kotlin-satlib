@@ -69,8 +69,9 @@ jobs:
       - name: Build CryptoMiniSat
         working-directory: jni
         run: |
-          git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+          git clone https://github.com/msoos/cryptominisat solvers/cms-src
           cd solvers/cms-src
+          git checkout 02f53d1fc045fdba53671306964d3d094feb949e
           cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
           cmake --build build -- -j8
           cmake --install build --prefix install
