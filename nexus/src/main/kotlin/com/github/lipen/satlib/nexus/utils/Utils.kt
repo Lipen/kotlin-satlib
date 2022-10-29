@@ -32,3 +32,8 @@ internal fun <T> List<T>.sample(n: Int, random: Random = Random): List<T> {
     }
     return idx.map { get(it) }
 }
+
+fun <T> Sequence<T>.withIndex(start: Int): Sequence<Pair<Int, T>> =
+    mapIndexed { index, value -> Pair(start + index, value) }
+
+fun <T> Iterable<T>.withIndex(start: Int): Sequence<Pair<Int, T>> = asSequence().withIndex(start)

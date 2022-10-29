@@ -81,11 +81,13 @@ class BDD(
     val namedCacheMisses: Map<String, Int>
         get() = caches.associate { it.name to it.misses }
 
+    val nonGarbage: MutableSet<Ref> = mutableSetOf()
+
     val one = Ref(1)
     val zero = Ref(-1)
 
     init {
-        storage.alloc(1) // terminal node
+        storage.alloc() // alloc the terminal node
         buckets[0] = 1
     }
 
@@ -182,7 +184,7 @@ class BDD(
 
         caches.forEach { it.map.clear() }
 
-        val alive = descendants(roots)
+        val alive = descendants(roots + nonGarbage)
         //logger.debug { "Alive: ${alive.sorted()}" }
 
         for (i in buckets.indices) {
@@ -549,19 +551,112 @@ class BDD(
         return -applyXor(u, v)
     }
 
-    private fun _descendants(node: Ref, visited: MutableSet<Int>) {
-        val i = node.index.absoluteValue
-        if (visited.add(i)) {
-            _descendants(low(i), visited)
-            _descendants(high(i), visited)
+    private fun _compose(f: Ref, v: Int, g: Ref, cache: Cache<Pair<Ref, Ref>, Ref>): Ref {
+        // println("_compose(f = $f, v = $v, g = $g)")
+
+        if (isTerminal(f)) {
+            return f
         }
+        // if (isTerminal(g)) {
+        //     return compose(f, v, isOne(g))
+        // }
+
+        val i = variable(f)
+        check(i > 0) { "Variable for f=$f is $i" }
+        if (v < i) {
+            return f
+        }
+
+        return cache.getOrCompute(Pair(f, g)) {
+            if (i == v) {
+                // val low = low(f.index.absoluteValue).let { if (f.negated) -it else it }
+                // val high = high(f.index.absoluteValue).let { if (f.negated) -it else it }
+                val low = low(f)
+                val high = high(f)
+
+                // println(
+                //     "Apply ITE($g, $high, $low)${
+                //         if (f.negated) {
+                //             " +negated"
+                //         } else {
+                //             ""
+                //         }
+                //     }"
+                // )
+                applyIte(g, high, low).let { if (f.negated) -it else it }
+            } else {
+                check(v > i)
+
+                // val j = variable(g)
+                val j = if (variable(g) > 0) variable(g) else variable(f)
+                check(j > 0) { "Variable for g=$g is $j" }
+                val m = min(i, j)
+                check(m > 0)
+
+                // recur(f, g) { f_, g_ ->
+                //     _compose(f_, v, g_, cache)
+                // }
+
+                val (f0, f1) = topCofactors(f, m)
+                val (g0, g1) = topCofactors(g, m)
+                // println(
+                //     "Calculate h0..." +
+                //         " f=$f (size=${size(f)}, var=${variable(f)})" +
+                //         ", g=$g (size=${size(g)}, var=${variable(g)})" +
+                //         ", f0=$f0, g0=$g0"
+                // )
+                val h0 = _compose(f0, v, g0, cache)
+                // println(
+                //     "Calculate h1..." +
+                //         " f=$f (size=${size(f)}, var=${variable(f)})" +
+                //         ", g=$g (size=${size(g)}, var=${variable(g)})" +
+                //         ", f1=$f1, g1=$g1"
+                // )
+                val h1 = _compose(f1, v, g1, cache)
+
+                mkNode(v = m, low = h0, high = h1)
+            }
+        }
+    }
+
+    private inline fun recur(f: Ref, g: Ref, fn: (Ref, Ref) -> Ref): Ref {
+        val v = min(variable(f), variable(g))
+        val (f0, f1) = topCofactors(f, v)
+        val (g0, g1) = topCofactors(g, v)
+        val h0 = fn(f0, g0)
+        val h1 = fn(f1, g1)
+        return mkNode(v = v, low = h0, high = h1)
+    }
+
+    fun compose(f: Ref, v: Int, g: Ref): Ref {
+        val cache = Cache<Pair<Ref, Ref>, Ref>("COMPOSE($v)")
+        return _compose(f, v, g, cache)
+    }
+
+    private fun _compose(f: Ref, v: Int, g: Boolean, cache: Cache<Ref, Ref>): Ref {
+        TODO()
+    }
+
+    fun compose(f: Ref, v: Int, g: Boolean): Ref {
+        val cache = Cache<Ref, Ref>("COMPOSE($v)")
+        return _compose(f, v, g, cache)
     }
 
     fun descendants(nodes: Iterable<Ref>): Set<Int> {
         val visited = mutableSetOf(1)
-        for (node in nodes) {
-            _descendants(node, visited)
+
+        fun visit(node: Ref) {
+            val i = node.index.absoluteValue
+            if (visited.add(i)) {
+                visit(low(i))
+                visit(high(i))
+            }
         }
+
+        for (node in nodes) {
+            visit(node)
+        }
+
         return visited
     }
 
@@ -712,6 +807,11 @@ class BDD(
 }
 
 fun main() {
+    // testSuite1()
+    testSuite2()
+}
+
+fun testSuite1() {
     val bdd = BDD()
     val one = bdd.one
     val zero = bdd.zero
@@ -776,4 +876,35 @@ fun main() {
     println("bdd.cacheMisses = ${bdd.cacheMisses}")
     println("bdd.maxChain() = ${bdd.maxChain()}")
     // println("bdd.chains() = ${bdd.chains()}")
+}
+
+fun testSuite2() {
+    val bdd = BDD()
+    val one = bdd.one
+    val zero = bdd.zero
+
+    println("one = $one")
+    println("zero = $zero")
+
+    val x1 = bdd.mkVar(1)
+    val x2 = bdd.mkVar(2)
+    val x3 = bdd.mkVar(3)
+
+    println("x1 = $x1")
+    println("x2 = $x2")
+    println("x3 = $x3")
+
+    println("-".repeat(42))
+    val g1 = bdd.mkNode(v = 2, low = x3, high = -x3)
+    val g2 = bdd.mkNode(v = 2, low = -x3, high = x3)
+    println("g1 = $g1")
+    println("g2 = $g2")
+    check(g1 == -g2)
+    val f = bdd.mkNode(v = 1, low = g2, high = g1)
+    // bdd.collectGarbage(listOf(f))
+    println("f = $f (size=${bdd.size(f)})")
+
+    println("-".repeat(42))
+    println("bdd.size = ${bdd.size}")
+    println("bdd.realSize = ${bdd.realSize}")
 }

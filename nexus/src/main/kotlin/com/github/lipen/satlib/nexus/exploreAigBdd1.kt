@@ -29,7 +29,6 @@ private fun buildBddFromAig(
     val bdd = BDD(storageCapacity = 1 shl 24)
     logger.info { "BDD: $bdd" }
 
-    val timeStart = timeNow()
     val id2node: MutableMap<Int, BddRef> = mutableMapOf() // {id: BDD}
     val gateBdd: MutableMap<Int, BddRef> = mutableMapOf() // {id: BDD}
     val aliases: MutableList<Int> = mutableListOf()
@@ -51,32 +50,23 @@ private fun buildBddFromAig(
         for (id in layer) {
             val timeGateStart = timeNow()
             val gate = aig.andGate(id)
-            val left: BddRef = if (gate.left.negated) {
-                -id2node[gate.left.id]!!
-            } else {
-                id2node[gate.left.id]!!
-            }
-            val right: BddRef = if (gate.right.negated) {
-                -id2node[gate.right.id]!!
-            } else {
-                id2node[gate.right.id]!!
-            }
+            val left: BddRef = id2node[gate.left.id]!!.let { if (gate.left.negated) -it else it }
+            val right: BddRef = id2node[gate.right.id]!!.let { if (gate.right.negated) -it else it }
             val node: BddRef = bdd.applyAnd(left, right)
+            id2node[id] = node
             gateBdd[id] = node
-            if (bdd.size(node) > 1_000) {
-                println("Replacing large BDD with a variable $id")
-                id2node[id] = bdd.mkVar(id)
-                aliases.add(id)
-            } else {
-                id2node[id] = node
-            }
+            // if (bdd.size(node) > 1_000) {
+            //     println("Replacing large BDD with a variable $id")
+            //     id2node[id] = bdd.mkVar(id)
+            //     aliases.add(id)
+            // }
             println(
-                "gateBdd[$id] = $node (size=${bdd.size(node)}), node=$gate, left=$left (size=${bdd.size(left)}), right=$right (size=${
-                    bdd.size(
-                        right
-                    )
-                }), time=%.3fs"
-                    .format(secondsSince(timeGateStart))
+                "gateBdd[$id] = $node (size=${bdd.size(node)})" +
+                    ", gate=$gate" +
+                    ", left=$left (size=${bdd.size(left)})" +
+                    ", right=$right (size=${bdd.size(right)})" +
+                    ", time=%.3fs"
+                        .format(secondsSince(timeGateStart))
             )
         }
         println("Built layer $layerId/${aig.layers.size - 1} in %.3fs".format(secondsSince(timeLayerStart)))
@@ -127,26 +117,29 @@ private fun buildBddFromAig(
         println()
     }
 
+    if (doGC) {
+        println("Collecting garbage...")
+        val timeGCStart = timeNow()
+        bdd.collectGarbage(aig.outputIds.map { id2node[it]!! } + aig.inputIds.map { id2node[it]!! } + aliases.map { id2node[it]!! } + aliases.map { gateBdd[it]!! })
+        println("GC in %.3fs".format(secondsSince(timeGCStart)))
 
-    println("Collecting garbage...")
-    val timeGCStart = timeNow()
-    bdd.collectGarbage((aig.outputIds.map { id2node[it]!! } + aig.inputIds.map { id2node[it]!! } + aliases.map { id2node[it]!! }).distinct())
-    println("GC in %.3fs".format(secondsSince(timeGCStart)))
-
-    for (id in id2node.keys.toList()) {
-        if (id !in aig.inputIds && id !in aig.outputIds && id !in aliases) {
-            id2node.remove(id)
+        for (id in id2node.keys.toList()) {
+            if (id !in aig.inputIds && id !in aig.outputIds && id !in aliases) {
+                id2node.remove(id)
+            }
         }
     }
 
+    logger.info { "= Aliases: (${aliases.size})" }
     for (id in aliases) {
         val node = gateBdd[id]!!
         logger.info { "Alias for $id = $node (size=${bdd.size(node)})" }
     }
 
-    for (id in aig.outputIds) {
-        val node = id2node[id]!!
-        logger.info { "Output $id = $node (size=${bdd.size(node)})" }
+    logger.info { "= Outputs: (${aig.outputs.size})" }
+    for (output in aig.outputs) {
+        val node = id2node[output.id]!!.let { if (output.negated) -it else it }
+        logger.info { "Output ${output.id} = $node (size=${bdd.size(node)})" }
     }
 
     logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
@@ -157,7 +150,7 @@ fun main() {
 
     // val filename = "data/instances/BubbleSort/fraag/BubbleSort_3_2.aag"
     // val filename = "data/instances/BubbleSort/fraag/BubbleSort_7_4.aag"
-    val filename = "data/instances/miters/fraag/BvP_7_4-aigmiter.aag"
+    val filename = "data/instances/miters/fraag/BvP_5_4-aigmiter.aag"
     logger.info { "filename = $filename" }
     val aig = parseAig(filename)
     logger.info { "aig = $aig" }
