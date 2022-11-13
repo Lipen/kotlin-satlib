@@ -4,10 +4,10 @@ LIB_DIR = $(BUILD_DIR)/lib
 SRC_DIR = src/main
 CPP_DIR = $(SRC_DIR)/cpp
 RES_DIR = $(SRC_DIR)/resources
-RES_LIB_SUBDIR = linux64# `linux64` or `win64`
+RES_LIB_SUBDIR = linux64# `linux64` or `win64` or `osx64`
 RES_LIB_DIR = $(RES_DIR)/lib/$(RES_LIB_SUBDIR)
 LIB_PREFIX = lib# `lib` or empty
-LIB_EXT = so# `so` or `dll`
+LIB_EXT = so# `so` or `dll` or `dylib`
 getSrc = $(CPP_DIR)/$(1).cpp
 getLib = $(LIB_DIR)/$(LIB_PREFIX)$(1).$(LIB_EXT)
 
@@ -81,7 +81,7 @@ LIBS = $(JMINISAT_LIB) $(JGLUCOSE_LIB) $(JCADICAL_LIB) $(JCMS_LIB)# ...more
 ## Java
 JAVA_HOME ?= $(patsubst %/bin/javac,%,$(realpath /usr/bin/javac))
 JAVA_INCLUDE = $(JAVA_HOME)/include
-JAVA_INCLUDE_SUBDIR = linux# `linux` or `win32`
+JAVA_INCLUDE_SUBDIR = linux# `linux` or `win32` or `darwin`
 
 ## Compile/link
 CXX = g++
