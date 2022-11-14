@@ -80,7 +80,7 @@ In order to use wrappers for native SAT solvers (_e.g._, `MiniSatSolver`), you n
 When you use the solver (_e.g._ `JMiniSat`) first time, it loads the native library via `Loader.load("jminisat")` which tries to load them from 'resources' folder.
 
 * On Linux, place j-libs in `/path/to/kotlin-satlib/jni/src/main/resources/lib/linux64`.
-* On macOS, use `/path/to/kotlin-satlib/jni/src/main/resources/lib/osx64`.
+* On macOS, use `osx64` subfolder.
 * On Windows, use `win64` subfolder.
 
 TIP: If you are using `kotlin-satlib` as a dependency for your project, place j-libs inside `<your-project>/.../resources/lib/<platform>` folder.
