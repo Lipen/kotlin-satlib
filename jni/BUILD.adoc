@@ -86,9 +86,14 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
  git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
  cd solvers/cadical-src
 
-* ✨ Apply patches:
+* ✨ Apply patches on Unix and Windows:
 
  git apply -v ../../patches/cadical-shared.patch
+ patch -p0 < ../../patches/cadical-stats.patch
+
+* ✨ Apply patches on macOS:
+
+ git apply -v ../../patches/cadical-dylib.patch
  patch -p0 < ../../patches/cadical-stats.patch
 
 * 🐧 Build and install on Unix:
@@ -101,9 +106,11 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
 * 👨🏻‍💻 Build and install on macOS:
 
  ./configure -fPIC
- make -j16 dynamiclib
- mkdir -p install/include/cadical && cp src/cadical.hpp install/include/cadical
- mkdir install/lib && cp build/libcadical.dylib install/lib
+ make -j16 dylib
+ mkdir -p install/include/cadical
+ install -m 644 src/cadical.hpp install/include/cadical
+ mkdir install/lib
+ install -m 644 build/libcadical.dylib install/lib
 
 * 🎭 Build and install on Windows:
 
@@ -120,7 +127,7 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
 
 * 👨🏻‍💻 On macOS (`libjcadical.dylib`)
 
- make jcadical CADICAL_INSTALL_DIR=solvers/cadical-src/install LIB_EXT=dylib JAVA_INCLUDE_SUBDIR=darwin JAVA_HOME=$(/usr/libexec/java_home) JCADICAL_CXXFLAGS="-std=c++11"
+ make jcadical JAVA_HOME=$(/usr/libexec/java_home) JAVA_INCLUDE_SUBDIR=darwin CADICAL_INSTALL_DIR=solvers/cadical-src/install JCADICAL_CXXFLAGS="-std=c++11" LIB_EXT=dylib
 
 * 🎭 On Windows (`jcadical.dll`):
 

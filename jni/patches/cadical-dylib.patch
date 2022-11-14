@@ -1,33 +1,28 @@
 diff --git a/configure b/configure
-index e761d26..43320d2 100755
+index c02b197..8843a13 100755
 --- a/configure
 +++ b/configure
-@@ -471,7 +471,11 @@ mobical:
+@@ -474,7 +474,9 @@ mobical:
  	\$(MAKE) -C "\$(CADICALBUILD)" mobical
  update:
  	\$(MAKE) -C "\$(CADICALBUILD)" update
 -.PHONY: all cadical clean mobical test update
-+shared:
-+	\$(MAKE) -C "\$(CADICALBUILD)" libcadical.so
-+dll:
-+	\$(MAKE) -C "\$(CADICALBUILD)" cadical.dll
-+.PHONY: all cadical clean mobical test update shared dll
++dylib:
++	\$(MAKE) -C "\$(CADICALBUILD)" libcadical.dylib
++.PHONY: all cadical clean mobical test update dylib
  EOF
 
  msg "generated '../makefile' as proxy to ..."
 diff --git a/makefile.in b/makefile.in
-index 69b4d22..f2ff9bb 100644
+index 8fd957f..054c890 100644
 --- a/makefile.in
 +++ b/makefile.in
-@@ -47,6 +47,12 @@ mobical: mobical.o libcadical.a makefile
+@@ -49,6 +49,9 @@ mobical: mobical.o libcadical.a makefile $(LIBS)
  libcadical.a: $(OBJ) makefile
  	ar rc $@ $(OBJ)
 
-+libcadical.so: $(OBJ) makefile
++libcadical.dylib: $(OBJ) makefile
 +	$(COMPILE) -shared -o $@ $(OBJ)
-+
-+cadical.dll: $(OBJ) makefile
-+	$(COMPILE) -shared -o $@ $(OBJ) -lpsapi
 +
  #--------------------------------------------------------------------------#
 
