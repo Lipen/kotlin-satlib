@@ -109,7 +109,7 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
  make -j16 dylib
  mkdir -p install/include/cadical
  install -m 644 src/cadical.hpp install/include/cadical
- mkdir install/lib
+ mkdir -p install/lib
  install -m 644 build/libcadical.dylib install/lib
 
 * 🎭 Build and install on Windows:

@@ -7,7 +7,7 @@ RES_DIR = $(SRC_DIR)/resources
 RES_LIB_SUBDIR = linux64# `linux64` or `osx64` or `win64`
 RES_LIB_DIR = $(RES_DIR)/lib/$(RES_LIB_SUBDIR)
 LIB_PREFIX = lib# `lib` or empty
-LIB_EXT = so# `so` or `dll` or `dylib`
+LIB_EXT = so# `so` or `dylib` or `dll`
 getSrc = $(CPP_DIR)/$(1).cpp
 getLib = $(LIB_DIR)/$(LIB_PREFIX)$(1).$(LIB_EXT)
 
