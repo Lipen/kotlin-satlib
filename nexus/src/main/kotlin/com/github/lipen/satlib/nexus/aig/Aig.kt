@@ -42,7 +42,7 @@ class Aig(
     val outputIds: List<Int> = outputs.map { it.id }
     val andGateIds: List<Int> = andGates.map { it.id }
 
-    val layers: List<List<Int>> = toposort(dependencyGraph()).toList()
+    val layers: List<List<Int>> = toposort(dependencyGraph()).map { layer -> layer.sorted() }.toList()
 
     private val parentsTable: Map<Int, List<Ref>> =
         mapping.keys.associateWith { mutableListOf<Ref>() }.also {

@@ -32,7 +32,7 @@ private fun buildBddFromAig(
     val id2node: MutableMap<Int, BddRef> = mutableMapOf() // {id: BDD}
     val gateBdd: MutableMap<Int, BddRef> = mutableMapOf() // {id: BDD}
     val aliases: MutableList<Int> = mutableListOf()
-    val doGC = false
+    val doGC = true
     var maxLastBddSize = 100_000
 
     println("=== Building BDD nodes for inputs...")
@@ -141,6 +141,13 @@ private fun buildBddFromAig(
         val node = id2node[output.id]!!.let { if (output.negated) -it else it }
         logger.info { "Output ${output.id} = $node (size=${bdd.size(node)})" }
     }
+    logger.info {
+        "Total size of all outputs: ${
+            bdd.descendants(aig.outputs.map { out ->
+                id2node[out.id]!!.let { if (out.negated) -it else it }
+            }).size
+        }"
+    }
 
     logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
 }
@@ -150,7 +157,8 @@ fun main() {
 
     // val filename = "data/instances/BubbleSort/fraag/BubbleSort_3_2.aag"
     // val filename = "data/instances/BubbleSort/fraag/BubbleSort_7_4.aag"
-    val filename = "data/instances/miters/fraag/BvP_5_4-aigmiter.aag"
+    val filename = "data/instances/miters/fraag/BvP_6_4-aigmiter.aag"
+    // val filename = "data/instances/IWLS93/aag/C6288.aag" // 16-bit multiplier
     logger.info { "filename = $filename" }
     val aig = parseAig(filename)
     logger.info { "aig = $aig" }

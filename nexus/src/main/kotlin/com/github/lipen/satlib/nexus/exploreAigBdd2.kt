@@ -34,8 +34,15 @@ private fun buildBddFromAigs(
     logger.info { "BDD: $bdd" }
 
     var vars = aigLeft.inputs.size
-    val doGC = false
+    val doGC1 = false
+    val doGC2 = true
     var maxLastBddSize = 100_000
+
+    // fun BDD.convert(gate: AigAndGate, id2node: (Int) -> BddRef): BddRef {
+    //     val left: BddRef = id2node(gate.left.id).let { if (gate.left.negated) -it else it }
+    //     val right: BddRef = id2node(gate.right.id).let { if (gate.right.negated) -it else it }
+    //     return applyAnd(left, right)
+    // }
 
     fun processAig(
         aig: Aig,
@@ -62,18 +69,15 @@ private fun buildBddFromAigs(
                 val left: BddRef = id2node[gate.left.id]!!.let { if (gate.left.negated) -it else it }
                 val right: BddRef = id2node[gate.right.id]!!.let { if (gate.right.negated) -it else it }
                 val node: BddRef = bdd.applyAnd(left, right)
+                // val node = bdd.convert(gate) { id2node[it]!! }
                 bdd.nonGarbage.add(node)
                 realBdd[id] = node
-                if (bdd.size(node) > 5_000) {
-                    val v = ++vars
-                    println("Replacing large BDD with a variable v=$v, id=$id")
-                    val aliasedNode = bdd.mkVar(v)
-                    bdd.nonGarbage.add(aliasedNode)
-                    id2node[id] = aliasedNode
-                    alias[v] = id
-                } else {
-                    id2node[id] = node
-                }
+                val v = ++vars
+                println("Replacing large BDD with id=$id with a new variable v=$v")
+                alias[v] = id
+                val aliasedNode = bdd.mkVar(v)
+                id2node[id] = aliasedNode
+                bdd.nonGarbage.add(aliasedNode)
                 println(
                     "gateBdd[$id] = $node (size=${bdd.size(node)})" +
                         ", gate=$gate" +
@@ -84,7 +88,7 @@ private fun buildBddFromAigs(
             }
             println("Built layer $layerId/${aig.layers.size - 1} in %.3fs".format(secondsSince(timeLayerStart)))
 
-            if (doGC && bdd.realSize > maxLastBddSize) {
+            if (doGC1 && bdd.realSize > maxLastBddSize) {
                 println("Building front...")
                 val seen: MutableList<Int> = mutableListOf()
                 val front: MutableList<Int> = mutableListOf()
@@ -108,12 +112,7 @@ private fun buildBddFromAigs(
 
                 println("Collecting garbage...")
                 val timeGCStart = timeNow()
-                bdd.collectGarbage(
-                    front.map { id2node[it]!! } //+
-                    // aig.inputIds.map { id2node[it]!! } +
-                    // alias.values.map { id2node[it]!! } +
-                    // alias.values.map { realBdd[it]!! }
-                )
+                bdd.collectGarbage(front.map { id2node[it]!! })
                 println("GC in %.3fs".format(secondsSince(timeGCStart)))
 
                 for (id in id2node.keys.toList()) {
@@ -143,32 +142,31 @@ private fun buildBddFromAigs(
     println("=== RIGHT")
     processAig(aigRight, id2nodeRight, realBddRight, aliasRight)
 
-    // println("Collecting garbage...")
-    // val timeGCStart = timeNow()
-    // bdd.collectGarbage((aigLeft.outputIds.map { id2nodeLeft[it]!! } + aigLeft.inputIds.map { id2nodeLeft[it]!! } + aliasesLeft.map { id2nodeLeft[it]!! }).distinct())
-    // println("GC in %.3fs".format(secondsSince(timeGCStart)))
-    //
-    // for (id in id2nodeLeft.keys.toList()) {
-    //     if (id !in aigLeft.inputIds && id !in aigLeft.outputIds && id !in aliasesLeft) {
-    //         id2nodeLeft.remove(id)
-    //     }
+    if (doGC2) {
+        println("Collecting garbage...")
+        val timeGCStart = timeNow()
+        bdd.collectGarbage(emptyList())
+        println("GC in %.3fs".format(secondsSince(timeGCStart)))
+    }
+    logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
+
+    // logger.info { "=== ALIASES" }
+    // for ((v, id) in aliasLeft) {
+    //     val node: BddRef = realBddLeft[id]!!
+    //     logger.info { "LEFT: Alias for v=$v with id=$id is $node (size=${bdd.size(node)})" }
+    // }
+    // for ((v, id) in aliasLeft) {
+    //     val node: BddRef = realBddLeft[id]!!
+    //     logger.info { "RIGHT: Alias for v=$v with id=$id is $node (size=${bdd.size(node)})" }
     // }
 
-    for ((v, id) in aliasLeft) {
-        val node: BddRef = realBddLeft[id]!!
-        logger.info { "LEFT: Alias for v=$v with id=$id is $node (size=${bdd.size(node)})" }
-    }
-    for ((v, id) in aliasLeft) {
-        val node: BddRef = realBddLeft[id]!!
-        logger.info { "RIGHT: Alias for v=$v with id=$id is $node (size=${bdd.size(node)})" }
-    }
-
-    logger.info { "=== LEFT" }
+    logger.info { "=== OUTPUTS" }
+    logger.info { "= LEFT:" }
     for ((i, output) in aigLeft.outputs.withIndex(start = 1)) {
         val node: BddRef = id2nodeLeft[output.id]!!.let { if (output.negated) -it else it }
         logger.info { "Output $i with ref=$output is $node (size=${bdd.size(node)})" }
     }
-    logger.info { "=== RIGHT" }
+    logger.info { "= RIGHT:" }
     for ((i, output) in aigRight.outputs.withIndex(start = 1)) {
         val node: BddRef = id2nodeRight[output.id]!!.let { if (output.negated) -it else it }
         logger.info { "Output $i with ref=$output is $node (size=${bdd.size(node)})" }
@@ -185,71 +183,97 @@ private fun buildBddFromAigs(
         }
     }
 
+    logger.info { "Building XORs..." }
     val xorOutputs = aigLeft.outputIds.zip(aigRight.outputIds).map { (l, r) ->
         val left: BddRef = id2nodeLeft[l]!!
         val right: BddRef = id2nodeRight[r]!!
         bdd.applyXor(left, right)
-    }.toMutableList()
-    bdd.nonGarbage.addAll(xorOutputs)
-    logger.info { "=== XOR OUTPUTS BEFORE SUBSTITUTION" }
-    for ((i, node: BddRef) in xorOutputs.withIndex(start = 1)) {
-        logger.info { "Xor output $i with is $node (size=${bdd.size(node)})" }
+    }
+    logger.info { "=== XORs:" }
+    for ((i, xorOut) in xorOutputs.withIndex(start = 1)) {
+        logger.info { "XOR for output $i is $xorOut (size=${bdd.size(xorOut)})" }
     }
 
-    // logger.info { "=== Back-substitute for LEFT:" }
-    // for ((v, id) in aliasLeft.entries.reversed()) {
-    //     val real = realBddLeft[id]!!
-    //     logger.info { "Alias for v=$v with id=$id is $real (size=${bdd.size(real)})" }
-    //     logger.info { "Pre-substitute node is ${id2nodeLeft[id]} (size=${bdd.size(id2nodeLeft[id]!!)})" }
-    //     val node = bdd.compose(id2nodeLeft[id]!!, v, real)
-    //     id2nodeLeft[id] = node
-    //     logger.info { "Substituted $real for v=$v with id=$id: now node is $node (size=${bdd.size(node)})" }
-    // }
-    // logger.info { "=== Back-substitute for RIGHT:" }
-    // for ((v, id) in aliasRight.entries.reversed()) {
-    //     val real = realBddRight[id]!!
-    //     logger.info { "Alias for v=$v with id=$id is $real (size=${bdd.size(real)})" }
-    //     logger.info { "Pre-substitute node is ${id2nodeRight[id]} (size=${bdd.size(id2nodeRight[id]!!)})" }
-    //     val node = bdd.compose(id2nodeRight[id]!!, v, real)
-    //     id2nodeRight[id] = node
-    //     logger.info { "Substituted $real for v=$v with id=$id: now node is $node (size=${bdd.size(node)})" }
-    // }
+    logger.info { "Building final OR..." }
+    var finalOr: BddRef = xorOutputs.reduce { acc, ref -> bdd.applyOr(acc, ref) }
+    bdd.nonGarbage.add(finalOr)
+    logger.info { "=== FINAL OR BEFORE SUBSTITUTION: $finalOr (size=${bdd.size(finalOr)})" }
 
-    for ((i, xorOutput) in xorOutputs.withIndex(start = 1)) {
-        var node: BddRef = xorOutput
+    if (doGC2) {
+        println("Collecting garbage...")
+        val timeGCStart = timeNow()
+        bdd.collectGarbage(emptyList())
+        println("GC in %.3fs".format(secondsSince(timeGCStart)))
+    }
+    logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
+
+    logger.info { "=== BACK-SUBSTITUTING..." }
+    run {
+        var node: BddRef = finalOr
+        logger.info { "Initial node is $node (size=${bdd.size(node)})" }
         run {
-            logger.info { "=== Back-substitute LEFT for xor-output $i with ref=$node:" }
+            logger.info { "= Back-substitute LEFT:" }
             for ((v, id) in aliasLeft.entries.reversed()) {
+                val aliased = id2nodeLeft[id]!!
                 val real = realBddLeft[id]!!
-                logger.info { "Alias for v=$v with id=$id is $real (size=${bdd.size(real)})" }
-                node = bdd.compose(node, v, real)
+                logger.info {
+                    "Alias for v=$v with id=$id is $aliased (size=${bdd.size(aliased)})" +
+                        ", real BDD is $real (size=${bdd.size(real)})"
+                }
+                val newNode = bdd.compose(node, v, real)
+                bdd.nonGarbage.remove(node)
+                bdd.nonGarbage.remove(real)
+                bdd.nonGarbage.remove(aliased)
+                node = newNode
+                bdd.nonGarbage.add(node)
                 logger.info { "Substituted $real for v=$v with id=$id: now node is $node (size=${bdd.size(node)})" }
+
+                // if (doGC2) {
+                //     println("Collecting garbage...")
+                //     val timeGCStart = timeNow()
+                //     bdd.collectGarbage(emptyList())
+                //     println("GC in %.3fs".format(secondsSince(timeGCStart)))
+                // }
+                // logger.info{"BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}"}
             }
         }
         run {
-            logger.info { "=== Back-substitute RIGHT for xor-output $i with ref=$node:" }
+            logger.info { "= Back-substitute RIGHT:" }
             for ((v, id) in aliasRight.entries.reversed()) {
+                val aliased = id2nodeRight[id]!!
                 val real = realBddRight[id]!!
-                node = bdd.compose(node, v, real)
+                logger.info {
+                    "Alias for v=$v with id=$id is $aliased (size=${bdd.size(aliased)})" +
+                        ", real BDD is $real (size=${bdd.size(real)})"
+                }
+                val newNode = bdd.compose(node, v, real)
+                bdd.nonGarbage.remove(node)
+                bdd.nonGarbage.remove(real)
+                bdd.nonGarbage.remove(aliased)
+                node = newNode
+                bdd.nonGarbage.add(node)
                 logger.info { "Substituted $real for v=$v with id=$id: now node is $node (size=${bdd.size(node)})" }
+
+                // if (doGC2) {
+                //     println("Collecting garbage...")
+                //     val timeGCStart = timeNow()
+                //     bdd.collectGarbage(emptyList())
+                //     println("GC in %.3fs".format(secondsSince(timeGCStart)))
+                // }
+                // logger.info{"BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}"}
             }
         }
-        xorOutputs[i - 1] = node
-
-        if (doGC) {
-            println("Collecting garbage...")
-            val timeGCStart = timeNow()
-            // bdd.collectGarbage(xorOutputs + aliasLeft.values.map { id2nodeLeft[it]!! } + aliasLeft.values.map { realBddLeft[it]!! } + aliasRight.values.map { id2nodeRight[it]!! } + aliasRight.values.map { realBddRight[it]!! })
-            bdd.collectGarbage(emptyList())
-            println("GC in %.3fs".format(secondsSince(timeGCStart)))
-        }
+        finalOr = node
     }
 
-    logger.info { "=== XOR OUTPUTS AFTER SUBSTITUTION" }
-    for ((i, node: BddRef) in xorOutputs.withIndex(start = 1)) {
-        logger.info { "Xor output $i with is $node (size=${bdd.size(node)})" }
-    }
+    logger.info { "=== FINAL OR AFTER SUBSTITUTION: $finalOr (size=${bdd.size(finalOr)})" }
 
+    if (doGC2) {
+        println("Collecting garbage...")
+        val timeGCStart = timeNow()
+        bdd.collectGarbage(emptyList())
+        println("GC in %.3fs".format(secondsSince(timeGCStart)))
+    }
     logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}" }
 }
 

@@ -9,10 +9,10 @@ internal class Storage(capacity: Int) {
     private val dataHigh = IntArray(capacity)
     private val dataNext = IntArray(capacity)
 
-    private var lastIndex: Int = 0
     private var minFree: Int = 1
 
-    val size: Int get() = lastIndex
+    var lastIndex: Int = 0
+        private set
     var realSize: Int = 0
         private set
 
@@ -25,7 +25,6 @@ internal class Storage(capacity: Int) {
     fun next(index: Int): Int = dataNext[index]
 
     private fun getFreeIndex(): Int {
-        // return ++lastIndex
         return (minFree..lastIndex).firstOrNull { !dataOccupied[it] } ?: ++lastIndex
     }
 
@@ -45,6 +44,7 @@ internal class Storage(capacity: Int) {
         require(low != 0)
         require(high != 0)
         val index = alloc()
+        check(index < dataVar.size) { error("Index reached capacity") }
         dataVar[index] = v
         dataLow[index] = low
         dataHigh[index] = high

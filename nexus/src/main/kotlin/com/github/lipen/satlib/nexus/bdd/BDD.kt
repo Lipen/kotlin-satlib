@@ -52,7 +52,7 @@ class BDD(
     private val buckets = IntArray(bucketsCapacity)
     internal val storage = Storage(storageCapacity)
 
-    val size: Int get() = storage.size
+    val size: Int get() = storage.lastIndex
     val realSize: Int get() = storage.realSize
 
     fun maxChain(): Int = chains().maxOrNull() ?: 0
@@ -276,34 +276,14 @@ class BDD(
         check(!isTerminal(f))
 
         // ite(F,F,H) == ite(F,1,H) == F + H
-        if (isTerminal(g) || f == g) {
-            //logger.debug { "applyIte: either g is terminal or f == g" }
-            @Suppress("LiftReturnOrAssignment")
-            // ite(F,1,0) => F
-            if (isZero(h)) {
-                //logger.debug { "applyIte: h is 0" }
-                return f
-            }
-            // F + H => ~(~F * ~H)
-            else {
-                //logger.debug { "applyIte: h is not 0" }
-                return -applyAnd(-f, -h)
-            }
+        if (isOne(g) || f == g) {
+            //logger.debug { "applyIte: either g is 1 or f == g" }
+            return applyOr(f, h)
         }
         // ite(F,~F,H) == ite(F,0,H) == ~F * H
         else if (isZero(g) || f == -g) {
             //logger.debug { "applyIte: either g is 0 or f == ~g" }
-            @Suppress("LiftReturnOrAssignment")
-            // ite(F,0,1) => ~F
-            if (isOne(h)) {
-                //logger.debug { "applyIte: h is 1" }
-                return -f
-            }
-            // ~F * H
-            else {
-                //logger.debug { "applyIte: h is not 1" }
-                return applyAnd(f, h)
-            }
+            return applyAnd(-f, h)
         }
 
         // ite(F,G,F) == ite(F,G,0) == F * G
@@ -314,7 +294,7 @@ class BDD(
         // ite(F,G,~F) == ite(F,G,1) == ~F + G
         else if (isOne(h) || f == -h) {
             //logger.debug { "applyIte: either h is 1 or f == ~h" }
-            return applyAnd(f, -g)
+            return applyOr(-f, g)
         }
 
         // ite(F,G,G) => G
@@ -551,6 +531,15 @@ class BDD(
         return -applyXor(u, v)
     }
 
+    private inline fun recur(f: Ref, g: Ref, fn: (Ref, Ref) -> Ref): Ref {
+        val v = min(variable(f), variable(g))
+        val (f0, f1) = topCofactors(f, v)
+        val (g0, g1) = topCofactors(g, v)
+        val h0 = fn(f0, g0)
+        val h1 = fn(f1, g1)
+        return mkNode(v = v, low = h0, high = h1)
+    }
+
     private fun _compose(f: Ref, v: Int, g: Ref, cache: Cache<Pair<Ref, Ref>, Ref>): Ref {
         // println("_compose(f = $f, v = $v, g = $g)")
 
@@ -619,26 +608,8 @@ class BDD(
         }
     }
 
-    private inline fun recur(f: Ref, g: Ref, fn: (Ref, Ref) -> Ref): Ref {
-        val v = min(variable(f), variable(g))
-        val (f0, f1) = topCofactors(f, v)
-        val (g0, g1) = topCofactors(g, v)
-        val h0 = fn(f0, g0)
-        val h1 = fn(f1, g1)
-        return mkNode(v = v, low = h0, high = h1)
-    }
-
     fun compose(f: Ref, v: Int, g: Ref): Ref {
         val cache = Cache<Pair<Ref, Ref>, Ref>("COMPOSE($v)")
-        return _compose(f, v, g, cache)
-    }
-
-    private fun _compose(f: Ref, v: Int, g: Boolean, cache: Cache<Ref, Ref>): Ref {
-        TODO()
-    }
-
-    fun compose(f: Ref, v: Int, g: Boolean): Ref {
-        val cache = Cache<Ref, Ref>("COMPOSE($v)")
         return _compose(f, v, g, cache)
     }
 
