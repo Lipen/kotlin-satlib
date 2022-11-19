@@ -80,6 +80,7 @@ In order to use wrappers for native SAT solvers (_e.g._, `MiniSatSolver`), you n
 When you use the solver (_e.g._ `JMiniSat`) first time, it loads the native library via `Loader.load("jminisat")` which tries to load them from 'resources' folder.
 
 * On Linux, place j-libs in `/path/to/kotlin-satlib/jni/src/main/resources/lib/linux64`.
+* On macOS, use `osx64` subfolder.
 * On Windows, use `win64` subfolder.
 
 TIP: If you are using `kotlin-satlib` as a dependency for your project, place j-libs inside `<your-project>/.../resources/lib/<platform>` folder.
@@ -88,6 +89,7 @@ Each j-lib depends on the SAT solver shared library, _e.g._, `jminisat` depends 
 Dependent libs are loaded transitively, so you just have to ensure they can be located in runtime.
 
 * On Linux, this implies calling `ldconfig -n <dir-with-libs>` and/or using `LD_LIBRARY_PATH`.
+* On macOS, you can set `DYLD_LIBRARY_PATH` environment variable with path to your `.dylib` files.
 * On Windows, the standard way of ensuring discoverability of DLLs is placing them "in the current directory", but, from my experience, it does not work, so you have to place solver shared libs, _e.g._, `minisat.dll`, inside `C:/Windows`.
 
 === Manual build
