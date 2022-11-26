@@ -1946,7 +1946,7 @@ internal fun Solver.`check circuits equivalence using method 14`(
     val fileCnf = File("cnf_${name}_merge-in_${type}-${funs}.cnf")
     dumpDimacs(fileCnf)
     fileCnf.appendingSink().buffer().useWith {
-        writeln("c mergedInputValue: ${mergedInputValue.shape.asList()}")
+        writeln("c mergedInputValue: ${mergedInputValue.shape}")
         writeln("c mergedInputValue = ${mergedInputValue.values}")
     }
     return true

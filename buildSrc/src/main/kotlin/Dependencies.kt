@@ -16,7 +16,7 @@ object Versions {
     const val kotlinx_serialization = "1.3.2"
     const val log4j = "2.17.1"
     const val mordant = "1.2.1"
-    const val multiarray = "0.12.0"
+    const val multiarray = "0.13.1"
     const val okio = "3.0.0"
     const val shadow = "7.1.0"
 }
