@@ -12,7 +12,7 @@ class MockSolver(
     private val __solve: () -> Boolean = { TODO() },
     private val __reset: () -> Unit = {},
     private val __close: () -> Unit = {},
-    private val __dumpDimacs: (File) -> Unit = {},
+    private val __dumpDimacs: MockSolver.(File) -> Unit = {},
     private val __interrupt: () -> Unit = {},
     private val __getModel: () -> Model = { TODO() },
 ) : AbstractSolver() {
