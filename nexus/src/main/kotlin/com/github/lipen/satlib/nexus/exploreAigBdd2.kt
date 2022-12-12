@@ -16,10 +16,10 @@ import com.github.lipen.satlib.nexus.bdd.Ref as BddRef
 
 private val logger = KotlinLogging.logger {}
 
-@Suppress("unused", "ObjectPropertyName")
+@Suppress("unused")
 private val _aigRef: AigRef? = null
 
-@Suppress("unused", "ObjectPropertyName")
+@Suppress("unused")
 private val _bddRef: BddRef? = null
 
 private fun buildBddFromAigs(
@@ -35,7 +35,7 @@ private fun buildBddFromAigs(
 
     var vars = aigLeft.inputs.size
     val doGC1 = false
-    val doGC2 = true
+    val doGC2 = false
     var maxLastBddSize = 100_000
 
     // fun BDD.convert(gate: AigAndGate, id2node: (Int) -> BddRef): BddRef {
@@ -228,13 +228,14 @@ private fun buildBddFromAigs(
                 bdd.nonGarbage.add(node)
                 logger.info { "Substituted $real for v=$v with id=$id: now node is $node (size=${bdd.size(node)})" }
 
-                // if (doGC2) {
-                //     println("Collecting garbage...")
-                //     val timeGCStart = timeNow()
-                //     bdd.collectGarbage(emptyList())
-                //     println("GC in %.3fs".format(secondsSince(timeGCStart)))
-                // }
-                // logger.info{"BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}"}
+                if (doGC2 && bdd.realSize > maxLastBddSize) {
+                    println("Collecting garbage...")
+                    val timeGCStart = timeNow()
+                    bdd.collectGarbage(emptyList())
+                    println("GC in %.3fs".format(secondsSince(timeGCStart)))
+                }
+                maxLastBddSize = (max(maxLastBddSize, bdd.size) * 0.5).roundToInt()
+                logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}, maxLastBddSize = $maxLastBddSize" }
             }
         }
         run {
@@ -254,13 +255,14 @@ private fun buildBddFromAigs(
                 bdd.nonGarbage.add(node)
                 logger.info { "Substituted $real for v=$v with id=$id: now node is $node (size=${bdd.size(node)})" }
 
-                // if (doGC2) {
-                //     println("Collecting garbage...")
-                //     val timeGCStart = timeNow()
-                //     bdd.collectGarbage(emptyList())
-                //     println("GC in %.3fs".format(secondsSince(timeGCStart)))
-                // }
-                // logger.info{"BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}"}
+                if (doGC2 && bdd.realSize > maxLastBddSize) {
+                    println("Collecting garbage...")
+                    val timeGCStart = timeNow()
+                    bdd.collectGarbage(emptyList())
+                    println("GC in %.3fs".format(secondsSince(timeGCStart)))
+                }
+                maxLastBddSize = (max(maxLastBddSize, bdd.size) * 0.5).roundToInt()
+                logger.info { "BDD.size = ${bdd.size}, BDD.realSize = ${bdd.realSize}, maxLastBddSize = $maxLastBddSize" }
             }
         }
         finalOr = node
@@ -282,7 +284,7 @@ fun main() {
 
     val left = "BubbleSort"
     val right = "PancakeSort"
-    val param = "5_4"
+    val param = "4_3"
     val name = "BvP_$param"
     val aag = "fraag" // "aag" or "fraag"
 

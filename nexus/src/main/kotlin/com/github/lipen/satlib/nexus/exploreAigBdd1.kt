@@ -157,7 +157,11 @@ fun main() {
 
     // val filename = "data/instances/BubbleSort/fraag/BubbleSort_3_2.aag"
     // val filename = "data/instances/BubbleSort/fraag/BubbleSort_7_4.aag"
-    val filename = "data/instances/miters/fraag/BvP_6_4-aigmiter.aag"
+    // val filename = "data/instances/miters/fraag/BvP_4_3-aigmiter.aag"
+    // val filename = "data/instances/miters/fraag/BvP_4_4-aigmiter.aag"
+    val filename = "data/instances/miters/fraag/BvP_5_4-aigmiter.aag"
+    // val filename = "data/instances/miters/fraag/BvP_6_4-aigmiter.aag"
+    // val filename = "data/instances/miters/fraag/BvP_7_4-aigmiter.aag"
     // val filename = "data/instances/IWLS93/aag/C6288.aag" // 16-bit multiplier
     logger.info { "filename = $filename" }
     val aig = parseAig(filename)
