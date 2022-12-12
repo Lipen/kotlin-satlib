@@ -32,3 +32,12 @@ old/
 
 # Solvers sources
 /jni/solvers
+
+.vscode/
+/build-logic/
+*.cnf
+*.drat
+*.bat
+*.py
+*.R
+boolexpr/
