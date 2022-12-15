@@ -8,7 +8,7 @@ object Versions {
     const val junit = "5.8.1"
     const val klock = "2.4.8"
     const val kluent = "1.68"
-    const val kotlin = "1.6.10"
+    const val kotlin = "1.7.21"
     const val kotlin_logging = "2.1.0"
     const val kotlinter = "3.7.0"
     const val kotlinx_coroutines = "1.6.0"
