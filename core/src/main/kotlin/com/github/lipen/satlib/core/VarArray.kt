@@ -54,3 +54,9 @@ inline fun Solver.newBoolVarArray(
     zerobased: Boolean = false,
     init: (IntArray) -> Lit = { newLiteral() },
 ): BoolVarArray = BoolVarArray.new(shape, zerobased, init)
+
+val <T> DomainVarArray<T>.literals: List<Lit>
+    get() = values.flatMap { it.literals }
+
+val BoolVarArray.literals: List<Lit>
+    get() = values

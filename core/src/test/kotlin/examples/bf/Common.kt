@@ -10,10 +10,10 @@ import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.convert
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult
+import examples.utils.pow
 import okio.buffer
 import okio.sink
 import java.io.File
-import kotlin.math.pow
 
 enum class NodeType(val value: Int) {
     TERMINAL(1),
@@ -22,17 +22,9 @@ enum class NodeType(val value: Int) {
     OR(4);
 }
 
-fun Int.pow(n: Int): Int =
-    if (this == 2) 1 shl n
-    else this.toDouble().pow(n).toInt()
-
-fun Long.pow(n: Int): Long =
-    if (this == 2L) 1L shl n
-    else this.toDouble().pow(n).toLong()
-
 data class Row(val values: List<Boolean>) {
     val size: Int = values.size
-    val index: Int = values.reversed().withIndex().map { (i, v) -> if (v) 2.pow(i) else 0 }.sum()
+    val index: Int = values.reversed().withIndex().sumOf { (i, v) -> if (v) 2.pow(i) else 0 }
 
     constructor(i: Int, numberOfVariables: Int) :
         this(i.toLong(), numberOfVariables)
