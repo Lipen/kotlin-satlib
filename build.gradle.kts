@@ -35,7 +35,8 @@ fun Project.configureKotlinConventions() {
         testRuntimeOnly(Libs.JUnit.jupiter_engine)
         testImplementation(Libs.JUnit.jupiter_params)
         testImplementation(Libs.Kluent.kluent)
-        testImplementation(Libs.Log4j.log4j_slf4j_impl)
+        testImplementation(Libs.Log4j.log4j_core)
+        testImplementation(Libs.Log4j.log4j_slf4j2_impl)
     }
 
     tasks.withType<KotlinCompile> {

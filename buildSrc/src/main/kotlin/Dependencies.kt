@@ -60,7 +60,8 @@ object Libs {
     // https://github.com/apache/logging-log4j2
     object Log4j {
         const val version = Versions.log4j
-        const val log4j_slf4j_impl = "org.apache.logging.log4j:log4j-slf4j-impl:$version"
+        const val log4j_core = "org.apache.logging.log4j:log4j-core:$version"
+        const val log4j_slf4j2_impl = "org.apache.logging.log4j:log4j-slf4j2-impl:$version"
     }
 
     // https://github.com/Kotlin/kotlinx.coroutines
