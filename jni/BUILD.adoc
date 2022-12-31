@@ -29,7 +29,7 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
 
  make jminisat MINISAT_INSTALL_DIR=solvers/minisat-src/install
 
-* 👨🏻‍💻 On macOS (`libjminisat.dylib`)
+* 🍎 On macOS (`libjminisat.dylib`)
 
  make jminisat MINISAT_INSTALL_DIR=solvers/minisat-src/install LIB_EXT=dylib JAVA_INCLUDE_SUBDIR=darwin JAVA_HOME=$(/usr/libexec/java_home)
 
@@ -69,7 +69,7 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
 
  make jglucose GLUCOSE_INSTALL_DIR=solvers/glucose-src/install
 
-* 👨🏻‍💻 On macOS (`libjglucose.dylib`)
+* 🍎 On macOS (`libjglucose.dylib`)
 
  make jglucose GLUCOSE_INSTALL_DIR=solvers/glucose-src/install LIB_EXT=dylib JAVA_INCLUDE_SUBDIR=darwin JAVA_HOME=$(/usr/libexec/java_home)
 
@@ -103,7 +103,7 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
  install -m 644 src/cadical.hpp -Dt install/include/cadical
  install -m 644 build/libcadical.so -Dt install/lib
 
-* 👨🏻‍💻 Build and install on macOS:
+* 🍎 Build and install on macOS:
 
  ./configure -fPIC
  make -j16 dylib
@@ -125,7 +125,7 @@ The instructions below assume that you start each build in `/path/to/kotlin-satl
 
  make jcadical CADICAL_INSTALL_DIR=solvers/cadical-src/install
 
-* 👨🏻‍💻 On macOS (`libjcadical.dylib`)
+* 🍎 On macOS (`libjcadical.dylib`)
 
  make jcadical JAVA_HOME=$(/usr/libexec/java_home) JAVA_INCLUDE_SUBDIR=darwin CADICAL_INSTALL_DIR=solvers/cadical-src/install JCADICAL_CXXFLAGS="-std=c++11" LIB_EXT=dylib
 
