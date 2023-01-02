@@ -3,6 +3,7 @@ rootProject.name = "kotlin-satlib"
 include("core")
 include("jni")
 include("utils")
+include("jna")
 
 plugins {
     `gradle-enterprise`

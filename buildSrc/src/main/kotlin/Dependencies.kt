@@ -5,6 +5,7 @@ object Versions {
     const val jgitver = "0.9.1"
     const val jmh = "1.23"
     const val jmh_gradle_plugin = "0.5.3"
+    const val jna = "5.12.1"
     const val junit = "5.9.1"
     const val klock = "2.4.8"
     const val kluent = "1.72"
@@ -68,6 +69,12 @@ object Libs {
     object KotlinxCoroutines {
         const val version = Versions.kotlinx_coroutines
         const val kotlinx_coroutines_core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
+    }
+
+    // https://github.com/java-native-access/jna
+    object Jna {
+        const val version = Versions.jna
+        const val jna = "net.java.dev.jna:jna:$version"
     }
 }
 
