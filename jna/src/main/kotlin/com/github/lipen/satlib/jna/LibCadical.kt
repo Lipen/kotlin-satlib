@@ -40,6 +40,14 @@ interface LibCadical : Library {
     fun ccadical_melt(ptr: CCadical, lit: Int)
     fun ccadical_simplify(ptr: CCadical): Int
 
+    fun version(): String
+    fun copyright(): String
+    fun signature(): String
+    fun identifier(): String
+    fun compiler(): String
+    fun date(): String
+    fun flags(): String
+
     class CCadical : PointerType()
 
     fun interface TerminateCb : Callback {
@@ -75,6 +83,13 @@ fun main() {
     val lib = LibCadical.load("cadical")
     println("library = $lib")
     println("signature = ${lib.ccadical_signature()}")
+    println("version = ${lib.version()}")
+    println("copyright = ${lib.copyright()}")
+    println("signature = ${lib.signature()}")
+    println("identifier = ${lib.identifier()}")
+    println("compiler = ${lib.compiler()}")
+    println("date = ${lib.date()}")
+    println("flags = ${lib.flags()}")
 
     val ptr = lib.ccadical_init()
     println("ptr = $ptr")
