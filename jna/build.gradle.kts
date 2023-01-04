@@ -1,3 +1,3 @@
 dependencies {
-    implementation(Libs.Jna.jna)
+    api(Libs.Jna.jna)
 }
