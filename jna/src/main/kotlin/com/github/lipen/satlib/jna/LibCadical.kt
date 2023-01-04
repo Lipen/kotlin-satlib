@@ -23,22 +23,26 @@ interface LibCadical : Library {
 
     fun ccadical_constrain(ptr: CCadical, lit: Int)
     fun ccadical_constraint_failed(ptr: CCadical): Int
+
     fun ccadical_set_option(ptr: CCadical, name: String, value: Int)
-    fun ccadical_limit(ptr: CCadical, name: String, limit: Int)
     fun ccadical_get_option(ptr: CCadical, name: String): Int
+    fun ccadical_limit(ptr: CCadical, name: String, limit: Int)
     fun ccadical_print_statistics(ptr: CCadical)
-    fun ccadical_active(ptr: CCadical): Long
+
+    fun ccadical_vars(ptr: CCadical): Int
+    fun ccadical_active(ptr: CCadical): Int
     fun ccadical_irredundant(ptr: CCadical): Long
     fun ccadical_conflicts(ptr: CCadical): Long
     fun ccadical_decisions(ptr: CCadical): Long
     fun ccadical_restarts(ptr: CCadical): Long
     fun ccadical_propagations(ptr: CCadical): Long
+
     fun ccadical_fixed(ptr: CCadical, lit: Int): Int
-    fun ccadical_terminate(ptr: CCadical)
-    fun ccadical_freeze(ptr: CCadical, lit: Int)
     fun ccadical_frozen(ptr: CCadical, lit: Int): Int
+    fun ccadical_freeze(ptr: CCadical, lit: Int)
     fun ccadical_melt(ptr: CCadical, lit: Int)
     fun ccadical_simplify(ptr: CCadical): Int
+    fun ccadical_terminate(ptr: CCadical)
 
     fun version(): String
     fun copyright(): String
