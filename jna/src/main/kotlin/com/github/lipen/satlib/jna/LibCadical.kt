@@ -28,6 +28,7 @@ interface LibCadical : Library {
     fun ccadical_get_option(ptr: CCadical, name: String): Int
     fun ccadical_limit(ptr: CCadical, name: String, limit: Int)
     fun ccadical_print_statistics(ptr: CCadical)
+    fun ccadical_write_dimacs(ptr: CCadical, path: String)
 
     fun ccadical_vars(ptr: CCadical): Int
     fun ccadical_active(ptr: CCadical): Int
