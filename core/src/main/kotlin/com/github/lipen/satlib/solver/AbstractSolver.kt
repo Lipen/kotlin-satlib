@@ -10,7 +10,6 @@ import java.io.File
 
 private val log = mu.KotlinLogging.logger {}
 
-@Suppress("FunctionName")
 abstract class AbstractSolver : Solver {
     final override var context: Context = newContext()
     final override var numberOfVariables: Int = 0
