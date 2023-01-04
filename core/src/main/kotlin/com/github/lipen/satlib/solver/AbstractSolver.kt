@@ -45,7 +45,7 @@ abstract class AbstractSolver : Solver {
         return _newLiteral(outerNumberOfVariables)
     }
 
-    @Suppress("OverridingDeprecatedMember")
+    @Suppress("OVERRIDE_DEPRECATION")
     final override fun addClause() {
         // log.trace { "addClause()" }
         ++numberOfClauses
