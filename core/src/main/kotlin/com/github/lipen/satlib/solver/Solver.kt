@@ -18,7 +18,6 @@ import java.io.File
  * - Use [getValue] to query the value of literals (though, it is advisable to use [Model] for this).
  * - Use [getModel] to query the satisfying assignment (model).
  */
-@Suppress("FunctionName")
 interface Solver : AutoCloseable {
     /**
      * The context.
