@@ -16,7 +16,7 @@ interface LibCadical : Library {
     fun ccadical_assume(ptr: CCadical, lit: Int)
     fun ccadical_solve(ptr: CCadical): Int
     fun ccadical_val(ptr: CCadical, lit: Int): Int
-    fun ccadical_failed(ptr: CCadical, lit: Int): Int
+    fun ccadical_failed(ptr: CCadical, lit: Int): Boolean // returns 0/1 int in C API
 
     fun ccadical_set_terminate(ptr: CCadical, state: Pointer, terminate: TerminateCb)
     fun ccadical_set_learn(ptr: CCadical, state: Pointer, max_length: Int, learn: LearnCb)
