@@ -4,6 +4,6 @@ dependencies {
     implementation(project(":utils"))
 
     // FIXME: temporary logging
-    implementation(Libs.Log4j.log4j_core)
-    implementation(Libs.Log4j.log4j_slf4j2_impl)
+    runtimeOnly(Libs.Log4j.log4j_core)
+    runtimeOnly(Libs.Log4j.log4j_slf4j2_impl)
 }
