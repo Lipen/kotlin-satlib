@@ -4,6 +4,10 @@ package com.github.lipen.satlib.solver
 
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.op.exactlyOne
+import com.github.lipen.satlib.jni.solver.CadicalSolver
+import com.github.lipen.satlib.jni.solver.CryptoMiniSatSolver
+import com.github.lipen.satlib.jni.solver.GlucoseSolver
+import com.github.lipen.satlib.jni.solver.MiniSatSolver
 import com.github.lipen.satlib.utils.useWith
 import java.io.File
 

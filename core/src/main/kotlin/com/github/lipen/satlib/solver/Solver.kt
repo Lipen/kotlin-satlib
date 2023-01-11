@@ -1,6 +1,5 @@
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.core.AssumptionsObservable
 import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray

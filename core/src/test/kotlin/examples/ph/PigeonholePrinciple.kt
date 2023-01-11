@@ -1,15 +1,15 @@
 package examples.ph
 
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.jni.solver.CadicalSolver
 import examples.utils.secondsSince
 import examples.utils.timeNow
 
 object GlobalsPH {
     var solverProvider: () -> Solver = {
-        MiniSatSolver()
+        // MiniSatSolver()
         // CryptoMiniSatSolver()
-        // CadicalSolver()
+        CadicalSolver()
     }
 
     init {

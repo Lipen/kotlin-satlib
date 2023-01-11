@@ -1,6 +1,7 @@
 package com.github.lipen.satlib.card
 
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
 
 fun Solver.declareComparatorLessThan(totalizer: List<Int>, upperBound: Int, declared: Int? = null) {
     require(upperBound <= totalizer.size)

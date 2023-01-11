@@ -1,12 +1,13 @@
-package com.github.lipen.satlib.solver
+@file:Suppress("MemberVisibilityCanBePrivate", "LocalVariableName")
+
+package com.github.lipen.satlib.jni.solver
 
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
-import com.github.lipen.satlib.jni.solver.JMiniSat
+import com.github.lipen.satlib.jni.JMiniSat
+import com.github.lipen.satlib.solver.AbstractSolver
 import java.io.File
 
-@Suppress("MemberVisibilityCanBePrivate", "FunctionName")
 class MiniSatSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
     val backend: JMiniSat = JMiniSat(),
@@ -47,36 +48,22 @@ class MiniSatSolver @JvmOverloads constructor(
         backend.close()
     }
 
+    override fun _interrupt() {
+        backend.interrupt()
+    }
+
     override fun _dumpDimacs(file: File) {
         backend.writeDimacs(file)
     }
 
     override fun _comment(comment: String) {}
 
-    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
+    override fun _newLiteral(outer: Int): Lit {
         return backend.newVariable()
     }
 
-    @Suppress("OverridingDeprecatedMember")
-    override fun _addClause() {
-        @Suppress("deprecation")
-        backend.addClause()
-    }
-
-    override fun _addClause(lit: Lit) {
-        backend.addClause(lit)
-    }
-
-    override fun _addClause(lit1: Lit, lit2: Lit) {
-        backend.addClause(lit1, lit2)
-    }
-
-    override fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
-        backend.addClause(lit1, lit2, lit3)
-    }
-
-    override fun _addClause(literals: LitArray) {
-        backend.addClause_(literals)
+    override fun _addClause(literals: List<Lit>) {
+        backend.addClause_(literals.toIntArray())
     }
 
     private fun <T> runMatchingSimpStrategy(block: (do_simp: Boolean, turn_off_simp: Boolean) -> T): T {
@@ -89,18 +76,12 @@ class MiniSatSolver @JvmOverloads constructor(
 
     override fun _solve(): Boolean {
         return runMatchingSimpStrategy { do_simp, turn_off_simp ->
-            backend.solve(do_simp, turn_off_simp)
+            if (assumptions.isEmpty()) {
+                backend.solve(do_simp, turn_off_simp)
+            } else {
+                backend.solve(assumptions.toIntArray(), do_simp, turn_off_simp)
+            }
         }
-    }
-
-    override fun _solve(assumptions: LitArray): Boolean {
-        return runMatchingSimpStrategy { do_simp, turn_off_simp ->
-            backend.solve(assumptions, do_simp, turn_off_simp)
-        }
-    }
-
-    override fun interrupt() {
-        backend.interrupt()
     }
 
     override fun getValue(lit: Lit): Boolean {

@@ -1,11 +1,5 @@
-/**
- * Copyright © 2020, Darya Grechishkina, Konstantin Chukharev, ITMO University
- */
+package com.github.lipen.satlib.jni
 
-package com.github.lipen.satlib.jni.solver
-
-import com.github.lipen.satlib.jni.Loader
-import com.github.lipen.satlib.utils.useWith
 import java.io.File
 import kotlin.math.absoluteValue
 
@@ -164,33 +158,5 @@ class JCryptoMiniSat(
         private const val LBOOL_TRUE: Byte = 0
         private const val LBOOL_FALSE: Byte = 1
         private const val LBOOL_UNDEF: Byte = 2
-    }
-}
-
-private fun main() {
-    @Suppress("DuplicatedCode")
-    JCryptoMiniSat().useWith {
-        var counter = 0
-        val x = ++counter
-        val y = ++counter
-        val z = ++counter
-
-        addClause(-x)
-        addClause(-z)
-        addClause(x, y, z)
-
-        println("Solving...")
-        check(solve()) { "Unexpected UNSAT" }
-        println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-        println("model = ${getModel().asList()}")
-
-        println("Solving with assumptions...")
-        check(solve(y))
-        check(!solve(-y))
-
-        val t = ++counter
-        check(solve(t))
-        check(solve(-t))
-        println("Solving with assumptions: OK")
     }
 }

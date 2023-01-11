@@ -1,3 +1,5 @@
+@file:Suppress("LocalVariableName")
+
 package examples.bf
 
 import com.github.lipen.multiarray.BooleanMultiArray
@@ -128,13 +130,16 @@ class BFAssignment(
                 NodeType.TERMINAL -> Proposition(
                     name = "x${nodeInputVariable[p]}"
                 )
+
                 NodeType.NOT -> Not(
                     expr = nodeMapping[nodeChild[p]]!!
                 )
+
                 NodeType.OR -> Or(
                     lhs = nodeMapping[nodeChild[p]]!!,
                     rhs = nodeMapping[nodeChild[p] + 1]!!
                 )
+
                 NodeType.AND -> And(
                     lhs = nodeMapping[nodeChild[p]]!!,
                     rhs = nodeMapping[nodeChild[p] + 1]!!

@@ -9,6 +9,7 @@ import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.op.atLeastOne
 import com.github.lipen.satlib.op.atMostOne
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln

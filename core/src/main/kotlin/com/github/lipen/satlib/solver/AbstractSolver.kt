@@ -43,8 +43,8 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun newLiteral(): Lit {
-        val outerNumberOfVariables = ++numberOfVariables
-        return _newLiteral(outerNumberOfVariables)
+        val outer = ++numberOfVariables
+        return _newLiteral(outer)
     }
 
     final override fun addClause(literals: List<Lit>) {
@@ -70,7 +70,7 @@ abstract class AbstractSolver : Solver {
     protected abstract fun _dumpDimacs(file: File)
 
     protected abstract fun _comment(comment: String)
-    protected abstract fun _newLiteral(outerNumberOfVariables: Int): Lit
+    protected abstract fun _newLiteral(outer: Lit): Lit
     protected abstract fun _addClause(literals: List<Lit>)
     protected abstract fun _solve(): Boolean
 }

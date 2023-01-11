@@ -1,11 +1,7 @@
 package com.github.lipen.satlib.card
 
-import com.github.lipen.satlib.core.AssumptionsProvider
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.core.LitArray
-import com.github.lipen.satlib.core.SequenceScopeLit
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.utils.toList_
 
 private val log = mu.KotlinLogging.logger {}
 
@@ -16,7 +12,7 @@ class Cardinality(
 ) {
     private var assumptionsUB: List<Lit> = emptyList()
     private var assumptionsLB: List<Lit> = emptyList()
-    private val assumptionsProvider = AssumptionsProvider { assumptionsUB + assumptionsLB }
+    val assumptions: List<Lit> get() = assumptionsUB + assumptionsLB
 
     var declaredUpperBound: Int? = null
         private set
@@ -25,11 +21,6 @@ class Cardinality(
 
     init {
         require(totalizer.isNotEmpty())
-        solver.assumptionsObservable.register(assumptionsProvider)
-    }
-
-    fun unregister() {
-        solver.assumptionsObservable.unregister(assumptionsProvider)
     }
 
     fun declareUpperBoundLessThan(newUpperBound: Int?) {
@@ -94,29 +85,16 @@ class Cardinality(
         }
     }
 
-    companion object {
-        fun declare(solver: Solver, literals: List<Lit>): Cardinality {
-            val totalizer = solver.declareTotalizer(literals)
-            return Cardinality(solver, totalizer)
-        }
+    fun unassumeUpperBound() {
+        assumptionsUB = emptyList()
+    }
+
+    fun unassumeLowerBound() {
+        assumptionsLB = emptyList()
     }
 }
 
-fun Solver.declareCardinality(literals: Iterable<Lit>): Cardinality =
-    Cardinality.declare(
-        solver = this,
-        literals = literals.toList_()
-    )
-
-fun Solver.declareCardinality(literals: LitArray): Cardinality =
-    declareCardinality(literals.asList())
-
-@JvmName("declareCardinalityVararg")
-fun Solver.declareCardinality(vararg literals: Int): Cardinality =
-    declareCardinality(literals)
-
-fun Solver.declareCardinality(literals: Sequence<Lit>): Cardinality =
-    declareCardinality(literals.asIterable())
-
-fun Solver.declareCardinality(literals: SequenceScopeLit): Cardinality =
-    declareCardinality(sequence(literals).constrainOnce())
+fun Solver.declareCardinality(literals: List<Lit>): Cardinality {
+    val totalizer = declareTotalizer(literals)
+    return Cardinality(this, totalizer)
+}

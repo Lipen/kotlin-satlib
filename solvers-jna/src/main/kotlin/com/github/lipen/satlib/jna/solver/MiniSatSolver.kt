@@ -1,10 +1,10 @@
-package com.github.lipen.satlib.solver.jna
+package com.github.lipen.satlib.jna.solver
 
 import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.newContext
-import com.github.lipen.satlib.jna.LibMinisat
+import com.github.lipen.satlib.jna.LibMiniSat
 import com.github.lipen.satlib.jna.minisat_Lit
 import com.github.lipen.satlib.jna.minisat_addClause
 import com.github.lipen.satlib.jna.minisat_lbool
@@ -23,8 +23,8 @@ private val logger = KotlinLogging.logger {}
 class MinisatSolver(
     val initialSeed: Double? = null, // internal default is 0
 ) : Solver {
-    val native: LibMinisat = LibMinisat.INSTANCE
-    val ptr: LibMinisat.CMinisat = native.minisat_init()
+    val native: LibMiniSat = LibMiniSat.INSTANCE
+    val ptr: LibMiniSat.CMiniSat = native.minisat_init()
 
     init {
         if (initialSeed != null) native.minisat_set_random_seed(ptr, initialSeed)

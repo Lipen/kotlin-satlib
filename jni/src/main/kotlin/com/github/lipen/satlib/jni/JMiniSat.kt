@@ -1,30 +1,5 @@
-/**
- * Copyright © 2016, Miklos Maroti, University of Szeged
- * Copyright © 2020, Konstantin Chukharev, ITMO University
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- */
+package com.github.lipen.satlib.jni
 
-package com.github.lipen.satlib.jni.solver
-
-import com.github.lipen.satlib.jni.Loader
-import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
 @Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
@@ -329,32 +304,5 @@ class JMiniSat(
         private const val LBOOL_TRUE: Byte = 0
         private const val LBOOL_FALSE: Byte = 1
         private const val LBOOL_UNDEF: Byte = 2
-    }
-}
-
-private fun main() {
-    @Suppress("DuplicatedCode")
-    JMiniSat().useWith {
-        val x = newVariable()
-        val y = newVariable()
-        val z = newVariable()
-
-        println("Encoding exactlyOne({x, y, z})")
-        addClause(-x, -y)
-        addClause(-x, -z)
-        addClause(-y, -z)
-        addClause(x, y, z)
-
-        println("nvars = $numberOfVariables, nclauses = $numberOfClauses, nlearnts = $numberOfLearnts")
-        println("Solving...")
-        check(solve()) { "Unexpected UNSAT" }
-        println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-        println("model = ${getModel().drop(1)}")
-
-        println("Solving with assumptions...")
-        check(this.solve(x)); println("model = ${getModel().drop(1)}"); check(getValue(x))
-        check(this.solve(y)); println("model = ${getModel().drop(1)}"); check(getValue(y))
-        check(this.solve(z)); println("model = ${getModel().drop(1)}"); check(getValue(z))
-        println("Solving with assumptions: OK")
     }
 }

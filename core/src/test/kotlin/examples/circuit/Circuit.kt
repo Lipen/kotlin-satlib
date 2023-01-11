@@ -15,9 +15,9 @@ import com.github.lipen.satlib.op.implyIff
 import com.github.lipen.satlib.op.implyIffAnd
 import com.github.lipen.satlib.op.implyIffOr
 import com.github.lipen.satlib.op.implyImplyAnd
-import com.github.lipen.satlib.solver.CadicalSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.jni.solver.CadicalSolver
 import com.github.lipen.satlib.utils.useWith
 import examples.bf.toBinaryString
 import examples.utils.pow

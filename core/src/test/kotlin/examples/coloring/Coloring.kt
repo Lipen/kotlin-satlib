@@ -7,16 +7,17 @@ import com.github.lipen.satlib.core.convertIntVarArray
 import com.github.lipen.satlib.core.eq
 import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.op.neqv
-import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.jni.solver.MiniSatSolver
 import com.github.lipen.satlib.utils.useWith
 import examples.utils.secondsSince
 import examples.utils.timeNow
 
 object GlobalsColoring {
     val solverProvider: () -> Solver = {
-        // MiniSatSolver()
-        GlucoseSolver()
+        MiniSatSolver()
+        // GlucoseSolver()
         // CryptoMiniSatSolver()
         // CadicalSolver()
     }

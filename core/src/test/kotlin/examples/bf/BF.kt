@@ -1,16 +1,18 @@
+@file:Suppress("LocalVariableName")
+
 package examples.bf
 
-import com.github.lipen.satlib.solver.GlucoseSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.jni.solver.CadicalSolver
 import examples.utils.secondsSince
 import examples.utils.timeNow
 
 object GlobalsBF {
     val solverProvider: () -> Solver = {
         // MiniSatSolver()
-        GlucoseSolver()
+        // GlucoseSolver()
         // CryptoMiniSatSolver()
-        // CadicalSolver()
+        CadicalSolver()
     }
     var IS_ENCODE_BFS: Boolean = true
     var IS_FORBID_DOUBLE_NEGATION: Boolean = true
@@ -22,7 +24,6 @@ object GlobalsBF {
     }
 }
 
-@Suppress("LocalVariableName")
 fun main() {
     val timeStart = timeNow()
 

@@ -28,13 +28,13 @@ enum class minisat_lbool(val value: Int) {
     }
 }
 
-interface LibMinisat : Library {
+interface LibMiniSat : Library {
     fun minisat_signature(): String
-    fun minisat_init(): CMinisat
-    fun minisat_release(ptr: CMinisat)
+    fun minisat_init(): CMiniSat
+    fun minisat_release(ptr: CMiniSat)
 
-    fun minisat_newVar(ptr: CMinisat): minisat_Var
-    fun minisat_newLit(ptr: CMinisat): minisat_Lit
+    fun minisat_newVar(ptr: CMiniSat): minisat_Var
+    fun minisat_newLit(ptr: CMiniSat): minisat_Lit
 
     fun minisat_mkLit(x: minisat_Var): minisat_Lit
     fun minisat_mkLit_args(x: minisat_Var, sign: Int): minisat_Lit
@@ -43,68 +43,68 @@ interface LibMinisat : Library {
     fun minisat_var(p: minisat_Lit): minisat_Var
     fun minisat_sign(p: minisat_Lit): Boolean
 
-    fun minisat_setPolarity(ptr: CMinisat, v: minisat_Var, b: Int)
-    fun minisat_setDecisionVar(ptr: CMinisat, v: minisat_Var, b: Int)
-    fun minisat_setFrozen(ptr: CMinisat, v: minisat_Var, b: Boolean)
-    fun minisat_isEliminated(ptr: CMinisat, v: minisat_Var): Boolean
-    fun minisat_eliminate(ptr: CMinisat, turn_off_elim: Boolean): Boolean
+    fun minisat_setPolarity(ptr: CMiniSat, v: minisat_Var, b: Int)
+    fun minisat_setDecisionVar(ptr: CMiniSat, v: minisat_Var, b: Int)
+    fun minisat_setFrozen(ptr: CMiniSat, v: minisat_Var, b: Boolean)
+    fun minisat_isEliminated(ptr: CMiniSat, v: minisat_Var): Boolean
+    fun minisat_eliminate(ptr: CMiniSat, turn_off_elim: Boolean): Boolean
 
-    fun minisat_addClause(ptr: CMinisat, len: Int, ps: Pointer /* Lit* */): Boolean
-    fun minisat_addClause_begin(ptr: CMinisat)
-    fun minisat_addClause_addLit(ptr: CMinisat, p: minisat_Lit)
-    fun minisat_addClause_commit(ptr: CMinisat): Boolean
+    fun minisat_addClause(ptr: CMiniSat, len: Int, ps: Pointer /* Lit* */): Boolean
+    fun minisat_addClause_begin(ptr: CMiniSat)
+    fun minisat_addClause_addLit(ptr: CMiniSat, p: minisat_Lit)
+    fun minisat_addClause_commit(ptr: CMiniSat): Boolean
 
-    fun minisat_simplify(ptr: CMinisat): Boolean
+    fun minisat_simplify(ptr: CMiniSat): Boolean
 
-    fun minisat_solve(ptr: CMinisat, len: Int, ps: Pointer /* Lit* */): Boolean
-    fun minisat_limited_solve(ptr: CMinisat, len: Int, ps: Pointer /* Lit* */): minisat_lbool
-    fun minisat_solve_begin(ptr: CMinisat)
-    fun minisat_solve_addLit(ptr: CMinisat, p: minisat_Lit)
-    fun minisat_solve_commit(ptr: CMinisat): Boolean
-    fun minisat_limited_solve_commit(ptr: CMinisat): minisat_lbool
+    fun minisat_solve(ptr: CMiniSat, len: Int, ps: Pointer /* Lit* */): Boolean
+    fun minisat_limited_solve(ptr: CMiniSat, len: Int, ps: Pointer /* Lit* */): minisat_lbool
+    fun minisat_solve_begin(ptr: CMiniSat)
+    fun minisat_solve_addLit(ptr: CMiniSat, p: minisat_Lit)
+    fun minisat_solve_commit(ptr: CMiniSat): Boolean
+    fun minisat_limited_solve_commit(ptr: CMiniSat): minisat_lbool
 
-    fun minisat_okay(ptr: CMinisat): Boolean
+    fun minisat_okay(ptr: CMiniSat): Boolean
 
     fun minisat_get_l_True(): minisat_lbool
     fun minisat_get_l_False(): minisat_lbool
     fun minisat_get_l_Undef(): minisat_lbool
 
-    fun minisat_value_Var(ptr: CMinisat, x: minisat_Var): minisat_lbool
-    fun minisat_value_Lit(ptr: CMinisat, p: minisat_Lit): minisat_lbool
-    fun minisat_modelValue_Var(ptr: CMinisat, x: minisat_Var): minisat_lbool
-    fun minisat_modelValue_Lit(ptr: CMinisat, p: minisat_Lit): minisat_lbool
+    fun minisat_value_Var(ptr: CMiniSat, x: minisat_Var): minisat_lbool
+    fun minisat_value_Lit(ptr: CMiniSat, p: minisat_Lit): minisat_lbool
+    fun minisat_modelValue_Var(ptr: CMiniSat, x: minisat_Var): minisat_lbool
+    fun minisat_modelValue_Lit(ptr: CMiniSat, p: minisat_Lit): minisat_lbool
 
-    fun minisat_num_assigns(ptr: CMinisat): Int
-    fun minisat_num_clauses(ptr: CMinisat): Int
-    fun minisat_num_learnts(ptr: CMinisat): Int
-    fun minisat_num_vars(ptr: CMinisat): Int
-    fun minisat_num_freeVars(ptr: CMinisat): Int
+    fun minisat_num_assigns(ptr: CMiniSat): Int
+    fun minisat_num_clauses(ptr: CMiniSat): Int
+    fun minisat_num_learnts(ptr: CMiniSat): Int
+    fun minisat_num_vars(ptr: CMiniSat): Int
+    fun minisat_num_freeVars(ptr: CMiniSat): Int
 
-    fun minisat_conflict_len(ptr: CMinisat): Int
-    fun minisat_conflict_nthLit(ptr: CMinisat, i: Int): minisat_Lit
+    fun minisat_conflict_len(ptr: CMiniSat): Int
+    fun minisat_conflict_nthLit(ptr: CMiniSat, i: Int): minisat_Lit
 
-    fun minisat_set_conf_budget(ptr: CMinisat, x: Int)
-    fun minisat_set_prop_budget(ptr: CMinisat, x: Int)
-    fun minisat_no_budget(ptr: CMinisat)
+    fun minisat_set_conf_budget(ptr: CMiniSat, x: Int)
+    fun minisat_set_prop_budget(ptr: CMiniSat, x: Int)
+    fun minisat_no_budget(ptr: CMiniSat)
 
-    fun minisat_interrupt(ptr: CMinisat)
-    fun minisat_clearInterrupt(ptr: CMinisat)
+    fun minisat_interrupt(ptr: CMiniSat)
+    fun minisat_clearInterrupt(ptr: CMiniSat)
 
-    fun minisat_set_verbosity(ptr: CMinisat, v: Int)
-    fun minisat_set_random_var_freq(ptr: CMinisat, freq: Double)
-    fun minisat_set_random_seed(ptr: CMinisat, seed: Double)
+    fun minisat_set_verbosity(ptr: CMiniSat, v: Int)
+    fun minisat_set_random_var_freq(ptr: CMiniSat, freq: Double)
+    fun minisat_set_random_seed(ptr: CMiniSat, seed: Double)
 
-    fun minisat_num_conflicts(ptr: CMinisat): Long
-    fun minisat_num_decisions(ptr: CMinisat): Long
-    fun minisat_num_restarts(ptr: CMinisat): Long
-    fun minisat_num_propagations(ptr: CMinisat): Long
+    fun minisat_num_conflicts(ptr: CMiniSat): Long
+    fun minisat_num_decisions(ptr: CMiniSat): Long
+    fun minisat_num_restarts(ptr: CMiniSat): Long
+    fun minisat_num_propagations(ptr: CMiniSat): Long
 
-    class CMinisat : PointerType()
+    class CMiniSat : PointerType()
 
     companion object {
-        val INSTANCE: LibMinisat by lazy(::load)
+        val INSTANCE: LibMiniSat by lazy(::load)
 
-        fun load(name: String = "minisat"): LibMinisat {
+        fun load(name: String = "minisat"): LibMiniSat {
             val mapper = DefaultTypeMapper()
             mapper.addTypeConverter(minisat_Var::class.java, converterForVar)
             mapper.addTypeConverter(minisat_Lit::class.java, converterForLit)
@@ -144,8 +144,8 @@ interface LibMinisat : Library {
     }
 }
 
-fun LibMinisat.minisat_addClause(
-    ptr: LibMinisat.CMinisat,
+fun LibMiniSat.minisat_addClause(
+    ptr: LibMiniSat.CMiniSat,
     clause: Iterable<minisat_Lit>,
 ): Boolean {
     minisat_addClause_begin(ptr)
@@ -155,8 +155,8 @@ fun LibMinisat.minisat_addClause(
     return minisat_addClause_commit(ptr)
 }
 
-fun LibMinisat.minisat_solve(
-    ptr: LibMinisat.CMinisat,
+fun LibMiniSat.minisat_solve(
+    ptr: LibMiniSat.CMiniSat,
     assumptions: Iterable<minisat_Lit> = emptyList(),
 ): Boolean {
     minisat_solve_begin(ptr)
@@ -166,8 +166,8 @@ fun LibMinisat.minisat_solve(
     return minisat_solve_commit(ptr)
 }
 
-fun LibMinisat.minisat_limited_solve(
-    ptr: LibMinisat.CMinisat,
+fun LibMiniSat.minisat_limited_solve(
+    ptr: LibMiniSat.CMiniSat,
     assumptions: Iterable<minisat_Lit> = emptyList(),
 ): minisat_lbool {
     minisat_solve_begin(ptr)
@@ -178,7 +178,7 @@ fun LibMinisat.minisat_limited_solve(
 }
 
 fun main() {
-    val lib = LibMinisat.load("minisat")
+    val lib = LibMiniSat.load("minisat")
     println("library = $lib")
     println("signature = ${lib.minisat_signature()}")
 

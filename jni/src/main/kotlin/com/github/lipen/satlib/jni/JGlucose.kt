@@ -1,14 +1,7 @@
-/**
- * Copyright © 2020, Darya Grechishkina, Konstantin Chukharev, ITMO University
- */
+package com.github.lipen.satlib.jni
 
-package com.github.lipen.satlib.jni.solver
-
-import com.github.lipen.satlib.jni.Loader
-import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
-@Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
 class JGlucose(
     val initialSeed: Double? = null, // default is 91648253
     val initialRandomVarFreq: Double? = null,
@@ -284,32 +277,5 @@ class JGlucose(
         private const val LBOOL_TRUE: Byte = 0
         private const val LBOOL_FALSE: Byte = 1
         private const val LBOOL_UNDEF: Byte = 2
-    }
-}
-
-private fun main() {
-    @Suppress("DuplicatedCode")
-    JGlucose().useWith {
-        val x = newVariable()
-        val y = newVariable()
-        val z = newVariable()
-
-        println("Encoding exactlyOne({x, y, z})")
-        addClause(-x, -y)
-        addClause(-x, -z)
-        addClause(-y, -z)
-        addClause(x, y, z)
-
-        println("nvars = $numberOfVariables, nclauses = $numberOfClauses, nlearnts = $numberOfLearnts")
-        println("Solving...")
-        check(solve()) { "Unexpected UNSAT" }
-        println("x = ${getValue(x)}, y = ${getValue(y)}, z = ${getValue(z)}")
-        println("model = ${getModel().drop(1)}")
-
-        println("Solving with assumptions...")
-        check(solve(x)); println("model = ${getModel().drop(1)}"); check(getValue(x))
-        check(solve(y)); println("model = ${getModel().drop(1)}"); check(getValue(y))
-        check(solve(z)); println("model = ${getModel().drop(1)}"); check(getValue(z))
-        println("Solving with assumptions: OK")
     }
 }

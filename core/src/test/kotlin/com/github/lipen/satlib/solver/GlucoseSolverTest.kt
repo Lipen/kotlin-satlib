@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.jni.solver.GlucoseSolver
 import com.github.lipen.satlib.op.runWithTimeout
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`

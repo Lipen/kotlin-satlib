@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.jni.solver
+package com.github.lipen.satlib.jni
 
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode

@@ -9,14 +9,15 @@ import com.github.lipen.satlib.core.convertIntVarArray
 import com.github.lipen.satlib.core.eq
 import com.github.lipen.satlib.core.neq
 import com.github.lipen.satlib.core.newIntVarArray
+import com.github.lipen.satlib.jni.solver.CadicalSolver
+import com.github.lipen.satlib.jni.solver.GlucoseSolver
+import com.github.lipen.satlib.jni.solver.MiniSatSolver
 import com.github.lipen.satlib.op.allSolutions
 import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.op.imply
 import com.github.lipen.satlib.op.runWithTimeout
-import com.github.lipen.satlib.solver.CadicalSolver
-import com.github.lipen.satlib.solver.GlucoseSolver
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.utils.pairs
 import com.github.lipen.satlib.utils.useWith
 import examples.utils.secondsSince
@@ -137,7 +138,7 @@ fun solve(
 
             val pathNodeVar: IntVarArray = context["pathNode"]
             // val essential = pathNodeVar.values.flatMap { it.literals }
-            val refutation: (Model) -> Iterable<Int> = { model ->
+            val refutation: (Model) -> List<Int> = { model ->
                 val pathNode = pathNodeVar.convert(model)
                 (1..V).map { i ->
                     pathNodeVar[i] neq pathNode[i]

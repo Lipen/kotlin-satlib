@@ -1,5 +1,9 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.jni.solver.CadicalSolver
+import com.github.lipen.satlib.jni.solver.CryptoMiniSatSolver
+import com.github.lipen.satlib.jni.solver.GlucoseSolver
+import com.github.lipen.satlib.jni.solver.MiniSatSolver
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be in`
