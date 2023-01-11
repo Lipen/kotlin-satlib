@@ -7,6 +7,7 @@ import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.jna.LibCadical
 import com.github.lipen.satlib.jna.ccadical_add_clause
 import com.github.lipen.satlib.jna.ccadical_solve
+import com.github.lipen.satlib.utils.useWith
 import com.sun.jna.Pointer
 import mu.KotlinLogging
 import java.io.File
@@ -98,8 +99,48 @@ class CadicalSolver(
     }
 }
 
+@Suppress("DuplicatedCode")
 fun main() {
-    CadicalSolver().use { solver ->
-        println("solver = $solver")
+    CadicalSolver().useWith {
+        val tie = newLiteral()
+        val shirt = newLiteral()
+        println("tie = $tie")
+        println("shirt = $shirt")
+
+        println("Adding clauses...")
+        addClause(listOf(-tie, shirt))
+        addClause(listOf(tie, shirt))
+        addClause(listOf(-tie, -shirt))
+
+        println("Solving...")
+        val res1 = solve()
+        println("Result: ${if (res1) "SAT" else "UNSAT"}")
+        check(res1)
+        println("tie = ${getValue(tie)}")
+        println("shirt = ${getValue(shirt)}")
+        check(!getValue(tie))
+        check(getValue(shirt))
+
+        println()
+        println("Solving with assumption TIE=true...")
+        val res2 = solve(listOf(tie))
+        println("Result: ${if (res2) "SAT" else "UNSAT"}")
+        check(!res2)
+        println("tie failed: ${native.ccadical_failed(ptr, tie)}")
+        println("shirt failed: ${native.ccadical_failed(ptr, shirt)}")
+        check(native.ccadical_failed(ptr, tie))
+        check(!native.ccadical_failed(ptr, shirt))
+
+        println()
+        println("Solving with assumption SHIRT=false...")
+        val res3 = solve(listOf(-shirt))
+        println("Result: ${if (res3) "SAT" else "UNSAT"}")
+        check(!res3)
+        println("tie failed: ${native.ccadical_failed(ptr, tie)}")
+        println("-shirt failed: ${native.ccadical_failed(ptr, -shirt)}")
+        check(!native.ccadical_failed(ptr, tie))
+        check(native.ccadical_failed(ptr, -shirt))
     }
+    println()
+    println("All done!")
 }

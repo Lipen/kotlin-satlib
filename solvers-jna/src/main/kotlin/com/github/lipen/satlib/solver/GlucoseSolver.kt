@@ -9,6 +9,7 @@ import com.github.lipen.satlib.jna.glucose_Lit
 import com.github.lipen.satlib.jna.glucose_addClause
 import com.github.lipen.satlib.jna.glucose_lbool
 import com.github.lipen.satlib.jna.glucose_solve
+import com.github.lipen.satlib.utils.useWith
 import com.sun.jna.Pointer
 import mu.KotlinLogging
 import java.io.File
@@ -113,11 +114,40 @@ fun fromGlucose(lit: glucose_Lit): Lit {
     return if (lit.value and 1 == 1) -v else v
 }
 
+@Suppress("DuplicatedCode")
 fun main() {
-    GlucoseSolver().use { solver ->
-        println("solver = $solver")
+    GlucoseSolver().useWith {
+        val tie = newLiteral()
+        val shirt = newLiteral()
+        println("tie = $tie")
+        println("shirt = $shirt")
 
-        println("newLit = ${solver.newLiteral()}")
-        println("newLit = ${solver.newLiteral()}")
+        println("Adding clauses...")
+        addClause(listOf(-tie, shirt))
+        addClause(listOf(tie, shirt))
+        addClause(listOf(-tie, -shirt))
+
+        println("Solving...")
+        val res1 = solve()
+        println("Result: ${if (res1) "SAT" else "UNSAT"}")
+        check(res1)
+        println("tie = ${getValue(tie)}")
+        println("shirt = ${getValue(shirt)}")
+        check(!getValue(tie))
+        check(getValue(shirt))
+
+        println()
+        println("Solving with assumption TIE=true...")
+        val res2 = solve(listOf(tie))
+        println("Result: ${if (res2) "SAT" else "UNSAT"}")
+        check(!res2)
+
+        println()
+        println("Solving with assumption SHIRT=false...")
+        val res3 = solve(listOf(-shirt))
+        println("Result: ${if (res3) "SAT" else "UNSAT"}")
+        check(!res3)
     }
+    println()
+    println("All done!")
 }
