@@ -6,6 +6,7 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.SequenceScopeLit
+import com.github.lipen.satlib.utils.toList_
 import java.io.File
 
 /**
@@ -14,6 +15,7 @@ import java.io.File
  * - Use [newLiteral] to declare new variables.
  * - Use [addClause] to declare new clauses.
  * - Use [context] to store any additional data.
+ * - Use [assumptions] to add assumptions for the next call to [solve].
  * - Use [solve] to solve the SAT problem.
  * - Use [getValue] to query the value of literals (though, it is advisable to use [Model] for this).
  * - Use [getModel] to query the satisfying assignment (model).
@@ -34,7 +36,8 @@ interface Solver : AutoCloseable {
      */
     val numberOfClauses: Int
 
-    val assumptionsObservable: AssumptionsObservable
+    // TODO: doc
+    val assumptions: MutableList<Lit>
 
     /**
      * Reset the solver.
@@ -53,6 +56,16 @@ interface Solver : AutoCloseable {
      * and can be restored to the working state via [reset].
      */
     override fun close()
+
+    /**
+     * Interrupt the SAT solver.
+     *
+     * In general, after the SAT solver was interrupted, the call to [solve] returns `false`.
+     * Note that the solving process may not stop immediately, since this operation is asynchronous.
+     * Due to this, the call to [solve] may have time to return `true` if you happen
+     * to call [interrupt] when the solver is about to actually solve the SAT problem.
+     */
+    fun interrupt()
 
     /**
      * Dump the constructed CNF in DIMACS format to the file.
@@ -79,34 +92,10 @@ interface Solver : AutoCloseable {
     fun newLiteral(): Lit
 
     // TODO: doc
-    @Deprecated(
-        "Clause must contain at least one literal!",
-        ReplaceWith("addClause(...)")
-    )
-    fun addClause()
-    fun addClause(lit: Lit)
-    fun addClause(lit1: Lit, lit2: Lit)
-    fun addClause(lit1: Lit, lit2: Lit, lit3: Lit)
-    fun addClause(literals: LitArray)
-    fun addClause(literals: Iterable<Lit>)
+    fun addClause(literals: List<Lit>)
 
     // TODO: doc
-    // Note:
-    //  - `solve()` method must use assumptions passed via the `addAssumptions` method.
-    //  - `solve(assumptions)` methods must use *only* the passed `assumptions`.
     fun solve(): Boolean
-    fun solve(assumptions: LitArray): Boolean
-    fun solve(assumptions: Iterable<Lit>): Boolean
-
-    /**
-     * Interrupt the SAT solver.
-     *
-     * In general, after the SAT solver was interrupted, the call to [solve] returns `false`.
-     * Note that the solving process may not stop immediately, since this operation is asynchronous.
-     * Due to this, the call to [solve] may have time to return `true` if you happen
-     * to call [interrupt] when the solver is about to actually solve the SAT problem.
-     */
-    fun interrupt()
 
     /**
      * Query the Boolean value of a literal.
@@ -129,11 +118,6 @@ interface Solver : AutoCloseable {
      * but it is advisable to query the model right after the call to [solve] which returned `true`.
      */
     fun getModel(): Model
-
-    // companion object {
-    //     const val trueLiteral: Lit = Int.MAX_VALUE
-    //     const val falseLiteral: Lit = -trueLiteral
-    // }
 }
 
 inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
@@ -143,6 +127,17 @@ inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
     this.context = oldContext
 }
 
+//region [addClause]
+
+fun Solver.addClause(literals: Iterable<Lit>) {
+    addClause(literals.toList_())
+}
+
+fun Solver.addClause(literals: LitArray) {
+    addClause(literals.asList())
+}
+
+@JvmName("addClauseVararg")
 fun Solver.addClause(vararg literals: Lit) {
     addClause(literals)
 }
@@ -155,14 +150,47 @@ fun Solver.addClause(block: SequenceScopeLit) {
     addClause(sequence(block).constrainOnce())
 }
 
+//endregion
+
+//region [assume]
+
+fun Solver.assume(literals: Iterable<Lit>) {
+    assumptions.addAll(literals)
+}
+
+fun Solver.assume(literals: Sequence<Lit>) {
+    assume(literals.asIterable())
+}
+
+fun Solver.assume(literals: LitArray) {
+    assume(literals.asList())
+}
+
+@JvmName("assumeVararg")
+fun Solver.assume(vararg literals: Lit) {
+    assume(literals)
+}
+
+//endregion
+
+//region [solve]
+
+fun Solver.solve(assumptions: Iterable<Lit>): Boolean {
+    assume(assumptions)
+    return solve()
+}
+
+fun Solver.solve(assumptions: Sequence<Lit>): Boolean {
+    return solve(assumptions.asIterable())
+}
+
+fun Solver.solve(assumptions: LitArray): Boolean {
+    return solve(assumptions.asList())
+}
+
+@JvmName("solveVararg")
 fun Solver.solve(vararg assumptions: Lit): Boolean {
     return solve(assumptions)
 }
 
-// fun Solver.solve(literals: Sequence<Lit>) {
-//     solve(literals.asIterable())
-// }
-//
-// fun Solver.solve(block: SequenceScopeLit) {
-//     solve(sequence(block).constrainOnce())
-// }
+//endregion

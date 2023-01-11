@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib.solver.jna
 
 import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
@@ -9,6 +9,8 @@ import com.github.lipen.satlib.jna.glucose_Lit
 import com.github.lipen.satlib.jna.glucose_addClause
 import com.github.lipen.satlib.jna.glucose_lbool
 import com.github.lipen.satlib.jna.glucose_solve
+import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.sun.jna.Pointer
 import mu.KotlinLogging
@@ -20,7 +22,7 @@ private val logger = KotlinLogging.logger {}
 @Suppress("MemberVisibilityCanBePrivate")
 class GlucoseSolver(
     val initialSeed: Double? = null, // internal default is 0
-) : Solver2 {
+) : Solver {
     val native: LibGlucose = LibGlucose.INSTANCE
     val ptr: LibGlucose.CGlucose = native.glucose_init()
 
@@ -37,13 +39,6 @@ class GlucoseSolver(
 
     override val assumptions: MutableList<Lit> = mutableListOf()
 
-    override fun close() {
-        if (ptr.pointer != Pointer.NULL) {
-            native.glucose_release(ptr)
-            ptr.pointer = Pointer.NULL
-        }
-    }
-
     override fun reset() {
         context = newContext()
         numberOfVariables = 0
@@ -54,6 +49,13 @@ class GlucoseSolver(
         ptr.pointer = native.glucose_init().pointer
         // if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("glucose_init returned NULL")
         if (initialSeed != null) native.glucose_set_random_seed(ptr, initialSeed)
+    }
+
+    override fun close() {
+        if (ptr.pointer != Pointer.NULL) {
+            native.glucose_release(ptr)
+            ptr.pointer = Pointer.NULL
+        }
     }
 
     override fun interrupt() {

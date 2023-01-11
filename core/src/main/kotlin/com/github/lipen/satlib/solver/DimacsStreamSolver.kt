@@ -1,11 +1,13 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.Model
+import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.utils.parseDimacsOutput
 import com.github.lipen.satlib.utils.write
 import com.github.lipen.satlib.utils.writeln
+import mu.KotlinLogging
 import okio.Buffer
 import okio.BufferedSink
 import okio.buffer
@@ -13,20 +15,40 @@ import okio.sink
 import okio.source
 import java.io.File
 
+private val logger = KotlinLogging.logger {}
+
 @Suppress("MemberVisibilityCanBePrivate")
 class DimacsStreamSolver(
     val command: () -> String,
-) : AbstractSolver() {
-    private val buffer = Buffer()
-    private var _model: Model? = null
+) : Solver {
+    override var context: Context = newContext()
+    override var numberOfVariables: Int = 0
+        private set
+    override var numberOfClauses: Int = 0
+        private set
+    override val assumptions: MutableList<Lit> = mutableListOf()
 
-    override fun _reset() {
+    private val buffer = Buffer()
+    private var model: Model? = null
+
+    override fun reset() {
+        logger.debug { "reset()" }
+        context = newContext()
+        numberOfVariables = 0
+        numberOfClauses = 0
+        assumptions.clear()
         buffer.clear()
-        _model = null
+        model = null
     }
 
-    override fun _close() {
+    override fun close() {
+        logger.debug { "close()" }
         buffer.close()
+    }
+
+    override fun interrupt() {
+        logger.debug { "close()" }
+        throw UnsupportedOperationException(INTERRUPTION_NOT_SUPPORTED)
     }
 
     fun writeDimacs(sink: BufferedSink) {
@@ -34,50 +56,38 @@ class DimacsStreamSolver(
         buffer.copyTo(sink.buffer)
     }
 
-    override fun _dumpDimacs(file: File) {
+    override fun dumpDimacs(file: File) {
+        logger.debug { "dumpDimacs(file = $file)" }
         file.sink().buffer().use {
             writeDimacs(it)
         }
     }
 
-    override fun _comment(comment: String) {
+    override fun comment(comment: String) {
+        logger.trace { "// $comment" }
         for (line in comment.lineSequence()) {
             buffer.write("c ").writeln(line)
         }
     }
 
-    override fun _newLiteral(outerNumberOfVariables: Int): Lit {
-        return outerNumberOfVariables
+    override fun newLiteral(): Lit {
+        return ++numberOfVariables
     }
 
-    override fun _addClause() {
-        buffer.writeln("0")
-    }
-
-    override fun _addClause(lit: Lit) {
-        buffer.writeln("$lit 0")
-    }
-
-    override fun _addClause(lit1: Lit, lit2: Lit) {
-        buffer.writeln("$lit1 $lit2 0")
-    }
-
-    override fun _addClause(lit1: Lit, lit2: Lit, lit3: Lit) {
-        buffer.writeln("$lit1 $lit2 $lit3 0")
-    }
-
-    override fun _addClause(literals: LitArray) {
-        _addClause(literals.asList())
-    }
-
-    override fun _addClause(literals: List<Lit>) {
+    override fun addClause(literals: List<Lit>) {
+        logger.trace { "addClause($literals)" }
+        ++numberOfClauses
         for (lit in literals) {
             buffer.write(lit.toString()).write(" ")
         }
         buffer.writeln("0")
     }
 
-    override fun _solve(): Boolean {
+    override fun solve(): Boolean {
+        logger.debug { "solve()" }
+        if (assumptions.isNotEmpty()) {
+            throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
+        }
         buffer.writeln("c solve")
         val command = command()
         val process = Runtime.getRuntime().exec(command)
@@ -86,17 +96,9 @@ class DimacsStreamSolver(
             // Note: process' stdin must be closed in order to start the solving process
         }
         process.inputStream.source().buffer().use { out ->
-            _model = parseDimacsOutput(out)
-            return _model != null
+            model = parseDimacsOutput(out)
+            return model != null
         }
-    }
-
-    override fun _solve(assumptions: LitArray): Boolean {
-        throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
-    }
-
-    override fun interrupt() {
-        throw UnsupportedOperationException(INTERRUPTION_NOT_SUPPORTED)
     }
 
     override fun getValue(lit: Lit): Boolean {
@@ -104,7 +106,7 @@ class DimacsStreamSolver(
     }
 
     override fun getModel(): Model {
-        return _model ?: error("Model is null because the solver is not in the SAT state")
+        return model ?: error("Model is null because the solver is not in the SAT state")
     }
 
     companion object {

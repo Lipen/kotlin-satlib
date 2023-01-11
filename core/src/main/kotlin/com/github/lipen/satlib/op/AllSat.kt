@@ -24,14 +24,14 @@ fun Solver.allSolutions(
 }
 
 fun Solver.allSolutions(
-    refutation: (Model) -> Iterable<Lit>,
+    refutation: (Model) -> List<Lit>,
 ): Sequence<Model> = sequence {
     while (solve()) {
         val model = getModel()
         yield(model)
 
         val refutationLits = refutation(model)
-        log.trace { "refutationLits = ${refutationLits.toList()}" }
+        log.trace { "refutationLits = $refutationLits" }
         addClause(refutationLits)
     }
     log.trace { "No more solutions" }

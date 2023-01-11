@@ -1,5 +1,8 @@
 package com.github.lipen.satlib.solver
 
+import com.github.lipen.satlib.solver.jna.CadicalSolver
+import com.github.lipen.satlib.solver.jna.GlucoseSolver
+import com.github.lipen.satlib.solver.jna.MinisatSolver
 import com.github.lipen.satlib.utils.useWith
 
 private object test_MinisatSolver {
@@ -29,7 +32,7 @@ private object test_CadicalSolver {
     }
 }
 
-fun Solver2.testSolverWithAssumptions() {
+fun Solver.testSolverWithAssumptions() {
     val x = newLiteral()
     val y = newLiteral()
     val z = newLiteral()
