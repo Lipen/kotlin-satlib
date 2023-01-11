@@ -8,4 +8,7 @@ dependencies {
     implementation(Libs.KotlinxCoroutines.kotlinx_coroutines_core)
 
     testImplementation(Libs.Klock.klock_jvm)
+
+    // FIXME: adhoc DI
+    testImplementation(project(":solvers-jni"))
 }

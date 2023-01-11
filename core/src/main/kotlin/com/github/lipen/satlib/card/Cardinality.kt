@@ -4,14 +4,8 @@ import com.github.lipen.satlib.core.AssumptionsProvider
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.LitArray
 import com.github.lipen.satlib.core.SequenceScopeLit
-import com.github.lipen.satlib.core.convert
-import com.github.lipen.satlib.core.newBoolVarArray
-import com.github.lipen.satlib.op.allSolutions
-import com.github.lipen.satlib.op.imply
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.toList_
-import com.github.lipen.satlib.utils.useWith
 
 private val log = mu.KotlinLogging.logger {}
 
@@ -126,38 +120,3 @@ fun Solver.declareCardinality(literals: Sequence<Lit>): Cardinality =
 
 fun Solver.declareCardinality(literals: SequenceScopeLit): Cardinality =
     declareCardinality(sequence(literals).constrainOnce())
-
-private fun main() {
-    fun Iterable<Boolean>.toBinaryString(): String =
-        joinToString("") { if (it) "1" else "0" }
-
-    MiniSatSolver().useWith {
-        val n = 5
-        val ub = 4
-        val lb = 2
-        val lits = context("lits") {
-            newBoolVarArray(n)
-        }
-
-        for (i in 1 until n) {
-            imply(lits[i], lits[i + 1])
-        }
-
-        // addClause(lits[5])
-
-        val totalizer = declareCardinality(lits.values)
-        println("totalizer = ${totalizer.totalizer}")
-        totalizer.assumeUpperBoundLessThanOrEqual(ub)
-        totalizer.assumeLowerBoundGreaterThanOrEqual(lb)
-        // totalizer.declareUpperBoundLessThanOrEqual(ub)
-        // totalizer.declareLowerBoundGreaterThanOrEqual(lb)
-
-        for ((i, model) in allSolutions(lits.values).withIndex()) {
-            println("Solution #${i + 1}")
-            val litsModel = lits.convert(model)
-            check(litsModel.shape.size == 1)
-            // println("       123456789")
-            println("lits = ${litsModel.values.toBinaryString()} (count = ${litsModel.values.count { it }})")
-        }
-    }
-}
