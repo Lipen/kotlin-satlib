@@ -4,6 +4,7 @@ include("core")
 include("jni")
 include("utils")
 include("jna")
+include("solvers-jna")
 
 plugins {
     `gradle-enterprise`

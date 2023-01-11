@@ -1,14 +1,32 @@
-@file:Suppress("FunctionName", "LocalVariableName")
+@file:Suppress("FunctionName", "LocalVariableName", "ClassName")
 
 package com.github.lipen.satlib.jna
 
+import com.sun.jna.DefaultTypeMapper
 import com.sun.jna.Library
 import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 
-private typealias minisat_Var = Int
-private typealias minisat_Lit = Int
-private typealias minisat_lbool = Int
+// TODO: Rename these classes to PascalCase:
+
+// Note: `minisat_Var` and `minisat_Lit` could be "inline classes",
+//   but JNA does not support mapping them.
+data class minisat_Var(val value: Int) {
+    override fun toString(): String = "Var($value)"
+}
+
+data class minisat_Lit(val value: Int) {
+    override fun toString(): String = "Lit($value)"
+}
+
+enum class minisat_lbool(val value: Int) {
+    True(1), False(0), Undef(-1);
+
+    companion object {
+        private val map = minisat_lbool.values().associateBy { it.value }
+        fun from(value: Int): minisat_lbool? = map[value]
+    }
+}
 
 interface LibMinisat : Library {
     fun minisat_signature(): String
@@ -25,6 +43,12 @@ interface LibMinisat : Library {
     fun minisat_var(p: minisat_Lit): minisat_Var
     fun minisat_sign(p: minisat_Lit): Boolean
 
+    fun minisat_setPolarity(ptr: CMinisat, v: minisat_Var, b: Int)
+    fun minisat_setDecisionVar(ptr: CMinisat, v: minisat_Var, b: Int)
+    fun minisat_setFrozen(ptr: CMinisat, v: minisat_Var, b: Boolean)
+    fun minisat_isEliminated(ptr: CMinisat, v: minisat_Var): Boolean
+    fun minisat_eliminate(ptr: CMinisat, turn_off_elim: Boolean): Boolean
+
     fun minisat_addClause(ptr: CMinisat, len: Int, ps: Pointer /* Lit* */): Boolean
     fun minisat_addClause_begin(ptr: CMinisat)
     fun minisat_addClause_addLit(ptr: CMinisat, p: minisat_Lit)
@@ -40,9 +64,6 @@ interface LibMinisat : Library {
     fun minisat_limited_solve_commit(ptr: CMinisat): minisat_lbool
 
     fun minisat_okay(ptr: CMinisat): Boolean
-
-    fun minisat_setPolarity(ptr: CMinisat, v: minisat_Var, b: Int)
-    fun minisat_setDecisionVar(ptr: CMinisat, v: minisat_Var, b: Int)
 
     fun minisat_get_l_True(): minisat_lbool
     fun minisat_get_l_False(): minisat_lbool
@@ -69,11 +90,9 @@ interface LibMinisat : Library {
     fun minisat_interrupt(ptr: CMinisat)
     fun minisat_clearInterrupt(ptr: CMinisat)
 
-    fun minisat_setFrozen(ptr: CMinisat, v: minisat_Var, b: Boolean)
-    fun minisat_isEliminated(ptr: CMinisat, v: minisat_Var): Boolean
-    fun minisat_eliminate(ptr: CMinisat, turn_off_elim: Boolean): Boolean
-
     fun minisat_set_verbosity(ptr: CMinisat, v: Int)
+    fun minisat_set_random_var_freq(ptr: CMinisat, freq: Double)
+    fun minisat_set_random_seed(ptr: CMinisat, seed: Double)
 
     fun minisat_num_conflicts(ptr: CMinisat): Long
     fun minisat_num_decisions(ptr: CMinisat): Long
@@ -85,7 +104,43 @@ interface LibMinisat : Library {
     companion object {
         val INSTANCE: LibMinisat by lazy(::load)
 
-        fun load(name: String = "minisat"): LibMinisat = loadLibraryDefault(name)
+        fun load(name: String = "minisat"): LibMinisat {
+            val mapper = DefaultTypeMapper()
+            mapper.addTypeConverter(minisat_Var::class.java, converterForVar)
+            mapper.addTypeConverter(minisat_Lit::class.java, converterForLit)
+            mapper.addTypeConverter(minisat_lbool::class.java, converterForLBool)
+            val options = mapOf(
+                Library.OPTION_TYPE_MAPPER to mapper,
+            )
+            return loadLibrary(name, options)
+            // .also { lib ->
+            //     check(lib.minisat_get_l_True() == minisat_lbool.True)
+            //     check(lib.minisat_get_l_False() == minisat_lbool.False)
+            //     check(lib.minisat_get_l_Undef() == minisat_lbool.Undef)
+            // }
+        }
+
+        private val converterForVar by lazy {
+            typeConverter<minisat_Var, Int>(
+                fromNative = { nativeValue, _ -> minisat_Var(nativeValue) },
+                toNative = { value, _ -> value.value }
+            )
+        }
+        private val converterForLit by lazy {
+            typeConverter<minisat_Lit, Int>(
+                fromNative = { nativeValue, _ -> minisat_Lit(nativeValue) },
+                toNative = { value, _ -> value.value }
+            )
+        }
+        private val converterForLBool by lazy {
+            typeConverter<minisat_lbool, Int>(
+                fromNative = { nativeValue, _ ->
+                    minisat_lbool.from(nativeValue)
+                        ?: error("Bad value: '$nativeValue'")
+                },
+                toNative = { value, _ -> value.value }
+            )
+        }
     }
 }
 
@@ -148,19 +203,33 @@ fun main() {
 
     // SAT
     println("Solving...")
-    println("res = ${lib.minisat_solve(ptr)} (must be SAT)")
+    val res1 = lib.minisat_solve(ptr)
+    println("res = $res1 (must be SAT)")
+    println("x = ${lib.minisat_value_Lit(ptr, x)}")
+    println("-x = ${lib.minisat_value_Lit(ptr, lib.minisat_negate(x))}")
+    check(res1)
 
     // UNSAT under assumptions
     println("Solving under assumption [$x]")
-    println("res = ${lib.minisat_solve(ptr, listOf(x))} (must be UNSAT)")
+    val assumptions = listOf(x)
+    val res2 = lib.minisat_solve(ptr, assumptions)
+    println("res = $res2 (must be UNSAT)")
+    println("x = ${lib.minisat_value_Lit(ptr, x)}")
+    check(!res2)
 
     // SAT again
     println("Solving again without assumptions...")
-    println("res = ${lib.minisat_solve(ptr)} (must be SAT)")
+    val res3 = lib.minisat_solve(ptr)
+    println("res = $res3 (must be SAT)")
+    println("x = ${lib.minisat_value_Lit(ptr, x)}")
+    check(res3)
 
     // UNSAT
     addClause(listOf(x))
-    println("res = ${lib.minisat_solve(ptr)} (must be UNSAT)")
+    val res4 = lib.minisat_solve(ptr)
+    println("res = $res4 (must be UNSAT)")
+    println("x = ${lib.minisat_value_Lit(ptr, x)}")
+    check(!res4)
 
     lib.minisat_release(ptr)
 

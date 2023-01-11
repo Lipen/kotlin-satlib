@@ -66,7 +66,7 @@ interface LibCadical : Library {
     companion object {
         val INSTANCE: LibCadical by lazy(::load)
 
-        fun load(name: String = "cadical"): LibCadical = loadLibraryDefault(name)
+        fun load(name: String = "cadical"): LibCadical = loadLibrary(name)
     }
 }
 

@@ -1,14 +1,28 @@
-@file:Suppress("FunctionName", "LocalVariableName")
+@file:Suppress("FunctionName", "LocalVariableName", "ClassName")
 
 package com.github.lipen.satlib.jna
 
+import com.sun.jna.DefaultTypeMapper
 import com.sun.jna.Library
 import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 
-private typealias glucose_Var = Int
-private typealias glucose_Lit = Int
-private typealias glucose_lbool = Int
+data class glucose_Var(val value: Int) {
+    override fun toString(): String = "Var($value)"
+}
+
+data class glucose_Lit(val value: Int) {
+    override fun toString(): String = "Lit($value)"
+}
+
+enum class glucose_lbool(val value: Int) {
+    True(1), False(0), Undef(-1);
+
+    companion object {
+        private val map = glucose_lbool.values().associateBy { it.value }
+        fun from(value: Int): glucose_lbool? = map[value]
+    }
+}
 
 interface LibGlucose : Library {
     fun glucose_signature(): String
@@ -25,6 +39,12 @@ interface LibGlucose : Library {
     fun glucose_var(p: glucose_Lit): glucose_Var
     fun glucose_sign(p: glucose_Lit): Boolean
 
+    fun glucose_setPolarity(ptr: CGlucose, v: glucose_Var, b: Int)
+    fun glucose_setDecisionVar(ptr: CGlucose, v: glucose_Var, b: Int)
+    fun glucose_setFrozen(ptr: CGlucose, v: glucose_Var, b: Boolean)
+    fun glucose_isEliminated(ptr: CGlucose, v: glucose_Var): Boolean
+    fun glucose_eliminate(ptr: CGlucose, turn_off_elim: Boolean): Boolean
+
     fun glucose_addClause(ptr: CGlucose, len: Int, ps: Pointer /* Lit* */): Boolean
     fun glucose_addClause_begin(ptr: CGlucose)
     fun glucose_addClause_addLit(ptr: CGlucose, p: glucose_Lit)
@@ -40,9 +60,6 @@ interface LibGlucose : Library {
     fun glucose_limited_solve_commit(ptr: CGlucose): glucose_lbool
 
     fun glucose_okay(ptr: CGlucose): Boolean
-
-    fun glucose_setPolarity(ptr: CGlucose, v: glucose_Var, b: Int)
-    fun glucose_setDecisionVar(ptr: CGlucose, v: glucose_Var, b: Int)
 
     fun glucose_get_l_True(): glucose_lbool
     fun glucose_get_l_False(): glucose_lbool
@@ -69,11 +86,10 @@ interface LibGlucose : Library {
     fun glucose_interrupt(ptr: CGlucose)
     fun glucose_clearInterrupt(ptr: CGlucose)
 
-    fun glucose_setFrozen(ptr: CGlucose, v: glucose_Var, b: Boolean)
-    fun glucose_isEliminated(ptr: CGlucose, v: glucose_Var): Boolean
-    fun glucose_eliminate(ptr: CGlucose, turn_off_elim: Boolean): Boolean
-
+    fun glucose_setIncremental(ptr: CGlucose)
     fun glucose_set_verbosity(ptr: CGlucose, v: Int)
+    fun glucose_set_random_var_freq(ptr: CGlucose, freq: Double)
+    fun glucose_set_random_seed(ptr: CGlucose, seed: Double)
 
     fun glucose_num_conflicts(ptr: CGlucose): Long
     fun glucose_num_decisions(ptr: CGlucose): Long
@@ -85,7 +101,43 @@ interface LibGlucose : Library {
     companion object {
         val INSTANCE: LibGlucose by lazy(::load)
 
-        fun load(name: String = "glucose"): LibGlucose = loadLibraryDefault(name)
+        fun load(name: String = "glucose"): LibGlucose {
+            val mapper = DefaultTypeMapper()
+            mapper.addTypeConverter(glucose_Var::class.java, converterForVar)
+            mapper.addTypeConverter(glucose_Lit::class.java, converterForLit)
+            mapper.addTypeConverter(glucose_lbool::class.java, converterForLBool)
+            val options = mapOf(
+                Library.OPTION_TYPE_MAPPER to mapper,
+            )
+            return loadLibrary(name, options)
+            // .also { lib ->
+            //     check(lib.glucose_get_l_True() == glucose_lbool.True)
+            //     check(lib.glucose_get_l_False() == glucose_lbool.False)
+            //     check(lib.glucose_get_l_Undef() == glucose_lbool.Undef)
+            // }
+        }
+
+        private val converterForVar by lazy {
+            typeConverter<glucose_Var, Int>(
+                fromNative = { nativeValue, _ -> glucose_Var(nativeValue) },
+                toNative = { value, _ -> value.value }
+            )
+        }
+        private val converterForLit by lazy {
+            typeConverter<glucose_Lit, Int>(
+                fromNative = { nativeValue, _ -> glucose_Lit(nativeValue) },
+                toNative = { value, _ -> value.value }
+            )
+        }
+        private val converterForLBool by lazy {
+            typeConverter<glucose_lbool, Int>(
+                fromNative = { nativeValue, _ ->
+                    glucose_lbool.from(nativeValue)
+                        ?: error("Bad value: '$nativeValue'")
+                },
+                toNative = { value, _ -> value.value }
+            )
+        }
     }
 }
 
@@ -130,6 +182,15 @@ fun main() {
     val ptr = lib.glucose_init()
     println("ptr = $ptr")
 
+    println("Setting incremental mode")
+    lib.glucose_setIncremental(ptr)
+
+    println("Setting verbosity")
+    lib.glucose_set_verbosity(ptr, 1)
+
+    println("Turning off elimination")
+    lib.glucose_eliminate(ptr, true)
+
     println("Allocating new literal")
     val x = lib.glucose_newLit(ptr)
     println("x = $x")
@@ -148,19 +209,33 @@ fun main() {
 
     // SAT
     println("Solving...")
-    println("res = ${lib.glucose_solve(ptr)} (must be SAT)")
+    val res1 = lib.glucose_solve(ptr)
+    println("res = $res1 (must be SAT)")
+    println("x = ${lib.glucose_value_Lit(ptr, x)}")
+    println("-x = ${lib.glucose_value_Lit(ptr, lib.glucose_negate(x))}")
+    check(res1)
 
     // UNSAT under assumptions
-    println("Solving under assumption [$x]")
-    println("res = ${lib.glucose_solve(ptr, listOf(x))} (must be UNSAT)")
+    val assumptions = listOf(x)
+    println("Solving under assumptions $assumptions")
+    val res2 = lib.glucose_solve(ptr, assumptions)
+    println("res = $res2 (must be UNSAT)")
+    println("x = $x = ${lib.glucose_value_Lit(ptr, x)}")
+    check(!res2)
 
     // SAT again
     println("Solving again without assumptions...")
-    println("res = ${lib.glucose_solve(ptr)} (must be SAT)")
+    val res3 = lib.glucose_solve(ptr)
+    println("res = $res3 (must be SAT)")
+    println("x = $x = ${lib.glucose_value_Lit(ptr, x)}")
+    check(res3)
 
     // UNSAT
     addClause(listOf(x))
-    println("res = ${lib.glucose_solve(ptr)} (must be UNSAT)")
+    val res4 = lib.glucose_solve(ptr)
+    println("res = $res4 (must be UNSAT)")
+    println("x = $x = ${lib.glucose_value_Lit(ptr, x)}")
+    check(!res4)
 
     lib.glucose_release(ptr)
 
