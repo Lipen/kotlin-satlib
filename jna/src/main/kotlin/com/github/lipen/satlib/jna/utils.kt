@@ -5,15 +5,21 @@ import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.ToNativeContext
 import com.sun.jna.TypeConverter
+import mu.KotlinLogging
 
-inline fun <reified T : Library> loadLibrary(
+internal val logger = KotlinLogging.logger {}
+
+internal inline fun <reified T : Library> loadLibrary(
     name: String,
     options: Map<String, *> = emptyMap<String, Any>(),
 ): T {
-    return Native.load(name, T::class.java, options)
+    logger.debug { "Loading '$name'..." }
+    val lib = Native.load(name, T::class.java, options)
+    logger.debug { "Loaded '$name': $lib" }
+    return lib
 }
 
-inline fun <reified T : Any, reified N : Any> typeConverter(
+internal inline fun <reified T : Any, reified N : Any> typeConverter(
     crossinline fromNative: (nativeValue: N, context: FromNativeContext?) -> T,
     crossinline toNative: (value: T, context: ToNativeContext?) -> N,
 ): TypeConverter = object : TypeConverter {
