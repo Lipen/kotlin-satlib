@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib.util
 
 import org.junit.jupiter.api.DisplayNameGenerator
 import java.lang.reflect.Method

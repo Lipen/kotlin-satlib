@@ -1,7 +1,9 @@
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib.jni.solver
 
-import com.github.lipen.satlib.jni.solver.GlucoseSolver
-import com.github.lipen.satlib.jni.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.solver.solve
+import com.github.lipen.satlib.util.MyDisplayNameGenerator
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.DisplayNameGeneration

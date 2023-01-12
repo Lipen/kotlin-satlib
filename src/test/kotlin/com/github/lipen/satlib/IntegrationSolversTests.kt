@@ -1,9 +1,14 @@
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib
 
 import com.github.lipen.satlib.jni.solver.CadicalSolver
 import com.github.lipen.satlib.jni.solver.CryptoMiniSatSolver
 import com.github.lipen.satlib.jni.solver.GlucoseSolver
 import com.github.lipen.satlib.jni.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.DimacsFileSolver
+import com.github.lipen.satlib.solver.DimacsStreamSolver
+import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.util.MyDisplayNameGenerator
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be in`
@@ -15,7 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DisplayNameGeneration(MyDisplayNameGenerator::class)
-class SolversTests {
+class IntegrationSolversTests {
     @ParameterizedTest(name = "{displayName} [{0}]")
     @MethodSource("solvers")
     fun Solver.`simple SAT`() {

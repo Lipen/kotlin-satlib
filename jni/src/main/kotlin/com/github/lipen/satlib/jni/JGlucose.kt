@@ -2,6 +2,7 @@ package com.github.lipen.satlib.jni
 
 import java.io.File
 
+@Suppress("FunctionName", "MemberVisibilityCanBePrivate")
 class JGlucose(
     val initialSeed: Double? = null, // default is 91648253
     val initialRandomVarFreq: Double? = null,

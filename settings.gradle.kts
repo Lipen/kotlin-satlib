@@ -2,6 +2,7 @@ rootProject.name = "kotlin-satlib"
 
 include("core")
 include("utils")
+include("tests-utils")
 include("jni")
 include("solvers-jni")
 include("jna")

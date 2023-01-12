@@ -1,4 +1,7 @@
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib.util
+
+import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
 
 fun Solver.declare_sgen_n120_sat() {
     check(numberOfVariables == 0)

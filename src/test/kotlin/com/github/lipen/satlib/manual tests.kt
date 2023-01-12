@@ -1,13 +1,18 @@
 @file:Suppress("ClassName")
 
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib
 
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.op.exactlyOne
 import com.github.lipen.satlib.jni.solver.CadicalSolver
 import com.github.lipen.satlib.jni.solver.CryptoMiniSatSolver
 import com.github.lipen.satlib.jni.solver.GlucoseSolver
 import com.github.lipen.satlib.jni.solver.MiniSatSolver
+import com.github.lipen.satlib.op.exactlyOne
+import com.github.lipen.satlib.solver.DimacsFileSolver
+import com.github.lipen.satlib.solver.DimacsStreamSolver
+import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import java.io.File
 
@@ -71,7 +76,7 @@ private object test_DimacsStreamSolver {
 private fun Boolean.toInt(): Int = if (this) 1 else 0
 
 private fun Solver.checkExactlyOne(vararg lits: Lit) {
-    check(lits.sumBy { getValue(it).toInt() } == 1)
+    check(lits.sumOf { getValue(it).toInt() } == 1)
 }
 
 internal fun Solver.testSolverWithAssumptions() {

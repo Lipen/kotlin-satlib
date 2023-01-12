@@ -2,7 +2,7 @@ package com.github.lipen.satlib.jni
 
 import java.io.File
 
-@Suppress("PropertyName", "FunctionName", "MemberVisibilityCanBePrivate", "unused")
+@Suppress("FunctionName", "MemberVisibilityCanBePrivate", "unused", "LocalVariableName")
 class JMiniSat(
     val initialSeed: Double? = null, // default is 91648253
     val initialRandomVarFreq: Double? = null,

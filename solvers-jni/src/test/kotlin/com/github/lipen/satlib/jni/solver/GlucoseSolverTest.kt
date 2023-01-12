@@ -1,15 +1,15 @@
-package com.github.lipen.satlib.solver
+package com.github.lipen.satlib.jni.solver
 
-import com.github.lipen.satlib.jni.solver.MiniSatSolver
 import com.github.lipen.satlib.op.runWithTimeout
+import com.github.lipen.satlib.util.declare_sgen_n120_sat
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-class MiniSatSolverTest {
-    private val solver = MiniSatSolver()
+class GlucoseSolverTest {
+    private val solver = GlucoseSolver()
 
     @Test
     fun `solving with timeout`(): Unit = with(solver) {

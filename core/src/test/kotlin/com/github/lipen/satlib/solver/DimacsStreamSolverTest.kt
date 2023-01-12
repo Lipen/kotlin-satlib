@@ -52,7 +52,6 @@ class DimacsStreamSolverTest {
         val x = newLiteral()
 
         addClause(x)
-        @Suppress("deprecation")
         addClause()
 
         solve().`should be false`()

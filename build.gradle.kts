@@ -84,14 +84,25 @@ fun Project.configureKotlinConventions() {
 }
 
 allprojects {
-    // configureKotlinConventions()
+    configureKotlinConventions()
 }
 
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
     version = rootProject.version
+}
 
-    configureKotlinConventions()
+dependencies {
+    api(project(":core"))
+    api(project(":jni"))
+    api(project(":solvers-jni"))
+    api(project(":jna"))
+    api(project(":solvers-jna"))
+    implementation(project(":utils"))
+    implementation(project(":tests-utils"))
+
+    testImplementation(Libs.Klock.klock_jvm)
+    testImplementation(Libs.Okio.okio)
 }
 
 idea {
