@@ -9,7 +9,7 @@
 #include <cryptominisat5/cryptominisat.h>
 
 #define JNI_METHOD(rtype, name) \
-    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_solver_JCryptoMiniSat_##name
+    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_JCryptoMiniSat_##name
 
 static inline jlong encode(CMSat::SATSolver* p) {
 	return static_cast<jlong>(reinterpret_cast<intptr_t>(p));

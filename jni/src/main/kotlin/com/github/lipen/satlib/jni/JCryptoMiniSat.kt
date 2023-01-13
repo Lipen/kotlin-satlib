@@ -160,3 +160,8 @@ class JCryptoMiniSat(
         private const val LBOOL_UNDEF: Byte = 2
     }
 }
+
+fun main() {
+    val solver = JCryptoMiniSat()
+    println("solver = $solver")
+}

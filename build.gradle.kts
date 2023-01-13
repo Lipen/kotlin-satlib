@@ -101,6 +101,10 @@ dependencies {
     implementation(project(":utils"))
     implementation(project(":tests-utils"))
 
+    // // FIXME: temporary logging
+    // runtimeOnly(Libs.Log4j.log4j_core)
+    // runtimeOnly(Libs.Log4j.log4j_slf4j2_impl)
+
     testImplementation(Libs.Klock.klock_jvm)
     testImplementation(Libs.Okio.okio)
 }

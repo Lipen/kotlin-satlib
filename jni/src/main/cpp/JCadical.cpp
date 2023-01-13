@@ -7,7 +7,7 @@
 #include <cadical/cadical.hpp>
 
 #define JNI_METHOD(rtype, name) \
-    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_solver_JCadical_##name
+    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_JCadical_##name
 
 static inline jlong encode(CaDiCaL::Solver* p) {
     return (jlong) (intptr_t) p;

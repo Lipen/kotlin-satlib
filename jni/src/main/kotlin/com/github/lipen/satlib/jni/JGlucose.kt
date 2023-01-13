@@ -280,3 +280,8 @@ class JGlucose(
         private const val LBOOL_UNDEF: Byte = 2
     }
 }
+
+fun main() {
+    val solver = JGlucose()
+    println("solver = $solver")
+}

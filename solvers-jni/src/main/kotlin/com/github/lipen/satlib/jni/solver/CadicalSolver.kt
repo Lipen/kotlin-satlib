@@ -40,7 +40,11 @@ class CadicalSolver @JvmOverloads constructor(
     }
 
     override fun _solve(): Boolean {
-        return backend.solve()
+        return if (assumptions.isEmpty()) {
+            backend.solve()
+        } else {
+            backend.solve(assumptions.toIntArray())
+        }
     }
 
     override fun getValue(lit: Lit): Boolean {

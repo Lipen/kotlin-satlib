@@ -1,4 +1,6 @@
-package com.github.lipen.satlib.util
+@file:Suppress("FunctionName")
+
+package com.github.lipen.satlib.test
 
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause

@@ -27,7 +27,7 @@
 #include <minisat/simp/SimpSolver.h>
 
 #define JNI_METHOD(rtype, name) \
-    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_solver_JMiniSat_##name
+    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_JMiniSat_##name
 
 static inline jlong encode(Minisat::SimpSolver* p) {
     return (jlong) (intptr_t) p;

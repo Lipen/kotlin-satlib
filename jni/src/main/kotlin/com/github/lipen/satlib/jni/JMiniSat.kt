@@ -306,3 +306,8 @@ class JMiniSat(
         private const val LBOOL_UNDEF: Byte = 2
     }
 }
+
+fun main() {
+    val solver = JMiniSat()
+    println("solver = $solver")
+}

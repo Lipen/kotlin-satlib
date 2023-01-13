@@ -8,7 +8,7 @@
 #include <glucose/simp/SimpSolver.h>
 
 #define JNI_METHOD(rtype, name) \
-    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_solver_JGlucose_##name
+    JNIEXPORT rtype JNICALL Java_com_github_lipen_satlib_jni_JGlucose_##name
 
 static inline jlong encode(Glucose::SimpSolver* p) {
     return (jlong) (intptr_t) p;
