@@ -23,6 +23,7 @@ internal fun parseDimacsOutput(source: BufferedSource): Model? {
                 .toList()
                 .also { check(it.isNotEmpty()) { "Model is empty" } }
                 .let { Model.from(it, zerobased = true) }
+
         else -> error("Bad answer (neither SAT nor UNSAT) from solver: '$answer'")
     }
 }
