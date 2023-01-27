@@ -1,8 +1,10 @@
+@file:Suppress("ClassName")
+
 package com.github.lipen.satlib.solver
 
-import com.github.lipen.satlib.jna.solver.CadicalSolver
-import com.github.lipen.satlib.jna.solver.GlucoseSolver
-import com.github.lipen.satlib.jna.solver.MinisatSolver
+import com.github.lipen.satlib.solver.jna.CadicalSolver
+import com.github.lipen.satlib.solver.jna.GlucoseSolver
+import com.github.lipen.satlib.solver.jna.MinisatSolver
 import com.github.lipen.satlib.utils.useWith
 
 private object test_MinisatSolver {

@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.jni.solver
+package com.github.lipen.satlib.solver.jni
 
 import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.test.`assumptions are supported`
@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-class CadicalSolverTest {
-    private val solver = CadicalSolver()
+class CryptoMiniSatSolverTest {
+    private val solver = CryptoMiniSatSolver()
 
     @Test
     fun `simple SAT`() {

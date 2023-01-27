@@ -1,14 +1,14 @@
-package com.github.lipen.satlib.jna.solver
+package com.github.lipen.satlib.solver.jna
 
 import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.newContext
-import com.github.lipen.satlib.jna.LibMiniSat
-import com.github.lipen.satlib.jna.minisat_Lit
-import com.github.lipen.satlib.jna.minisat_addClause
-import com.github.lipen.satlib.jna.minisat_lbool
-import com.github.lipen.satlib.jna.minisat_solve
+import com.github.lipen.satlib.jna.LibGlucose
+import com.github.lipen.satlib.jna.glucose_Lit
+import com.github.lipen.satlib.jna.glucose_addClause
+import com.github.lipen.satlib.jna.glucose_lbool
+import com.github.lipen.satlib.jna.glucose_solve
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
@@ -20,14 +20,14 @@ import kotlin.math.absoluteValue
 private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
-class MinisatSolver(
+class GlucoseSolver(
     val initialSeed: Double? = null, // internal default is 0
 ) : Solver {
-    val native: LibMiniSat = LibMiniSat.INSTANCE
-    val ptr: LibMiniSat.CMiniSat = native.minisat_init()
+    val native: LibGlucose = LibGlucose.INSTANCE
+    val ptr: LibGlucose.CGlucose = native.glucose_init()
 
     init {
-        if (initialSeed != null) native.minisat_set_random_seed(ptr, initialSeed)
+        if (initialSeed != null) native.glucose_set_random_seed(ptr, initialSeed)
     }
 
     override var context: Context = newContext()
@@ -45,26 +45,26 @@ class MinisatSolver(
         numberOfClauses = 0
         assumptions.clear()
 
-        if (ptr.pointer != Pointer.NULL) native.minisat_release(ptr)
-        ptr.pointer = native.minisat_init().pointer
-        // if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("minisat_init returned NULL")
-        if (initialSeed != null) native.minisat_set_random_seed(ptr, initialSeed)
+        if (ptr.pointer != Pointer.NULL) native.glucose_release(ptr)
+        ptr.pointer = native.glucose_init().pointer
+        // if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("glucose_init returned NULL")
+        if (initialSeed != null) native.glucose_set_random_seed(ptr, initialSeed)
     }
 
     override fun close() {
         if (ptr.pointer != Pointer.NULL) {
-            native.minisat_release(ptr)
+            native.glucose_release(ptr)
             ptr.pointer = Pointer.NULL
         }
     }
 
     override fun interrupt() {
-        // TODO: native.minisat_terminate(ptr)
+        // TODO: native.glucose_terminate(ptr)
         TODO()
     }
 
     override fun dumpDimacs(file: File) {
-        // TODO: native.minisat_write_dimacs(ptr, file.path)
+        // TODO: native.glucose_write_dimacs(ptr, file.path)
         TODO()
     }
 
@@ -74,27 +74,27 @@ class MinisatSolver(
 
     override fun newLiteral(): Lit {
         val lit = ++numberOfVariables
-        val ms = native.minisat_newLit(ptr)
-        check(lit == fromMinisat(ms))
+        val ms = native.glucose_newLit(ptr)
+        check(lit == fromGlucose(ms))
         return lit
     }
 
     override fun addClause(literals: List<Lit>) {
         ++numberOfClauses
-        native.minisat_addClause(ptr, literals.map { toMinisat(it) })
+        native.glucose_addClause(ptr, literals.map { toGlucose(it) })
     }
 
     override fun solve(): Boolean {
-        val res = native.minisat_solve(ptr, assumptions.map { toMinisat(it) })
+        val res = native.glucose_solve(ptr, assumptions.map { toGlucose(it) })
         assumptions.clear()
         return res
     }
 
     override fun getValue(lit: Lit): Boolean {
-        return when (native.minisat_value_Lit(ptr, toMinisat(lit))) {
-            minisat_lbool.True -> true
-            minisat_lbool.False -> false
-            minisat_lbool.Undef -> false // FIXME?
+        return when (native.glucose_value_Lit(ptr, toGlucose(lit))) {
+            glucose_lbool.True -> true
+            glucose_lbool.False -> false
+            glucose_lbool.Undef -> false // FIXME?
         }
     }
 
@@ -105,20 +105,20 @@ class MinisatSolver(
     }
 }
 
-fun toMinisat(lit: Lit): minisat_Lit {
+fun toGlucose(lit: Lit): glucose_Lit {
     val v = lit.absoluteValue - 1
     val sign = if (lit > 0) 1 else 0
-    return minisat_Lit(2 * v + sign)
+    return glucose_Lit(2 * v + sign)
 }
 
-fun fromMinisat(lit: minisat_Lit): Lit {
+fun fromGlucose(lit: glucose_Lit): Lit {
     val v = (lit.value shr 1) + 1 // 1-based variable index
     return if (lit.value and 1 == 1) -v else v
 }
 
 @Suppress("DuplicatedCode")
 fun main() {
-    MinisatSolver().useWith {
+    GlucoseSolver().useWith {
         val tie = newLiteral()
         val shirt = newLiteral()
         println("tie = $tie")

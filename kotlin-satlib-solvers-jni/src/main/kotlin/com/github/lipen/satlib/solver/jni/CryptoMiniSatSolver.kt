@@ -1,17 +1,17 @@
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package com.github.lipen.satlib.jni.solver
+package com.github.lipen.satlib.solver.jni
 
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.Model
-import com.github.lipen.satlib.jni.JCadical
+import com.github.lipen.satlib.jni.JCryptoMiniSat
 import com.github.lipen.satlib.solver.AbstractSolver
 import java.io.File
 
-class CadicalSolver @JvmOverloads constructor(
-    val backend: JCadical = JCadical(),
+class CryptoMiniSatSolver @JvmOverloads constructor(
+    val backend: JCryptoMiniSat = JCryptoMiniSat(),
 ) : AbstractSolver() {
-    constructor(initialSeed: Int?) : this(backend = JCadical(initialSeed))
+    constructor(numberOfThreads: Int) : this(backend = JCryptoMiniSat(numberOfThreads))
 
     override fun _reset() {
         backend.reset()
@@ -22,7 +22,7 @@ class CadicalSolver @JvmOverloads constructor(
     }
 
     override fun _interrupt() {
-        backend.terminate()
+        backend.interrupt()
     }
 
     override fun _dumpDimacs(file: File) {
@@ -32,6 +32,7 @@ class CadicalSolver @JvmOverloads constructor(
     override fun _comment(comment: String) {}
 
     override fun _newLiteral(outer: Lit): Lit {
+        backend.newVariable()
         return outer
     }
 
@@ -52,6 +53,6 @@ class CadicalSolver @JvmOverloads constructor(
     }
 
     override fun getModel(): Model {
-        return Model.from(backend.getModel(), zerobased = false)
+        return Model.from(backend.getModel(), zerobased = true)
     }
 }

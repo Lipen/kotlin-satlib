@@ -1,37 +1,42 @@
-package com.github.lipen.satlib.jna.solver
+package com.github.lipen.satlib.solver.jna
 
 import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.newContext
-import com.github.lipen.satlib.jna.LibCadical
-import com.github.lipen.satlib.jna.ccadical_add_clause
-import com.github.lipen.satlib.jna.ccadical_solve
+import com.github.lipen.satlib.jna.LibMiniSat
+import com.github.lipen.satlib.jna.minisat_Lit
+import com.github.lipen.satlib.jna.minisat_addClause
+import com.github.lipen.satlib.jna.minisat_lbool
+import com.github.lipen.satlib.jna.minisat_solve
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.sun.jna.Pointer
 import mu.KotlinLogging
 import java.io.File
+import kotlin.math.absoluteValue
 
 private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
-class CadicalSolver(
-    val initialSeed: Int? = null, // internal default is 0
+class MinisatSolver(
+    val initialSeed: Double? = null, // internal default is 0
 ) : Solver {
-    val native: LibCadical = LibCadical.INSTANCE
-    val ptr: LibCadical.CCadical = native.ccadical_init()
+    val native: LibMiniSat = LibMiniSat.INSTANCE
+    val ptr: LibMiniSat.CMiniSat = native.minisat_init()
 
     init {
-        if (initialSeed != null) native.ccadical_set_option(ptr, "seed", initialSeed)
+        if (initialSeed != null) native.minisat_set_random_seed(ptr, initialSeed)
     }
 
     override var context: Context = newContext()
+
     override var numberOfVariables: Int = 0
         private set
     override var numberOfClauses: Int = 0
         private set
+
     override val assumptions: MutableList<Lit> = mutableListOf()
 
     override fun reset() {
@@ -40,25 +45,27 @@ class CadicalSolver(
         numberOfClauses = 0
         assumptions.clear()
 
-        if (ptr.pointer != Pointer.NULL) native.ccadical_release(ptr)
-        ptr.pointer = native.ccadical_init().pointer
-        // if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("ccadical_init returned NULL")
-        if (initialSeed != null) native.ccadical_set_option(ptr, "seed", initialSeed)
+        if (ptr.pointer != Pointer.NULL) native.minisat_release(ptr)
+        ptr.pointer = native.minisat_init().pointer
+        // if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("minisat_init returned NULL")
+        if (initialSeed != null) native.minisat_set_random_seed(ptr, initialSeed)
     }
 
     override fun close() {
         if (ptr.pointer != Pointer.NULL) {
-            native.ccadical_release(ptr)
+            native.minisat_release(ptr)
             ptr.pointer = Pointer.NULL
         }
     }
 
     override fun interrupt() {
-        native.ccadical_terminate(ptr)
+        // TODO: native.minisat_terminate(ptr)
+        TODO()
     }
 
     override fun dumpDimacs(file: File) {
-        native.ccadical_write_dimacs(ptr, file.path)
+        // TODO: native.minisat_write_dimacs(ptr, file.path)
+        TODO()
     }
 
     override fun comment(comment: String) {
@@ -66,42 +73,52 @@ class CadicalSolver(
     }
 
     override fun newLiteral(): Lit {
-        return ++numberOfVariables
+        val lit = ++numberOfVariables
+        val ms = native.minisat_newLit(ptr)
+        check(lit == fromMinisat(ms))
+        return lit
     }
 
     override fun addClause(literals: List<Lit>) {
         ++numberOfClauses
-        native.ccadical_add_clause(ptr, literals)
+        native.minisat_addClause(ptr, literals.map { toMinisat(it) })
     }
 
     override fun solve(): Boolean {
-        val res = native.ccadical_solve(ptr, assumptions)
+        val res = native.minisat_solve(ptr, assumptions.map { toMinisat(it) })
         assumptions.clear()
-        return when (res) {
-            0 -> false // UNSOLVED
-            10 -> true // SATISFIABLE
-            20 -> false // UNSATISFIABLE
-            else -> error("ccadical_solve returned $res")
-        }
+        return res
     }
 
     override fun getValue(lit: Lit): Boolean {
-        return when (val res = native.ccadical_val(ptr, lit)) {
-            lit -> true
-            -lit -> false
-            else -> error("ccadical_val(lit = $lit) returned $res")
+        return when (native.minisat_value_Lit(ptr, toMinisat(lit))) {
+            minisat_lbool.True -> true
+            minisat_lbool.False -> false
+            minisat_lbool.Undef -> false // FIXME?
         }
     }
 
     override fun getModel(): Model {
-        val data = List(numberOfVariables) { i -> getValue(i + 1) }
+        // TODO: more efficient model extraction.
+        val data = List(numberOfVariables) { getValue(it + 1) }
         return Model.from(data, false)
     }
 }
 
+fun toMinisat(lit: Lit): minisat_Lit {
+    val v = lit.absoluteValue - 1
+    val sign = if (lit > 0) 1 else 0
+    return minisat_Lit(2 * v + sign)
+}
+
+fun fromMinisat(lit: minisat_Lit): Lit {
+    val v = (lit.value shr 1) + 1 // 1-based variable index
+    return if (lit.value and 1 == 1) -v else v
+}
+
 @Suppress("DuplicatedCode")
 fun main() {
-    CadicalSolver().useWith {
+    MinisatSolver().useWith {
         val tie = newLiteral()
         val shirt = newLiteral()
         println("tie = $tie")
@@ -126,20 +143,12 @@ fun main() {
         val res2 = solve(listOf(tie))
         println("Result: ${if (res2) "SAT" else "UNSAT"}")
         check(!res2)
-        println("tie failed: ${native.ccadical_failed(ptr, tie)}")
-        println("shirt failed: ${native.ccadical_failed(ptr, shirt)}")
-        check(native.ccadical_failed(ptr, tie))
-        check(!native.ccadical_failed(ptr, shirt))
 
         println()
         println("Solving with assumption SHIRT=false...")
         val res3 = solve(listOf(-shirt))
         println("Result: ${if (res3) "SAT" else "UNSAT"}")
         check(!res3)
-        println("tie failed: ${native.ccadical_failed(ptr, tie)}")
-        println("-shirt failed: ${native.ccadical_failed(ptr, -shirt)}")
-        check(!native.ccadical_failed(ptr, tie))
-        check(native.ccadical_failed(ptr, -shirt))
     }
     println()
     println("All done!")

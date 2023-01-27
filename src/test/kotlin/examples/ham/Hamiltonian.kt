@@ -10,7 +10,7 @@ import com.github.lipen.satlib.core.eq
 import com.github.lipen.satlib.core.neq
 import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.jni.solver.CadicalSolver
-import com.github.lipen.satlib.jni.solver.GlucoseSolver
+import com.github.lipen.satlib.solver.jni.GlucoseSolver
 import com.github.lipen.satlib.jni.solver.MiniSatSolver
 import com.github.lipen.satlib.op.allSolutions
 import com.github.lipen.satlib.op.exactlyOne

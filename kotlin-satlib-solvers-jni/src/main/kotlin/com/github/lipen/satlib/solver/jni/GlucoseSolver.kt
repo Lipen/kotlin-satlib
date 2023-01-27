@@ -1,16 +1,16 @@
 @file:Suppress("MemberVisibilityCanBePrivate", "LocalVariableName")
 
-package com.github.lipen.satlib.jni.solver
+package com.github.lipen.satlib.solver.jni
 
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.Model
-import com.github.lipen.satlib.jni.JMiniSat
+import com.github.lipen.satlib.jni.JGlucose
 import com.github.lipen.satlib.solver.AbstractSolver
 import java.io.File
 
-class MiniSatSolver @JvmOverloads constructor(
+class GlucoseSolver @JvmOverloads constructor(
     val simpStrategy: SimpStrategy = SimpStrategy.ONCE,
-    val backend: JMiniSat = JMiniSat(),
+    val backend: JGlucose = JGlucose(),
 ) : AbstractSolver() {
     private var simplified = false
 
@@ -22,7 +22,7 @@ class MiniSatSolver @JvmOverloads constructor(
         initialRandomInitialActivities: Boolean = false,
     ) : this(
         simpStrategy = simpStrategy,
-        backend = JMiniSat(
+        backend = JGlucose(
             initialSeed = initialSeed,
             initialRandomVarFreq = initialRandomVarFreq,
             initialRandomPolarities = initialRandomPolarities,
@@ -58,7 +58,7 @@ class MiniSatSolver @JvmOverloads constructor(
 
     override fun _comment(comment: String) {}
 
-    override fun _newLiteral(outer: Int): Lit {
+    override fun _newLiteral(outer: Lit): Lit {
         return backend.newVariable()
     }
 

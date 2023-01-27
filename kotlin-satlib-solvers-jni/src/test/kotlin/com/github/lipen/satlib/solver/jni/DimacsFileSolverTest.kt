@@ -1,4 +1,4 @@
-package com.github.lipen.satlib.jni.solver
+package com.github.lipen.satlib.solver.jni
 
 import com.github.lipen.satlib.solver.DimacsFileSolver
 import com.github.lipen.satlib.test.`empty clause leads to UNSAT`
