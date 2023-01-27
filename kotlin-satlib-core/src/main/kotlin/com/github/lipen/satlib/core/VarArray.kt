@@ -20,7 +20,6 @@ class BoolVarArray @PublishedApi internal constructor(
         ): BoolVarArray = new(shape, zerobased, init)
 
         @JvmStatic
-        @Suppress("FunctionName")
         inline fun new(
             shape: IntArray,
             zerobased: Boolean = false,
