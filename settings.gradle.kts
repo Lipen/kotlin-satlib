@@ -1,13 +1,5 @@
 rootProject.name = "kotlin-satlib"
 
-include("core")
-include("utils")
-include("tests-utils")
-include("jni")
-include("solvers-jni")
-include("jna")
-include("solvers-jna")
-
 plugins {
     `gradle-enterprise`
 }
@@ -18,3 +10,16 @@ gradleEnterprise {
         termsOfServiceAgree = "yes"
     }
 }
+
+fun myInclude(name:String) {
+    include(name)
+    project(":$name").projectDir = file("${rootProject.name}-$name")
+}
+
+myInclude("core")
+myInclude("utils")
+myInclude("jni")
+myInclude("solvers-jni")
+myInclude("jna")
+myInclude("solvers-jna")
+include("tests-utils")

@@ -39,4 +39,4 @@ boolexpr/
 *.R
 
 # Solvers sources
-/jni/solvers
+/kotlin-satlib-jni/solvers/
