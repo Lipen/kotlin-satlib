@@ -1,7 +1,9 @@
 package com.github.lipen.satlib.core
 
+import com.github.lipen.multiarray.Index
 import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray
+import com.github.lipen.multiarray.Shape
 import com.github.lipen.satlib.solver.Solver
 
 typealias DomainVarArray<T> = MultiArray<DomainVar<T>>
@@ -16,15 +18,15 @@ class BoolVarArray @PublishedApi internal constructor(
         inline fun new(
             vararg shape: Int,
             zerobased: Boolean = false,
-            init: (IntArray) -> Lit,
+            init: (Index) -> Lit,
         ): BoolVarArray = new(shape, zerobased, init)
 
         @JvmStatic
         inline fun new(
             shape: IntArray,
             zerobased: Boolean = false,
-            init: (IntArray) -> Lit,
-        ): BoolVarArray = BoolVarArray(IntMultiArray.new(shape, zerobased, init))
+            init: (Index) -> Lit,
+        ): BoolVarArray = BoolVarArray(IntMultiArray.new(Shape(shape), zerobased, init))
     }
 }
 
@@ -33,8 +35,8 @@ inline fun <T> Solver.newDomainVarArray(
     zerobased: Boolean = false,
     encodeOneHot: Boolean = true,
     init: (T) -> Lit = { newLiteral() },
-    domain: (IntArray) -> Iterable<T>,
-): DomainVarArray<T> = DomainVarArray.new(shape, zerobased) { index ->
+    domain: (Index) -> Iterable<T>,
+): DomainVarArray<T> = DomainVarArray.new(Shape(shape), zerobased) { index ->
     newDomainVar(domain(index), encodeOneHot, init)
 }
 
@@ -43,15 +45,15 @@ inline fun Solver.newIntVarArray(
     zerobased: Boolean = false,
     encodeOneHot: Boolean = true,
     init: (Int) -> Lit = { newLiteral() },
-    domain: (IntArray) -> Iterable<Int>,
-): IntVarArray = IntVarArray.new(shape, zerobased) { index ->
+    domain: (Index) -> Iterable<Int>,
+): IntVarArray = IntVarArray.new(Shape(shape), zerobased) { index ->
     newIntVar(domain(index), encodeOneHot, init)
 }
 
 inline fun Solver.newBoolVarArray(
     vararg shape: Int,
     zerobased: Boolean = false,
-    init: (IntArray) -> Lit = { newLiteral() },
+    init: (Index) -> Lit = { newLiteral() },
 ): BoolVarArray = BoolVarArray.new(shape, zerobased, init)
 
 val <T> DomainVarArray<T>.literals: List<Lit>
