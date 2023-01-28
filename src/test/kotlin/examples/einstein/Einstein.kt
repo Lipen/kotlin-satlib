@@ -13,7 +13,7 @@ import com.github.lipen.satlib.op.imply
 import com.github.lipen.satlib.op.implyOr
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
-import com.github.lipen.satlib.solver.jni.GlucoseSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
 import com.github.lipen.satlib.utils.useWith
 import examples.utils.secondsSince
 import examples.utils.timeNow
@@ -21,9 +21,9 @@ import examples.utils.timeNow
 object GlobalsEinstein {
     val solverProvider: () -> Solver = {
         // MiniSatSolver()
-        GlucoseSolver()
+        // GlucoseSolver()
         // CryptoMiniSatSolver()
-        // CadicalSolver()
+        CadicalSolver()
     }
 
     init {

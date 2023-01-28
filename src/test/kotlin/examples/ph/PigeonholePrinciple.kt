@@ -1,7 +1,7 @@
 package examples.ph
 
 import com.github.lipen.satlib.solver.Solver
-import com.github.lipen.satlib.jni.solver.CadicalSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
 import examples.utils.secondsSince
 import examples.utils.timeNow
 

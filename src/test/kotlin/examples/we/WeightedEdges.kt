@@ -10,15 +10,15 @@ import com.github.lipen.satlib.core.newIntVarArray
 import com.github.lipen.satlib.op.imply
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
-import com.github.lipen.satlib.solver.jni.GlucoseSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
 import com.github.lipen.satlib.utils.useWith
 
 object GlobalsTheTask {
     val solverProvider: () -> Solver = {
         // MiniSatSolver()
-        GlucoseSolver()
+        // GlucoseSolver()
         // CryptoMiniSatSolver()
-        // CadicalSolver()
+        CadicalSolver()
     }
 
     init {
