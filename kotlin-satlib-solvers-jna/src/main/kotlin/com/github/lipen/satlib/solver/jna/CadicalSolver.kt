@@ -95,7 +95,7 @@ class CadicalSolver(
 
     override fun getModel(): Model {
         val data = List(numberOfVariables) { i -> getValue(i + 1) }
-        return Model.from(data, false)
+        return Model.from(data, zerobased = true)
     }
 }
 
