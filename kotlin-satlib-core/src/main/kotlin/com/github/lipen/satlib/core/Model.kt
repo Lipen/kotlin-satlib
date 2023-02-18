@@ -4,6 +4,9 @@ import com.github.lipen.multiarray.BooleanMultiArray
 import com.github.lipen.multiarray.IntMultiArray
 import com.github.lipen.multiarray.MultiArray
 import com.github.lipen.multiarray.map
+import com.github.lipen.satlib.utils.DomainMap
+import com.github.lipen.satlib.utils.Tuple
+import com.github.lipen.satlib.utils.mapValues
 import kotlin.math.absoluteValue
 
 class Model private constructor(
@@ -65,11 +68,46 @@ fun <T : Any> Context.convertDomainVar(name: String, model: Model): T? =
 fun Context.convertIntVar(name: String, model: Model): Int? =
     get<IntVar>(name).convert(model)
 
-inline fun <reified T> Context.convertDomainVarArray(name: String, model: Model): MultiArray<T> =
-    get<DomainVarArray<T>>(name).convert(model)
+inline fun <reified T> Context.convertDomainVarArray(
+    name: String,
+    model: Model,
+): MultiArray<T> = get<DomainVarArray<T>>(name).convert(model)
 
-fun Context.convertIntVarArray(name: String, model: Model): IntMultiArray =
-    get<IntVarArray>(name).convert(model)
+fun Context.convertIntVarArray(
+    name: String,
+    model: Model,
+): IntMultiArray = get<IntVarArray>(name).convert(model)
 
-fun Context.convertBoolVarArray(name: String, model: Model): BooleanMultiArray =
-    get<BoolVarArray>(name).convert(model)
+fun Context.convertBoolVarArray(
+    name: String,
+    model: Model,
+): BooleanMultiArray = get<BoolVarArray>(name).convert(model)
+
+// ==================================================
+
+@JvmName("domainVarDomainMapConvert")
+fun <K : Tuple, T : Any> DomainVarDomainMap<K, T>.convert(model: Model): DomainMap<K, T> =
+    mapValues { (_, v) -> v.convert(model) ?: error("So sad :c") }
+
+@JvmName("intVarDomainMapConvert")
+fun <K : Tuple> IntVarDomainMap<K>.convert(model: Model): DomainMap<K, Int> =
+    mapValues { (_, v) -> v.convert(model) ?: error("So sad :c") }
+
+@JvmName("boolVarDomainMapConvert")
+fun <K : Tuple> BoolVarDomainMap<K>.convert(model: Model): DomainMap<K, Boolean> =
+    mapValues { (_, v) -> model[v] }
+
+inline fun <K : Tuple, reified T : Any> Context.convertDomainVarDomainMap(
+    name: String,
+    model: Model,
+): DomainMap<K, T> = get<DomainVarDomainMap<K, T>>(name).convert(model)
+
+fun <K : Tuple> Context.convertIntVarDomainMap(
+    name: String,
+    model: Model,
+): DomainMap<K, Int> = get<IntVarDomainMap<K>>(name).convert(model)
+
+fun <K : Tuple> Context.convertBoolVarDomainMap(
+    name: String,
+    model: Model,
+): DomainMap<K, Boolean> = get<BoolVarDomainMap<K>>(name).convert(model)
