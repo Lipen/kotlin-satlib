@@ -38,5 +38,6 @@ inline fun Solver.newBoolVarArray(
 val <T> DomainVarArray<T>.literals: List<Lit>
     get() = values.flatMap { it.literals }
 
+@get:JvmName("literalsBoolVarArray")
 val BoolVarArray.literals: List<Lit>
     get() = values
