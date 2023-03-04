@@ -11,13 +11,16 @@ interface DomainVar<T> {
     val literals: Collection<Lit> // Note: proper order is *not* guaranteed
 
     companion object {
+        fun <T> from(storage: Map<T, Lit>): DomainVar<T> = DomainVarImpl(storage)
+
+        fun <T> empty(): DomainVar<T> = from(emptyMap())
+
+        // constructor
         @JvmStatic
         inline fun <T> new(
             domain: Iterable<T>,
             init: (T) -> Lit,
-        ): DomainVar<T> = DefaultDomainVar(domain, init)
-
-        fun <T> empty(): DomainVar<T> = DefaultDomainVar(emptyMap())
+        ): DomainVar<T> = from(domain.associateWith(init))
     }
 }
 
@@ -27,7 +30,7 @@ infix fun <T> DomainVar<T>.neq(value: T): Lit = -eq(value)
 // infix fun <T> DomainVar<T>.safeEq(value: T): Lit = storage[value] ?: Solver.falseLiteral
 // infix fun <T> DomainVar<T>.safeNeq(value: T): Lit = -safeEq(value)
 
-class DefaultDomainVar<T> @PublishedApi internal constructor(
+private class DomainVarImpl<T>(
     override val storage: Map<T, Lit>,
 ) : DomainVar<T> {
     override val domain: Set<T> = storage.keys
@@ -35,13 +38,6 @@ class DefaultDomainVar<T> @PublishedApi internal constructor(
 
     override fun toString(): String {
         return "OneHotDomainVar(domain = $domain)"
-    }
-
-    companion object {
-        inline operator fun <T> invoke(
-            domain: Iterable<T>,
-            init: (T) -> Lit,
-        ): DefaultDomainVar<T> = DefaultDomainVar(domain.associateWith(init))
     }
 }
 
