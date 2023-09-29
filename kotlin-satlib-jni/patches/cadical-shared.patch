@@ -13,7 +13,7 @@ index 3927cc2..0453d65 100755
 +	\$(MAKE) -C "\$(CADICALBUILD)" cadical.dll
 +.PHONY: all cadical clean mobical test format update shared dll
  EOF
-
+ 
  msg "generated '../makefile' as proxy to ..."
 diff --git a/makefile.in b/makefile.in
 index 1a21bff..5b9938a 100644
@@ -22,7 +22,7 @@ index 1a21bff..5b9938a 100644
 @@ -49,6 +49,12 @@ mobical: mobical.o libcadical.a makefile $(LIBS)
  libcadical.a: $(OBJ) makefile
  	ar rc $@ $(OBJ)
-
+ 
 +libcadical.so: $(OBJ) makefile
 +	$(COMPILE) -shared -o $@ $(OBJ)
 +
@@ -30,5 +30,5 @@ index 1a21bff..5b9938a 100644
 +	$(COMPILE) -shared -o $@ $(OBJ) -lpsapi
 +
  #--------------------------------------------------------------------------#
-
+ 
  # Note that 'build.hpp' is generated and resides in the build directory.
