@@ -2,7 +2,6 @@
 
 package com.github.lipen.satlib.nexus.bdd
 
-import java.util.PriorityQueue
 import kotlin.math.absoluteValue
 
 data class Triplet(
@@ -49,11 +48,8 @@ fun BDD.clause(vararg literals: Int): Ref {
 }
 
 fun BDD.cube(literals: Iterable<Int>): Ref {
-    // TODO: check uniqueness and consistency
     var current = one
     for (lit in literals.sortedByDescending { it.absoluteValue }) {
-        // val x = mkVar(lit)
-        // current = applyAnd(current, x)
         current = if (lit < 0) {
             mkNode(v = -lit, low = current, high = zero)
         } else {
@@ -71,33 +67,18 @@ fun BDD.cube(vararg literals: Int): Ref {
     return cube_(literals)
 }
 
-fun BDD.axioms(clauses: Iterable<List<Int>>): List<Ref> {
-    return clauses.map { clause(it) }
-}
-
-fun BDD.cojoinLinear(clauses: Iterable<Ref>): Ref {
+fun BDD.and(xs: Iterable<Ref>): Ref {
     var f = one
-    for (clause in clauses) {
-        f = applyAnd(f, clause)
+    for (x in xs) {
+        f = applyAnd(f, x)
     }
     return f
 }
 
-fun BDD.cojoinTree(clauses: Iterable<Ref>): Ref {
-    data class Node(val node: Ref) : Comparable<Node> {
-        val size: Int = descendants(node).size
+fun BDD.and_(xs: Array<out Ref>): Ref {
+    return and(xs.asList())
+}
 
-        override fun compareTo(other: Node): Int {
-            return size compareTo other.size
-        }
-    }
-
-    val queue = PriorityQueue(clauses.map { Node(it) })
-    while (queue.size > 1) {
-        val a = queue.remove()
-        val b = queue.remove()
-        val r = Node(applyAnd(a.node, b.node))
-        queue.add(r)
-    }
-    return queue.remove().node
+fun <T: Ref> BDD.and(vararg xs: T): Ref {
+    return and_(xs)
 }
