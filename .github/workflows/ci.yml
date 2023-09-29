@@ -49,7 +49,7 @@ jobs:
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical solvers/cadical-src
+          git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
           cd solvers/cadical-src
           git apply -v ../../patches/cadical-shared.patch
           patch -p0 < ../../patches/cadical-stats.patch
