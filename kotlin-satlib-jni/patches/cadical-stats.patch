@@ -1,8 +1,10 @@
---- src/cadical.hpp
-+++ src/cadical.hpp
-@@ -435,6 +435,11 @@
-   int64_t redundant () const;   // Number of active redundant clauses.
-   int64_t irredundant () const; // Number of active irredundant clauses.
+diff --git a/src/cadical.hpp b/src/cadical.hpp
+index 0991695..c595807 100644
+--- a/src/cadical.hpp
++++ b/src/cadical.hpp
+@@ -509,6 +509,11 @@ public:
+   void trace_api_calls (FILE *file);
+ #endif
 
 +  int64_t conflicts () const;   // Number of conflicts.
 +  int64_t decisions () const;   // Number of decisions.
@@ -10,11 +12,13 @@
 +  int64_t propagations () const;   // Number of propagations.
 +
    //------------------------------------------------------------------------
-   // Same as 'solve' with 'limits ("conflicts", 0)' and
-   //                      'limits ("preprocessing", rounds)'.
---- src/solver.cpp
-+++ src/solver.cpp
-@@ -664,6 +664,44 @@
+   // Option handling.
+
+diff --git a/src/solver.cpp b/src/solver.cpp
+index 5a5733c..10eb766 100644
+--- a/src/solver.cpp
++++ b/src/solver.cpp
+@@ -916,6 +916,44 @@ int64_t Solver::irredundant () const {
    return res;
  }
 
