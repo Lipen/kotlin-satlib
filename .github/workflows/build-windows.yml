@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew build -x test --stacktrace --scan
 
       - name: Build MiniSat
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
           cd solvers/minisat-src
@@ -43,7 +43,7 @@ jobs:
           cmake --install build --prefix install
 
       - name: Build Glucose
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
           cd solvers/glucose-src
@@ -55,7 +55,7 @@ jobs:
           cmake --install build --prefix install
 
       - name: Build Cadical
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
           cd solvers/cadical-src
@@ -67,7 +67,7 @@ jobs:
           install build/cadical.dll -Dt install/lib
 
       - name: Build CryptoMiniSat
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
           cd solvers/cms-src
@@ -76,7 +76,7 @@ jobs:
           cmake --install build --prefix install
 
       - name: Copy solver libs to C:/Windows
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           cp solvers/minisat-src/install/bin/libminisat.dll C:/Windows/
           cp solvers/glucose-src/install/lib/glucose.dll C:/Windows/
@@ -84,7 +84,7 @@ jobs:
           cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
 
       - name: Build JNI libs
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           make libs \
             LIB_PREFIX= LIB_EXT=dll \
@@ -97,12 +97,12 @@ jobs:
             JCMS_LDLIBS=-lcryptominisat5win
 
       - name: Copy JNI libs to resources folder
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           make res LIB_PREFIX= LIB_EXT=dll RES_LIB_SUBDIR=win64
 
       - name: Add Cryptominisat to PATH
-        working-directory: jni
+        working-directory: kotlin-satlib-jni
         run: |
           cp solvers/cms-src/install/bin/cryptominisat5_simple.exe solvers/cms-src/install/bin/cryptominisat5.exe
           echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
@@ -120,11 +120,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            jni/build/lib/jminisat.dll
-            jni/build/lib/jglucose.dll
-            jni/build/lib/jcadical.dll
-            jni/build/lib/jcms.dll
-            jni/solvers/minisat-src/install/bin/libminisat.dll
-            jni/solvers/glucose-src/install/lib/glucose.dll
-            jni/solvers/cadical-src/install/lib/cadical.dll
-            jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
+            kotlin-satlib-jni/build/lib/jminisat.dll
+            kotlin-satlib-jni/build/lib/jglucose.dll
+            kotlin-satlib-jni/build/lib/jcadical.dll
+            kotlin-satlib-jni/build/lib/jcms.dll
+            kotlin-satlib-jni/solvers/minisat-src/install/bin/libminisat.dll
+            kotlin-satlib-jni/solvers/glucose-src/install/lib/glucose.dll
+            kotlin-satlib-jni/solvers/cadical-src/install/lib/cadical.dll
+            kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
