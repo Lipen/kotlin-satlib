@@ -1,9 +1,124 @@
-name: Build (Windows)
+name: CI
 
-on: [ push, pull_request ]
+on: push
 
 jobs:
-  build:
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 11
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build project using Gradle
+        run: ./gradlew build -x test --stacktrace --scan
+
+      - name: Build MiniSat
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+          cd solvers/minisat-src
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j8
+          cmake --install build --prefix install
+          strip -s install/lib/libminisat.so
+
+      - name: Build Glucose
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+          cd solvers/glucose-src
+          git apply -v ../../patches/glucose-install.patch
+          cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j8
+          cmake --install build --prefix install
+          strip -s install/lib/libglucose.so
+
+      - name: Build Cadical
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 --branch rel-1.4.1 https://github.com/arminbiere/cadical solvers/cadical-src
+          cd solvers/cadical-src
+          git apply -v ../../patches/cadical-shared.patch
+          patch -p0 < ../../patches/cadical-stats.patch
+          ./configure -fPIC
+          make -j8 shared
+          install -m 644 src/cadical.hpp -Dt install/include/cadical
+          install -m 644 build/libcadical.so -Dt install/lib
+          strip -s install/lib/libcadical.so
+
+      - name: Build CryptoMiniSat
+        working-directory: kotlin-satlib-jni
+        run: |
+          git clone --depth=1 https://github.com/msoos/cryptominisat solvers/cms-src
+          cd solvers/cms-src
+          cmake -B build -DENABLE_PYTHON_INTERFACE=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j8
+          cmake --install build --prefix install
+          strip -s install/lib/libcryptominisat5.so
+
+      - name: Fixup libs
+        working-directory: kotlin-satlib-jni
+        run: |
+          ls -al --group-directories-first solvers/*-src/install/lib
+          cp --remove-destination $(readlink -f solvers/minisat-src/install/lib/libminisat.so) solvers/minisat-src/install/lib/libminisat.so
+          cp --remove-destination $(readlink -f solvers/cms-src/install/lib/libcryptominisat5.so) solvers/cms-src/install/lib/libcryptominisat5.so
+
+      - name: Set up ld cache
+        working-directory: kotlin-satlib-jni
+        run: sudo ldconfig $(realpath solvers/*-src/install/lib)
+
+      - name: Build JNI libs
+        working-directory: kotlin-satlib-jni
+        run: make libs \
+          MINISAT_INSTALL_DIR=solvers/minisat-src/install \
+          GLUCOSE_INSTALL_DIR=solvers/glucose-src/install \
+          CADICAL_INSTALL_DIR=solvers/cadical-src/install \
+          CMS_INSTALL_DIR=solvers/cms-src/install
+
+      - name: Copy JNI libs to resources folder
+        working-directory: kotlin-satlib-jni
+        run: make res
+
+      - name: Add Cryptominisat to PATH
+        working-directory: kotlin-satlib-jni
+        run: |
+          cp solvers/cms-src/install/bin/cryptominisat5_simple solvers/cms-src/install/bin/cryptominisat5
+          echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
+
+      - name: Run tests
+        run: ./gradlew cleanTest test --no-build-cache --stacktrace
+
+      - name: Upload to GH Releases
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            kotlin-satlib-jni/build/lib/libjminisat.so
+            kotlin-satlib-jni/build/lib/libjglucose.so
+            kotlin-satlib-jni/build/lib/libjcadical.so
+            kotlin-satlib-jni/build/lib/libjcms.so
+            kotlin-satlib-jni/solvers/minisat-src/install/lib/libminisat.so
+            kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so
+            kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so
+            kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so
+
+  build-windows:
+    name: Build on Windows
     runs-on: windows-2019
 
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
