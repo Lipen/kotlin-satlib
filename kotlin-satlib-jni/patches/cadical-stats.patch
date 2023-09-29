@@ -1,7 +1,5 @@
-diff --git a/src/cadical.hpp b/src/cadical.hpp
-index 0991695..c595807 100644
---- a/src/cadical.hpp
-+++ b/src/cadical.hpp
+--- src/cadical.hpp
++++ src/cadical.hpp
 @@ -509,6 +509,11 @@ public:
    void trace_api_calls (FILE *file);
  #endif
@@ -14,10 +12,8 @@ index 0991695..c595807 100644
    //------------------------------------------------------------------------
    // Option handling.
 
-diff --git a/src/solver.cpp b/src/solver.cpp
-index 5a5733c..10eb766 100644
---- a/src/solver.cpp
-+++ b/src/solver.cpp
+--- src/solver.cpp
++++ src/solver.cpp
 @@ -916,6 +916,44 @@ int64_t Solver::irredundant () const {
    return res;
  }
