@@ -27,12 +27,13 @@ out/
 logs/
 *.log
 
+# Solver sources
+/kotlin-satlib-jni/solvers/
+
 # Other
 /old/
 /stuff/
 /build-logic/
-boolexpr/
-solvers/
 *.txt
 *.cnf
 *.drat

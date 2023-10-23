@@ -4,10 +4,10 @@ import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.switch
-import com.github.lipen.satlib.solver.CadicalSolver
-import com.github.lipen.satlib.solver.CryptoMiniSatSolver
-import com.github.lipen.satlib.solver.GlucoseSolver
-import com.github.lipen.satlib.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
+import com.github.lipen.satlib.solver.jni.CryptoMiniSatSolver
+import com.github.lipen.satlib.solver.jni.GlucoseSolver
+import com.github.lipen.satlib.solver.jni.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 
 internal enum class SolverType {

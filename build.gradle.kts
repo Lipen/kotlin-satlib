@@ -36,7 +36,8 @@ fun Project.configureKotlinConventions() {
         testRuntimeOnly(Libs.JUnit.jupiter_engine)
         testImplementation(Libs.JUnit.jupiter_params)
         testImplementation(Libs.Kluent.kluent)
-        testImplementation(Libs.Log4j.log4j_slf4j_impl)
+        testImplementation(Libs.Log4j.log4j_core)
+        testImplementation(Libs.Log4j.log4j_slf4j2_impl)
     }
 
     tasks.withType<KotlinCompile> {
@@ -84,14 +85,29 @@ fun Project.configureKotlinConventions() {
 }
 
 allprojects {
-    // configureKotlinConventions()
+    configureKotlinConventions()
 }
 
 subprojects {
     group = "${rootProject.group}.${rootProject.name}"
     version = rootProject.version
+}
 
-    configureKotlinConventions()
+dependencies {
+    api(project(":core"))
+    api(project(":jni"))
+    api(project(":solvers-jni"))
+    api(project(":jna"))
+    api(project(":solvers-jna"))
+    implementation(project(":utils"))
+    implementation(project(":tests-utils"))
+
+    // // FIXME: temporary logging
+    // runtimeOnly(Libs.Log4j.log4j_core)
+    // runtimeOnly(Libs.Log4j.log4j_slf4j2_impl)
+
+    testImplementation(Libs.Klock.klock_jvm)
+    testImplementation(Libs.Okio.okio)
 }
 
 idea {
@@ -110,7 +126,7 @@ tasks.shadowJar {
 }
 
 tasks.wrapper {
-    gradleVersion = "7.3"
+    gradleVersion = "8.3"
     distributionType = Wrapper.DistributionType.ALL
 }
 

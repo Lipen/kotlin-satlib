@@ -14,7 +14,7 @@ import com.github.lipen.satlib.nexus.utils.mean
 import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
-import com.github.lipen.satlib.solver.CadicalSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult

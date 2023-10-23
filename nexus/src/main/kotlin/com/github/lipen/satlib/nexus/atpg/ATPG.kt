@@ -19,8 +19,9 @@ import com.github.lipen.satlib.nexus.utils.maybeMelt
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.op.iffAnd
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.solver.jni.MiniSatSolver
 import com.github.lipen.satlib.utils.useWith
 import mu.KotlinLogging
 import kotlin.math.absoluteValue

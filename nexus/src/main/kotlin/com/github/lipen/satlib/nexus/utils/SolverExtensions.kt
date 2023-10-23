@@ -1,9 +1,9 @@
 package com.github.lipen.satlib.nexus.utils
 
 import com.github.lipen.satlib.core.Lit
-import com.github.lipen.satlib.solver.CadicalSolver
-import com.github.lipen.satlib.solver.GlucoseSolver
-import com.github.lipen.satlib.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
+import com.github.lipen.satlib.solver.jni.GlucoseSolver
+import com.github.lipen.satlib.solver.jni.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
 import mu.KLogger

@@ -10,8 +10,9 @@ import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.nexus.utils.toBinaryString
 import com.github.lipen.satlib.nexus.utils.toposort
 import com.github.lipen.satlib.op.iffAnd
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.jni.MiniSatSolver
+import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
 import com.soywiz.klock.measureTimeWithResult

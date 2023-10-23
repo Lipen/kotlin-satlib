@@ -16,7 +16,7 @@ import com.github.lipen.satlib.nexus.encoding.encodeMiter
 import com.github.lipen.satlib.nexus.eqcheck.disbalance
 import com.github.lipen.satlib.nexus.eqcheck.loadPTable
 import com.github.lipen.satlib.nexus.utils.declare
-import com.github.lipen.satlib.solver.CadicalSolver
+import com.github.lipen.satlib.solver.jni.CadicalSolver
 import com.github.lipen.satlib.utils.useWith
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

@@ -14,8 +14,9 @@ import com.github.lipen.satlib.nexus.utils.maybeMelt
 import com.github.lipen.satlib.nexus.utils.secondsSince
 import com.github.lipen.satlib.nexus.utils.timeNow
 import com.github.lipen.satlib.op.iffIff
-import com.github.lipen.satlib.solver.MiniSatSolver
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.addClause
+import com.github.lipen.satlib.solver.jni.MiniSatSolver
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.soywiz.klock.measureTimeWithResult

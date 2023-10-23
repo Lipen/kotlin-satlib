@@ -5,6 +5,7 @@ import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.nexus.utils.bit
 import com.github.lipen.satlib.nexus.utils.pow
 import com.github.lipen.satlib.solver.Solver
+import com.github.lipen.satlib.solver.solve
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

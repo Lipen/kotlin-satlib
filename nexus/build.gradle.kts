@@ -7,13 +7,14 @@ plugins {
 dependencies {
     implementation(project(":core"))
     implementation(project(":utils"))
+    implementation(project(":solvers-jni"))
 
     implementation(Libs.Okio.okio)
     implementation(Libs.MultiArray.multiarray)
     implementation(Libs.Klock.klock_jvm)
     implementation(Libs.Clikt.clikt)
     implementation(Libs.Mordant.mordant)
-    implementation(Libs.Log4j.log4j_slf4j_impl)
+    implementation(Libs.Log4j.log4j_slf4j2_impl)
     implementation(Libs.KotlinxSerialization.serialization_json)
 }
 

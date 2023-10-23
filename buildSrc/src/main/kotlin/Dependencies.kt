@@ -2,23 +2,24 @@
 
 object Versions {
     const val clikt = "3.2.0"
-    const val gradle_versions = "0.39.0"
+    const val gradle_versions = "0.44.0"
     const val jgitver = "0.9.1"
     const val jmh = "1.23"
     const val jmh_gradle_plugin = "0.5.3"
-    const val junit = "5.8.1"
+    const val jna = "5.12.1"
+    const val junit = "5.9.1"
     const val klock = "2.4.8"
-    const val kluent = "1.68"
+    const val kluent = "1.72"
     const val kotlin = "1.8.21"
-    const val kotlin_logging = "2.1.0"
-    const val kotlinter = "3.7.0"
+    const val kotlin_logging = "3.0.4"
+    const val kotlinter = "3.12.0"
     const val kotlinx_coroutines = "1.7.1"
     const val kotlinx_serialization = "1.5.1"
-    const val log4j = "2.17.1"
+    const val log4j = "2.19.0"
     const val mordant = "1.2.1"
     const val multiarray = "0.13.1"
-    const val okio = "3.0.0"
-    const val shadow = "7.1.0"
+    const val okio = "3.2.0"
+    const val shadow = "7.1.2"
 }
 
 object Libs {
@@ -63,7 +64,8 @@ object Libs {
     // https://github.com/apache/logging-log4j2
     object Log4j {
         const val version = Versions.log4j
-        const val log4j_slf4j_impl = "org.apache.logging.log4j:log4j-slf4j-impl:$version"
+        const val log4j_core = "org.apache.logging.log4j:log4j-core:$version"
+        const val log4j_slf4j2_impl = "org.apache.logging.log4j:log4j-slf4j2-impl:$version"
     }
 
     // https://github.com/Kotlin/kotlinx.coroutines
@@ -88,6 +90,12 @@ object Libs {
     object KotlinxSerialization {
         const val version = Versions.kotlinx_serialization
         const val serialization_json = "org.jetbrains.kotlinx:kotlinx-serialization-json:$version"
+    }
+
+    // https://github.com/java-native-access/jna
+    object Jna {
+        const val version = Versions.jna
+        const val jna = "net.java.dev.jna:jna:$version"
     }
 }
 

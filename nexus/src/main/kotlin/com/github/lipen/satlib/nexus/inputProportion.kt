@@ -1,6 +1,7 @@
 package com.github.lipen.satlib.nexus
 
-import com.github.lipen.satlib.solver.MiniSatSolver
+import com.github.lipen.satlib.solver.jni.MiniSatSolver
+import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import okio.Buffer
 import okio.BufferedSink
@@ -83,7 +84,7 @@ fun main() {
                 println("UNSAT")
                 numUnsat += 1
             }
-            println("p = $numSat/${(numSat+numUnsat)} = ${numSat.toDouble()/(numSat+numUnsat)}")
+            println("p = $numSat/${(numSat + numUnsat)} = ${numSat.toDouble() / (numSat + numUnsat)}")
         }
 
         check(numSat + numUnsat == numQueries)
