@@ -1,10 +1,11 @@
 # Hidden folders
 .idea/
 .gradle/
+.vscode/
 
 # Build folders
-out/
 build/
+out/
 
 # Images
 *.png
@@ -27,17 +28,14 @@ logs/
 *.log
 
 # Other
-old/
-*.txt
-
-# Solvers sources
-/jni/solvers
-
-.vscode/
+/old/
+/stuff/
 /build-logic/
+boolexpr/
+solvers/
+*.txt
 *.cnf
 *.drat
 *.bat
 *.py
 *.R
-boolexpr/
