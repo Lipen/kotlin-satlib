@@ -81,7 +81,7 @@ private data class MutableDomainMapImpl<K : Tuple, V : Any>(
     }
 }
 
-//region ===[ getting ]===
+// region ===[ getting ]===
 
 operator fun <K, V : Any> DomainMap<Tuple1<K>, V>.get(
     key: K,
@@ -104,9 +104,9 @@ operator fun <K1, K2, K3, V : Any> DomainMap<Tuple3<K1, K2, K3>, V>.get(
     return get(Tuple(key1, key2, key3))
 }
 
-//endregion
+// endregion
 
-//region ===[ setting ]===
+// region ===[ setting ]===
 
 operator fun <K, V : Any> MutableDomainMap<Tuple1<K>, V>.set(
     key: K,
@@ -132,9 +132,9 @@ operator fun <K1, K2, K3, V : Any> MutableDomainMap<Tuple3<K1, K2, K3>, V>.set(
     set(Tuple(key1, key2, key3), value)
 }
 
-//endregion
+// endregion
 
-//region ===[ filling ]===
+// region ===[ filling ]===
 
 inline fun <K : Tuple, V : Any> MutableDomainMap<K, V>.fillBy(init: (K) -> V) {
     for (k in domains) {
@@ -145,9 +145,9 @@ inline fun <K : Tuple, V : Any> MutableDomainMap<K, V>.fillBy(init: (K) -> V) {
 inline fun <M : MutableDomainMap<K, V>, K : Tuple, V : Any> M.filledBy(init: (K) -> V): M =
     apply { fillBy(init) }
 
-//endregion
+// endregion
 
-//region ===[ mapping ]===
+// region ===[ mapping ]===
 
 fun <K : Tuple, V : Any, R : Any> DomainMap<K, V>.mapValues(
     transform: (Map.Entry<K, V>) -> R,
@@ -155,9 +155,9 @@ fun <K : Tuple, V : Any, R : Any> DomainMap<K, V>.mapValues(
     return MutableDomainMapImpl(domains, map.mapValues(transform).toMutableMap())
 }
 
-//endregion
+// endregion
 
-//region ===[ other extensions ]===
+// region ===[ other extensions ]===
 
 fun <K : Tuple, V : Any> DomainMap<K, V>.asMut(): MutableDomainMap<K, V> = when (this) {
     is MutableDomainMap<K, V> -> this
@@ -167,4 +167,4 @@ fun <K : Tuple, V : Any> DomainMap<K, V>.asMut(): MutableDomainMap<K, V> = when 
 fun <K : Tuple, V : Any> DomainMap<K, V>.toMut(): MutableDomainMap<K, V> =
     MutableDomainMapImpl(domains, map.toMutableMap())
 
-//endregion
+// endregion

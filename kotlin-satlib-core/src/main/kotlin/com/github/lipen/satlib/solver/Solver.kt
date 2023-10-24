@@ -126,7 +126,7 @@ inline fun Solver.switchContext(newContext: Context, block: () -> Unit) {
     this.context = oldContext
 }
 
-//region [addClause]
+// region [addClause]
 
 fun Solver.addClause(literals: Iterable<Lit>) {
     addClause(literals.toList_())
@@ -149,9 +149,9 @@ fun Solver.addClause(block: SequenceScopeLit) {
     addClause(sequence(block).constrainOnce())
 }
 
-//endregion
+// endregion
 
-//region [assume]
+// region [assume]
 
 fun Solver.assume(literals: Iterable<Lit>) {
     assumptions.addAll(literals)
@@ -170,9 +170,9 @@ fun Solver.assume(vararg literals: Lit) {
     assume(literals)
 }
 
-//endregion
+// endregion
 
-//region [solve]
+// region [solve]
 
 fun Solver.solve(assumptions: Iterable<Lit>): Boolean {
     assume(assumptions)
@@ -192,4 +192,4 @@ fun Solver.solve(vararg assumptions: Lit): Boolean {
     return solve(assumptions)
 }
 
-//endregion
+// endregion
