@@ -8,7 +8,7 @@ ifdef::env-github[]
 endif::[]
 
 image:logo.png["kotlin-satlib",64]
-image:https://github.com/Lipen/kotlin-satlib/workflows/ci.yml/badge.svg?branch=master["Build status",link="https://github.com/Lipen/kotlin-satlib/actions"]
+image:https://github.com/Lipen/kotlin-satlib/actions/workflows/ci.yml/badge.svg?branch=master["Build status",link="https://github.com/Lipen/kotlin-satlib/actions"]
 image:https://jitpack.io/v/Lipen/kotlin-satlib.svg["JitPack",link="https://jitpack.io/p/Lipen/kotlin-satlib"]
 image:https://hitsofcode.com/github/Lipen/kotlin-satlib["Hits-of-Code",link="https://hitsofcode.com/view/github/Lipen/kotlin-satlib"]
 
