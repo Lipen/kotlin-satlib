@@ -11,8 +11,8 @@ import com.github.lipen.satlib.core.IntVarArray
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.convert
 import com.github.lipen.satlib.utils.writeln
-import com.soywiz.klock.measureTimeWithResult
 import examples.utils.pow
+import korlibs.time.measureTimeWithResult
 import okio.buffer
 import okio.sink
 import java.io.File

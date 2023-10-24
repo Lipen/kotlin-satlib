@@ -1,7 +1,7 @@
 package examples.utils
 
-import com.soywiz.klock.PerformanceCounter
-import com.soywiz.klock.TimeSpan
+import korlibs.time.PerformanceCounter
+import korlibs.time.TimeSpan
 import kotlin.math.pow
 
 fun timeNow(): TimeSpan = PerformanceCounter.reference

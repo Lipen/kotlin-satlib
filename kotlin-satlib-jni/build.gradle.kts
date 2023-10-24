@@ -8,7 +8,7 @@ dependencies {
 
 jmh {
     jmhVersion = Versions.jmh
-    humanOutputFile = file("$buildDir/reports/jmh/human.txt")
-    resultsFile = file("$buildDir/reports/jmh/results.json")
+    humanOutputFile = layout.buildDirectory.file("reports/jmh/human.txt").get().asFile
+    resultsFile = layout.buildDirectory.file("reports/jmh/results.json").get().asFile
     resultFormat = "JSON"
 }

@@ -13,7 +13,7 @@ import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
-import com.soywiz.klock.measureTimeWithResult
+import korlibs.time.measureTimeWithResult
 import examples.utils.secondsSince
 import examples.utils.timeNow
 import okio.buffer

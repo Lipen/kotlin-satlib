@@ -1,22 +1,20 @@
-@file:Suppress("PublicApiImplicitType", "MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("PublicApiImplicitType", "MemberVisibilityCanBePrivate", "unused", "ConstPropertyName")
 
 object Versions {
-    const val gradle_versions = "0.44.0"
     const val jgitver = "0.9.1"
     const val jmh = "1.23"
     const val jmh_gradle_plugin = "0.5.3"
-    const val jna = "5.12.1"
-    const val junit = "5.9.1"
-    const val klock = "2.4.8"
-    const val kluent = "1.72"
-    const val kotlin = "1.7.21"
-    const val kotlin_logging = "3.0.4"
-    const val kotlinter = "3.12.0"
-    const val kotlinx_coroutines = "1.6.4"
-    const val log4j = "2.19.0"
+    const val jna = "5.13.0"
+    const val junit = "5.10.0"
+    const val klock = "4.0.10"
+    const val kluent = "1.73"
+    const val kotlin = "1.9.10"
+    const val kotlin_logging = "3.0.5"
+    const val kotlinx_coroutines = "1.7.3"
+    const val log4j = "2.21.0"
     const val multiarray = "0.13.1"
-    const val okio = "3.2.0"
-    const val shadow = "7.1.2"
+    const val okio = "3.6.0"
+    const val shadow = "8.1.1"
 }
 
 object Libs {
@@ -37,7 +35,7 @@ object Libs {
     // https://github.com/korlibs/klock
     object Klock {
         const val version = Versions.klock
-        const val klock_jvm = "com.soywiz.korlibs.klock:klock-jvm:$version"
+        const val klock = "com.soywiz.korlibs.klock:klock:$version"
     }
 
     // https://github.com/square/okio
@@ -83,18 +81,6 @@ object Plugins {
     object Jgitver {
         const val version = Versions.jgitver
         const val id = "fr.brouillard.oss.gradle.jgitver"
-    }
-
-    // https://github.com/ben-manes/gradle-versions-plugin
-    object GradleVersions {
-        const val version = Versions.gradle_versions
-        const val id = "com.github.ben-manes.versions"
-    }
-
-    // https://github.com/JLLeitschuh/ktlint-gradle
-    object Kotlinter {
-        const val version = Versions.kotlinter
-        const val id = "org.jmailen.kotlinter"
     }
 
     // https://github.com/johnrengelman/shadow
