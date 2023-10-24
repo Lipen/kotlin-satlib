@@ -8,9 +8,9 @@ import com.github.lipen.satlib.op.atMostOne
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
-import korlibs.time.measureTimeWithResult
 import examples.utils.secondsSince
 import examples.utils.timeNow
+import korlibs.time.measureTimeWithResult
 import okio.buffer
 import okio.sink
 import java.io.File

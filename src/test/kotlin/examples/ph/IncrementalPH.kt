@@ -13,9 +13,9 @@ import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.solver.solve
 import com.github.lipen.satlib.utils.useWith
 import com.github.lipen.satlib.utils.writeln
-import korlibs.time.measureTimeWithResult
 import examples.utils.secondsSince
 import examples.utils.timeNow
+import korlibs.time.measureTimeWithResult
 import okio.buffer
 import okio.sink
 import java.io.File
