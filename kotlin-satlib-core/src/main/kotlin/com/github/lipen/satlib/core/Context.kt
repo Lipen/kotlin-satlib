@@ -5,25 +5,25 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 /**
- * Context. Whatever that means.
+ * [Context] is a [Map]-like container for any non-nullable data.
  *
  * **Examples:**
  * ```
  * // Create Context
  * val context: Context = newContext()
  *
- * // Retrieve value from context
- * val x: T = context["name"]
- *
- * // Put value into context
+ * // Put a value into the context:
  * context["name"] = 42
  * val x = context("name", 42)
  * val x = context("name") { 42 }  // eager eval
  *
- * // Bind property (both val and var are possible)
+ * // Retrieve the value from the context:
+ * val x: T = context["name"]
+ *
+ * // Bind the property (both `val` and `var` are possible):
  * var x: T by context.bind()
  *
- * // Bind caching property with initial value
+ * // Bind the caching property with an initial value:
  * val x by context.bindCaching(42)
  * ```
  */
