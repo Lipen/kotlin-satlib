@@ -1,5 +1,7 @@
 package com.github.lipen.satlib.jni
 
+import kotlin.io.path.createTempDirectory
+
 private val log = mu.KotlinLogging.logger {}
 
 /**
@@ -48,6 +50,6 @@ object Loader {
     }
 
     private val NATIVE_LIB_TEMP_DIR by lazy {
-        createTempDir("nativelib").apply { deleteOnExit() }
+        createTempDirectory("nativelib").toFile().apply { deleteOnExit() }
     }
 }
