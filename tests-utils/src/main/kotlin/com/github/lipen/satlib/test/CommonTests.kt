@@ -2,6 +2,7 @@
 
 package com.github.lipen.satlib.test
 
+import com.github.lipen.satlib.op.runWithTimeout
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.addClause
 import com.github.lipen.satlib.solver.solve
@@ -81,4 +82,13 @@ fun Solver.`assumptions are supported`() {
     solve().`should be true`()
     solve(x).`should be true`()
     solve(-x).`should be false`()
+}
+
+fun <S : Solver> S.`solving with timeout`(clearInterrupt: S.() -> Unit) {
+    declare_sgen_n120_sat()
+    // The problem is satisfiable, but 1 millisecond is definitely not enough to solve it
+    runWithTimeout(1) { solve() }.`should be false`()
+    clearInterrupt()
+    // Continue solving without a timeout (this may take a while, ~10-60 seconds)
+    solve().`should be true`()
 }
