@@ -1,6 +1,7 @@
 package com.github.lipen.satlib.op
 
 import com.github.lipen.satlib.solver.Solver
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -12,7 +13,7 @@ private val log = mu.KotlinLogging.logger {}
 fun <T> Solver.runWithTimeout(
     timeMillis: Long,
     block: Solver.() -> T,
-): T = runBlocking {
+): T = runBlocking(Dispatchers.Default) {
     _runWithTimeout(timeMillis, block)
 }
 
