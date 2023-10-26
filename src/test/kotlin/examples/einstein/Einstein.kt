@@ -53,19 +53,19 @@ enum class Pet {
 
 private fun Solver.declareVariables() {
     val color = context("color") {
-        newDomainVarArray(5) { Color.values().asIterable() }
+        newDomainVarArray(5) { Color.entries.asIterable() }
     }
     val nationality = context("nationality") {
-        newDomainVarArray(5) { Nationality.values().asIterable() }
+        newDomainVarArray(5) { Nationality.entries.asIterable() }
     }
     val drink = context("drink") {
-        newDomainVarArray(5) { Drink.values().asIterable() }
+        newDomainVarArray(5) { Drink.entries.asIterable() }
     }
     val smoke = context("smoke") {
-        newDomainVarArray(5) { Smoke.values().asIterable() }
+        newDomainVarArray(5) { Smoke.entries.asIterable() }
     }
     val pet = context("pet") {
-        newDomainVarArray(5) { Pet.values().asIterable() }
+        newDomainVarArray(5) { Pet.entries.asIterable() }
     }
 }
 
@@ -79,19 +79,19 @@ private fun Solver.declareConstraints() {
     val pet: DomainVarArray<Pet> = context["pet"]
 
     // 0. Distinctness constraints
-    for (x in Color.values()) {
+    for (x in Color.entries) {
         exactlyOne((1..5).map { i -> color[i] eq x })
     }
-    for (x in Nationality.values()) {
+    for (x in Nationality.entries) {
         exactlyOne((1..5).map { i -> nationality[i] eq x })
     }
-    for (x in Drink.values()) {
+    for (x in Drink.entries) {
         exactlyOne((1..5).map { i -> drink[i] eq x })
     }
-    for (x in Smoke.values()) {
+    for (x in Smoke.entries) {
         exactlyOne((1..5).map { i -> smoke[i] eq x })
     }
-    for (x in Pet.values()) {
+    for (x in Pet.entries) {
         exactlyOne((1..5).map { i -> pet[i] eq x })
     }
 

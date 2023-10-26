@@ -19,7 +19,7 @@ enum class glucose_lbool(val value: Int) {
     True(1), False(0), Undef(-1);
 
     companion object {
-        private val map = glucose_lbool.values().associateBy { it.value }
+        private val map = entries.associateBy { it.value }
         fun from(value: Int): glucose_lbool? = map[value]
     }
 }

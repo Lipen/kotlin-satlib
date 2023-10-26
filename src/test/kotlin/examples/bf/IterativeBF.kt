@@ -26,7 +26,7 @@ import examples.utils.timeSince
 private fun Solver.declareVariables(P: Int, truthTable: Map<Row, Boolean>): BFVariables {
     val X = truthTable.keys.first().size
     val U = truthTable.size
-    val nodeType = newDomainVarArray(P) { NodeType.values().asIterable() }
+    val nodeType = newDomainVarArray(P) { NodeType.entries.asIterable() }
     val nodeInputVariable = newIntVarArray(P) { 0..X }
     val nodeParent = newIntVarArray(P) { (p) ->
         if (p == 1) listOf(0)

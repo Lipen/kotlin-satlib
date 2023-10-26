@@ -23,7 +23,7 @@ enum class minisat_lbool(val value: Int) {
     True(1), False(0), Undef(-1);
 
     companion object {
-        private val map = minisat_lbool.values().associateBy { it.value }
+        private val map = entries.associateBy { it.value }
         fun from(value: Int): minisat_lbool? = map[value]
     }
 }

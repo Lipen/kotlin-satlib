@@ -36,7 +36,7 @@ private fun Solver.emptyBFVariables(tt: Map<Row, Boolean>): BFVariables =
         U = tt.size,
         inputs = tt.keys.map { it.values },
         values = tt.values.toList(),
-        nodeType = newDomainVarArray { NodeType.values().asIterable() },
+        nodeType = newDomainVarArray { NodeType.entries.asIterable() },
         nodeInputVariable = IntVarArray.new { IntVar.empty() },
         nodeParent = IntVarArray.new { IntVar.empty() },
         nodeChild = IntVarArray.new { IntVar.empty() },
@@ -51,7 +51,7 @@ private fun Solver.declareIncrementalVariables(P: Int, oldBF: BFVariables): BFVa
 
     val nodeType: DomainVarArray<NodeType> = DomainVarArray.new(P) { (p) ->
         if (p <= oldP) oldBF.nodeType[p]
-        else newDomainVar(NodeType.values().asIterable())
+        else newDomainVar(NodeType.entries.asIterable())
     }
     val nodeInputVariable: IntVarArray = IntVarArray.new(P) { (p) ->
         if (p <= oldP) oldBF.nodeInputVariable[p]
