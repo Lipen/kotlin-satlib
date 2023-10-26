@@ -23,14 +23,14 @@ internal inline fun <reified T : Any, reified N : Any> typeConverter(
     crossinline fromNative: (nativeValue: N, context: FromNativeContext?) -> T,
     crossinline toNative: (value: T, context: ToNativeContext?) -> N,
 ): TypeConverter = object : TypeConverter {
-    override fun fromNative(nativeValue: Any?, context: FromNativeContext?): Any {
-        checkNotNull(nativeValue)
+    override fun fromNative(nativeValue: Any?, context: FromNativeContext?): Any? {
+        if (nativeValue == null) return null
         check(nativeValue is N)
         return fromNative(nativeValue, context)
     }
 
-    override fun toNative(value: Any?, context: ToNativeContext?): Any {
-        checkNotNull(value)
+    override fun toNative(value: Any?, context: ToNativeContext?): Any? {
+        if (value == null) return null
         check(value is T)
         return toNative(value, context)
     }
