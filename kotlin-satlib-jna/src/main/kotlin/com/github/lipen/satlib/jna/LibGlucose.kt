@@ -103,9 +103,9 @@ interface LibGlucose : Library {
 
         fun load(name: String = "glucose"): LibGlucose {
             val mapper = DefaultTypeMapper()
-            mapper.addTypeConverter(glucose_Var::class.java, converterForVar)
-            mapper.addTypeConverter(glucose_Lit::class.java, converterForLit)
-            mapper.addTypeConverter(glucose_lbool::class.java, converterForLBool)
+            mapper.addTypeConverter<glucose_Var>(converterForVar)
+            mapper.addTypeConverter<glucose_Lit>(converterForLit)
+            mapper.addTypeConverter<glucose_lbool>(converterForLBool)
             val options = mapOf(
                 Library.OPTION_TYPE_MAPPER to mapper,
             )

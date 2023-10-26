@@ -106,9 +106,9 @@ interface LibMiniSat : Library {
 
         fun load(name: String = "minisat"): LibMiniSat {
             val mapper = DefaultTypeMapper()
-            mapper.addTypeConverter(minisat_Var::class.java, converterForVar)
-            mapper.addTypeConverter(minisat_Lit::class.java, converterForLit)
-            mapper.addTypeConverter(minisat_lbool::class.java, converterForLBool)
+            mapper.addTypeConverter<minisat_Var>(converterForVar)
+            mapper.addTypeConverter<minisat_Lit>(converterForLit)
+            mapper.addTypeConverter<minisat_lbool>(converterForLBool)
             val options = mapOf(
                 Library.OPTION_TYPE_MAPPER to mapper,
             )

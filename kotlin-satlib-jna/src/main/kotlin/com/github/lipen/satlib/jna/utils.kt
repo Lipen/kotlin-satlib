@@ -1,5 +1,6 @@
 package com.github.lipen.satlib.jna
 
+import com.sun.jna.DefaultTypeMapper
 import com.sun.jna.FromNativeContext
 import com.sun.jna.Library
 import com.sun.jna.Native
@@ -38,4 +39,8 @@ internal inline fun <reified T : Any, reified N : Any> typeConverter(
     override fun nativeType(): Class<*> {
         return N::class.java
     }
+}
+
+internal inline fun <reified T> DefaultTypeMapper.addTypeConverter(converter: TypeConverter) {
+    addTypeConverter(T::class.java, converter)
 }
