@@ -36,7 +36,7 @@ object Loader {
         val os = when {
             osName.startsWith("Linux") -> "linux"
             osName.startsWith("Windows") -> "win"
-            osName.startsWith("Mac OS X") || osName.startsWith("Darwin") -> "osx"
+            osName.startsWith("Mac") || osName.startsWith("Darwin") -> "osx"
             else -> return@lazy "unknown"
         }
         val arch = when (System.getProperty("os.arch")) {
