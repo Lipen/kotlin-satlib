@@ -15,7 +15,7 @@ object Loader {
             System.loadLibrary(name)
         } catch (e: UnsatisfiedLinkError) {
             val libName = System.mapLibraryName(name)
-            val resource = "/$LIBDIR/$libName"
+            val resource = "/lib/$OS_ARCH/$libName"
             log.debug { "Resorting to loading from a resource: $resource" }
             val stream = this::class.java.getResourceAsStream(resource)
                 ?: throw UnsatisfiedLinkError("Could not load $name neither using System.loadLibrary, nor from a resource")
@@ -31,7 +31,7 @@ object Loader {
         log.debug { "Successfully loaded $name" }
     }
 
-    private val LIBDIR: String by lazy {
+    private val OS_ARCH: String by lazy {
         val osName = System.getProperty("os.name")
         val os = when {
             osName.startsWith("Linux") -> "linux"
@@ -44,7 +44,7 @@ object Loader {
             "x86_64", "amd64" -> "64"
             else -> return@lazy "unknown"
         }
-        "lib/$os$arch"
+        "$os$arch"
     }
 
     private val NATIVE_LIB_TEMP_DIR by lazy {
