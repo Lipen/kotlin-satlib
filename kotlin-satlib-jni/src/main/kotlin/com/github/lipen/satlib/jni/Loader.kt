@@ -48,7 +48,8 @@ object Loader {
         "$os$arch"
     }
 
+    private const val NATIVE_LIB_TEMP_DIR_NAME = "nativelib"
     private val NATIVE_LIB_TEMP_DIR: File by lazy {
-        createTempDirectory("nativelib").toFile().apply { deleteOnExit() }
+        createTempDirectory(NATIVE_LIB_TEMP_DIR_NAME).toFile().apply { deleteOnExit() }
     }
 }
