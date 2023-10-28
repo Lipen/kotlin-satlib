@@ -77,7 +77,7 @@ fun main() {
         val ptr = lib.kissat_init()
         println("ptr = $ptr")
 
-        // SAT
+        // UNSAT
         lib.kissat_add_clause(ptr, listOf(-1))
         lib.kissat_add_clause(ptr, listOf(1))
         println("Solving...")
