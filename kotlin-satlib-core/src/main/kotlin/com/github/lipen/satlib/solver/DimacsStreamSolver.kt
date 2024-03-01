@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
 class DimacsStreamSolver(
-    val command: () -> String,
+    val command: String,
 ) : Solver {
     override var context: Context = newContext()
     override var numberOfVariables: Int = 0
@@ -89,7 +89,6 @@ class DimacsStreamSolver(
             throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
         }
         buffer.writeln("c solve")
-        val command = command()
         val process = Runtime.getRuntime().exec(command)
         process.outputStream.sink().buffer().use {
             writeDimacs(it)

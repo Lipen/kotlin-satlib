@@ -67,7 +67,7 @@ private object test_DimacsFileSolver {
 private object test_DimacsStreamSolver {
     @JvmStatic
     fun main(args: Array<String>) {
-        DimacsStreamSolver(command = { "cryptominisat5" }).useWith {
+        DimacsStreamSolver("cryptominisat5").useWith {
             testSolverWithoutAssumptions()
         }
     }

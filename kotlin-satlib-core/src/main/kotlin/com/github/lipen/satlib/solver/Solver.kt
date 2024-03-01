@@ -67,7 +67,7 @@ interface Solver : AutoCloseable {
     fun interrupt()
 
     /**
-     * Dump the constructed CNF in DIMACS format to the file.
+     * Dump the constructed CNF in DIMACS format to the [file].
      */
     fun dumpDimacs(file: File)
 

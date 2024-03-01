@@ -12,12 +12,13 @@ import okio.Buffer
 import okio.buffer
 import okio.source
 import java.io.File
+import kotlin.io.path.createTempFile
 
 private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
 class DimacsFileSolver(
-    val file: () -> File = { createTempFile() },
+    val file: () -> File = { createTempFile().toFile() },
     val command: (File) -> String,
 ) : Solver {
     override var context: Context = newContext()
