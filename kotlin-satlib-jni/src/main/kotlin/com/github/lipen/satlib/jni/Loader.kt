@@ -1,9 +1,10 @@
 package com.github.lipen.satlib.jni
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import kotlin.io.path.createTempDirectory
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 /**
  * Native library loader.
@@ -12,12 +13,12 @@ object Loader {
     @JvmStatic
     fun load(name: String) {
         try {
-            log.debug { "Loading $name..." }
+            logger.debug { "Loading $name..." }
             System.loadLibrary(name)
         } catch (e: UnsatisfiedLinkError) {
             val libName = System.mapLibraryName(name)
             val resource = "/lib/$OS_ARCH/$libName"
-            log.debug { "Resorting to loading from a resource: $resource" }
+            logger.debug { "Resorting to loading from a resource: $resource" }
             val stream = this::class.java.getResourceAsStream(resource)
                 ?: throw UnsatisfiedLinkError("Could not load $name neither using System.loadLibrary, nor from a resource")
             stream.use { resourceStream ->
@@ -25,11 +26,11 @@ object Loader {
                 libFile.outputStream().use { libFileStream ->
                     resourceStream.copyTo(libFileStream)
                 }
-                log.debug { "Loading from ${libFile.absolutePath}..." }
+                logger.debug { "Loading from ${libFile.absolutePath}..." }
                 System.load(libFile.absolutePath)
             }
         }
-        log.debug { "Successfully loaded $name" }
+        logger.debug { "Successfully loaded $name" }
     }
 
     private val OS_ARCH: String by lazy {

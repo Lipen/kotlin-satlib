@@ -23,10 +23,11 @@ import com.github.lipen.satlib.utils.useWith
 import examples.utils.secondsSince
 import examples.utils.timeNow
 import examples.utils.timeSince
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import kotlin.math.sqrt
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 object GlobalsHamiltonian {
     val solverProvider: () -> Solver = {
@@ -125,11 +126,11 @@ fun solve(
 
         declareVariables(graph)
         declareConstraints(isLoop = isLoop)
-        log.debug("Variables: $numberOfVariables, clauses: $numberOfClauses")
+        logger.debug { "Variables: $numberOfVariables, clauses: $numberOfClauses" }
 
         if (isDump) {
             val cnfFile = File("cnf-ham-$V.cnf")
-            log.debug("Dumping CNF to '${cnfFile.path}'...")
+            logger.debug { "Dumping CNF to '${cnfFile.path}'..." }
             dumpDimacs(cnfFile)
         }
 
@@ -186,19 +187,19 @@ fun solve(
             println("${if (isSat) "SAT" else "UNSAT"} for V = $V in %.3f s".format(timeDelta.seconds))
 
             if (this is MiniSatSolver) {
-                log.debug("Decisions: ${backend.numberOfDecisions}")
-                log.debug("Conflicts: ${backend.numberOfConflicts}")
-                log.debug("Propagations: ${backend.numberOfPropagations}")
+                logger.debug { "Decisions: ${backend.numberOfDecisions}" }
+                logger.debug { "Conflicts: ${backend.numberOfConflicts}" }
+                logger.debug { "Propagations: ${backend.numberOfPropagations}" }
             }
             if (this is GlucoseSolver) {
-                log.debug("Decisions: ${backend.numberOfDecisions}")
-                log.debug("Conflicts: ${backend.numberOfConflicts}")
-                log.debug("Propagations: ${backend.numberOfPropagations}")
+                logger.debug { "Decisions: ${backend.numberOfDecisions}" }
+                logger.debug { "Conflicts: ${backend.numberOfConflicts}" }
+                logger.debug { "Propagations: ${backend.numberOfPropagations}" }
             }
             if (this is CadicalSolver) {
-                log.debug("Decisions: ${backend.numberOfDecisions}")
-                log.debug("Conflicts: ${backend.numberOfConflicts}")
-                log.debug("Propagations: ${backend.numberOfPropagations}")
+                logger.debug { "Decisions: ${backend.numberOfDecisions}" }
+                logger.debug { "Conflicts: ${backend.numberOfConflicts}" }
+                logger.debug { "Propagations: ${backend.numberOfPropagations}" }
             }
         }
     }
@@ -224,7 +225,7 @@ private fun generateGraph(V: Int): Graph {
             edges.add(Edge(i, j))
         }
     }
-    log.debug("Generated a perfect-squares graph with V = $V, E = ${edges.size}")
+    logger.debug { "Generated a perfect-squares graph with V = $V, E = ${edges.size}" }
     return Graph(V, edges)
 }
 

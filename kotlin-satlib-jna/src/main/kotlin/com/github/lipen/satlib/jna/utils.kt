@@ -6,9 +6,9 @@ import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.ToNativeContext
 import com.sun.jna.TypeConverter
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
-internal val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 internal inline fun <reified T : Library> loadLibrary(
     name: String,

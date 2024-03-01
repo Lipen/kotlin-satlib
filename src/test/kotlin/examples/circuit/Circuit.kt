@@ -24,7 +24,7 @@ import examples.utils.pow
 import examples.utils.timeNow
 import examples.utils.timeSince
 import examples.utils.toBooleanArray
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

@@ -7,7 +7,7 @@ import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.utils.parseDimacsOutput
 import com.github.lipen.satlib.utils.write
 import com.github.lipen.satlib.utils.writeln
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import okio.Buffer
 import okio.buffer
 import okio.source

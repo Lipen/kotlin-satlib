@@ -1,6 +1,7 @@
 package com.github.lipen.satlib.op
 
 import com.github.lipen.satlib.solver.Solver
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
@@ -8,7 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 fun <T> Solver.runWithTimeout(
     timeMillis: Long,
@@ -21,21 +22,21 @@ suspend fun <T> Solver._runWithTimeout(
     timeMillis: Long,
     block: suspend Solver.() -> T,
 ): T = coroutineScope {
-    log.debug { "runWithTimeout(timeMillis = $timeMillis)" }
+    logger.debug { "runWithTimeout(timeMillis = $timeMillis)" }
     val job = async { block() }
     try {
         withTimeout(timeMillis) {
-            log.debug { "Awaiting with timeout..." }
+            logger.debug { "Awaiting with timeout..." }
             job.await().also {
-                log.debug { "Result after awaiting is '$it'" }
+                logger.debug { "Result after awaiting is '$it'" }
             }
         }
     } catch (e: TimeoutCancellationException) {
-        log.debug { "Timeout! Interrupting..." }
+        logger.debug { "Timeout! Interrupting..." }
         interrupt()
-        log.debug { "Awaiting after interrupt..." }
+        logger.debug { "Awaiting after interrupt..." }
         job.await().also {
-            log.debug { "Result after awaiting is '$it'" }
+            logger.debug { "Result after awaiting is '$it'" }
         }
     } finally {
         // Actually, this must be done outside, but we are trying to do it here just to be safe.

@@ -2,8 +2,9 @@ package com.github.lipen.satlib.card
 
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.solver.Solver
+import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
 class Cardinality(
@@ -55,7 +56,7 @@ class Cardinality(
 
     fun assumeUpperBoundLessThan(newUpperBound: Int?) {
         assumptionsUB = if (newUpperBound == null) {
-            log.debug { "De-assuming the upper bound (null)" }
+            logger.debug { "De-assuming the upper bound (null)" }
             emptyList()
         } else {
             require(newUpperBound <= totalizer.size) {
@@ -75,7 +76,7 @@ class Cardinality(
 
     fun assumeLowerBoundGreaterThanOrEqual(newLowerBound: Int?) {
         assumptionsLB = if (newLowerBound == null) {
-            log.debug { "De-assuming the upper bound (null)" }
+            logger.debug { "De-assuming the upper bound (null)" }
             emptyList()
         } else {
             require(newLowerBound >= 1) {

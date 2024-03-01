@@ -4,8 +4,9 @@ import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.sign
 import com.github.lipen.satlib.solver.Solver
+import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 fun Solver.allSolutions(
     essential: List<Lit>? = null,
@@ -17,10 +18,10 @@ fun Solver.allSolutions(
         yield(model)
 
         val refutationLits = essentialLits.map { i -> i sign !model[i] }
-        log.trace { "refutationLits = ${refutationLits.toList()}" }
+        logger.trace { "refutationLits = ${refutationLits.toList()}" }
         addClause(refutationLits)
     }
-    log.trace { "No more solutions" }
+    logger.trace { "No more solutions" }
 }
 
 fun Solver.allSolutions(
@@ -31,8 +32,8 @@ fun Solver.allSolutions(
         yield(model)
 
         val refutationLits = refutation(model)
-        log.trace { "refutationLits = $refutationLits" }
+        logger.trace { "refutationLits = $refutationLits" }
         addClause(refutationLits)
     }
-    log.trace { "No more solutions" }
+    logger.trace { "No more solutions" }
 }

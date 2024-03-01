@@ -9,12 +9,13 @@ object Versions {
     const val klock = "4.0.10"
     const val kluent = "1.73"
     const val kotlin = "1.9.10"
-    const val kotlin_logging = "3.0.5"
+    const val kotlin_logging = "5.1.0"
     const val kotlinx_coroutines = "1.7.3"
     const val log4j = "2.21.0"
     const val multiarray = "0.13.1"
     const val okio = "3.6.0"
     const val shadow = "8.1.1"
+    const val slf4j = "2.0.9"
 }
 
 object Libs {
@@ -53,7 +54,7 @@ object Libs {
     // https://github.com/MicroUtils/kotlin-logging
     object KotlinLogging {
         const val version = Versions.kotlin_logging
-        const val kotlin_logging = "io.github.microutils:kotlin-logging:$version"
+        const val kotlin_logging = "io.github.oshai:kotlin-logging:$version"
     }
 
     // https://github.com/apache/logging-log4j2
@@ -73,6 +74,12 @@ object Libs {
     object Jna {
         const val version = Versions.jna
         const val jna = "net.java.dev.jna:jna:$version"
+    }
+
+    // https://github.com/qos-ch/slf4j
+    object Slf4j {
+        const val version = Versions.slf4j
+        const val slf4j_simple = "org.slf4j:slf4j-simple:$version"
     }
 }
 

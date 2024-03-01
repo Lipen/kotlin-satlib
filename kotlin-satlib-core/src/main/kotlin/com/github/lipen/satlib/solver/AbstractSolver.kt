@@ -4,9 +4,10 @@ import com.github.lipen.satlib.core.Context
 import com.github.lipen.satlib.core.Lit
 import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.utils.toList_
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 
-private val log = mu.KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 abstract class AbstractSolver : Solver {
     final override var context: Context = newContext()
@@ -33,12 +34,12 @@ abstract class AbstractSolver : Solver {
     }
 
     final override fun comment(comment: String) {
-        log.trace { "// $comment" }
+        logger.trace { "// $comment" }
         _comment(comment)
     }
 
     final override fun dumpDimacs(file: File) {
-        log.debug { "dumpDimacs(file = $file)" }
+        logger.debug { "dumpDimacs(file = $file)" }
         _dumpDimacs(file)
     }
 
