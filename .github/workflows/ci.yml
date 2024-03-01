@@ -28,12 +28,11 @@ jobs:
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+          git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -- -j8
-          cmake --install build --prefix install
-          strip -s install/lib/libminisat.so
+          meson setup builddir --buildtype release --strip
+          meson compile -C builddir
+          meson install -C builddir --destdir ../install
 
       - name: Build Glucose
         working-directory: kotlin-satlib-jni
@@ -146,11 +145,11 @@ jobs:
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/msoos/minisat solvers/minisat-src
+          git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -G "MinGW Makefiles"
-          cmake --build build
-          cmake --install build --prefix install
+          meson setup builddir --buildtype release --strip
+          meson compile -C builddir
+          meson install -C builddir --destdir ../install
 
       - name: Build Glucose
         working-directory: kotlin-satlib-jni
