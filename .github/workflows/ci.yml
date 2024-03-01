@@ -190,11 +190,16 @@ jobs:
           cmake --build build -- -j8
           cmake --install build --prefix install
 
+      - name: Show libs
+        working-directory: kotlin-satlib-jni
+        run: |
+          ls -al --group-directories-first solvers/*-src/install/lib
+
       - name: Copy solver libs to C:/Windows
         working-directory: kotlin-satlib-jni
         run: |
           cp solvers/minisat-src/install/bin/libminisat.dll C:/Windows/
-          cp solvers/glucose-src/install/lib/glucose.dll C:/Windows/
+          cp solvers/glucose-src/install/lib/libglucose.dll C:/Windows/
           cp solvers/cadical-src/install/lib/cadical.dll C:/Windows/
           cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
 
