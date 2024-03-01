@@ -40,7 +40,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          meson setup builddir --buildtype release --strip -v
+          meson setup builddir --buildtype release --strip
           meson compile -C builddir
           meson install -C builddir --destdir ../install
 
@@ -167,7 +167,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          meson setup builddir --buildtype release --strip -v
+          meson setup builddir --buildtype release --strip
           meson compile -C builddir
           meson install -C builddir --destdir ../install
 
