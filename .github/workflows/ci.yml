@@ -82,7 +82,6 @@ jobs:
         working-directory: kotlin-satlib-jni
         run: |
           ls -al --group-directories-first solvers/*-src/install/lib
-          cp --remove-destination $(readlink -f solvers/minisat-src/install/lib/x86_64-linux-gnu/libminisat.so) solvers/minisat-src/install/lib/x86_64-linux-gnu/libminisat.so
           cp --remove-destination $(readlink -f solvers/cms-src/install/lib/libcryptominisat5.so) solvers/cms-src/install/lib/libcryptominisat5.so
 
       - name: Set up ld cache
