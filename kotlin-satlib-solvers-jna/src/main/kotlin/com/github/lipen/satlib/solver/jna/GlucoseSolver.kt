@@ -104,7 +104,7 @@ class GlucoseSolver(
     override fun getModel(): Model {
         // TODO: more efficient model extraction.
         val data = List(numberOfVariables) { getValue(it + 1) }
-        return Model.from(data, false)
+        return Model.from(data, zerobased = true)
     }
 }
 
