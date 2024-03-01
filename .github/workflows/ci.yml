@@ -19,6 +19,14 @@ jobs:
           distribution: zulu
           java-version: 11
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install meson
+        run: pip install meson ninja
+
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
@@ -27,10 +35,12 @@ jobs:
 
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni
+        env:
+          CC: gcc
         run: |
           git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          meson setup builddir --buildtype release --strip
+          meson setup builddir --buildtype release --strip -v
           meson compile -C builddir
           meson install -C builddir --destdir ../install
 
@@ -136,6 +146,14 @@ jobs:
           distribution: zulu
           java-version: 11
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install meson
+        run: pip install meson ninja
+
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
@@ -144,10 +162,12 @@ jobs:
 
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni
+        env:
+          CC: gcc
         run: |
           git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          meson setup builddir --buildtype release --strip
+          meson setup builddir --buildtype release --strip -v
           meson compile -C builddir
           meson install -C builddir --destdir ../install
 
