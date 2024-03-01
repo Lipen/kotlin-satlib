@@ -35,17 +35,16 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
-          meson setup builddir --buildtype release --strip --prefix=$(realpath install)
+          meson setup builddir --buildtype release --strip --libdir=lib --prefix=$(realpath install)
           meson compile -C builddir
           meson install -C builddir
-          mv install/lib/x86_64-linux-gnu/* install/lib/
 
       - name: Build Glucose
         working-directory: kotlin-satlib-jni
         run: |
           git clone --depth=1 https://github.com/Lipen/glucose solvers/glucose-src
           cd solvers/glucose-src
-          meson setup builddir --buildtype release --strip --prefix=$(realpath install)
+          meson setup builddir --buildtype release --strip --libdir=lib --prefix=$(realpath install)
           meson compile -C builddir
           meson install -C builddir
 
