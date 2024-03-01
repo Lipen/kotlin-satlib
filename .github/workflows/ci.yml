@@ -43,13 +43,11 @@ jobs:
       - name: Build Glucose
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+          git clone --depth=1 https://github.com/Lipen/glucose solvers/glucose-src
           cd solvers/glucose-src
-          git apply -v ../../patches/glucose-install.patch
-          cmake -B build -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -- -j8
-          cmake --install build --prefix install
-          strip -s install/lib/libglucose.so
+          meson setup builddir --buildtype release --strip --prefix=$(realpath install)
+          meson compile -C builddir
+          meson install -C builddir
 
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
@@ -99,7 +97,6 @@ jobs:
       - name: Add Cryptominisat to PATH
         working-directory: kotlin-satlib-jni
         run: |
-          cp solvers/cms-src/install/bin/cryptominisat5_simple solvers/cms-src/install/bin/cryptominisat5
           echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
 
       - name: Run tests
@@ -157,8 +154,6 @@ jobs:
 
       - name: Build MiniSat
         working-directory: kotlin-satlib-jni
-        env:
-          CC: gcc
         run: |
           git clone --depth=1 https://github.com/Lipen/minisat solvers/minisat-src
           cd solvers/minisat-src
@@ -169,14 +164,11 @@ jobs:
       - name: Build Glucose
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/wadoon/glucose solvers/glucose-src
+          git clone --depth=1 https://github.com/Lipen/glucose solvers/glucose-src
           cd solvers/glucose-src
-          git apply -v ../../patches/glucose-install.patch
-          git apply -v ../../patches/glucose-mingw-lib-prefix.patch
-          git apply -v ../../patches/glucose-mingw-sys-time.patch
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -G "MinGW Makefiles"
-          cmake --build build --target glucose
-          cmake --install build --prefix install
+          meson setup builddir --buildtype release --strip --prefix=$(realpath install)
+          meson compile -C builddir
+          meson install -C builddir
 
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
@@ -228,7 +220,6 @@ jobs:
       - name: Add Cryptominisat to PATH
         working-directory: kotlin-satlib-jni
         run: |
-          cp solvers/cms-src/install/bin/cryptominisat5_simple.exe solvers/cms-src/install/bin/cryptominisat5.exe
           echo "$(realpath solvers/cms-src/install/bin)" >> $GITHUB_PATH
 
       - name: Run tests
