@@ -51,15 +51,11 @@ jobs:
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
+          git clone --depth=1 https://github.com/Lipen/cadical solvers/cadical-src
           cd solvers/cadical-src
-          git apply -v ../../patches/cadical-shared.patch
-          patch -p0 < ../../patches/cadical-stats.patch
-          ./configure -fPIC
-          make -j8 shared
-          install -m 644 src/cadical.hpp -Dt install/include/cadical
-          install -m 644 build/libcadical.so -Dt install/lib
-          strip -s install/lib/libcadical.so
+          meson setup builddir --buildtype release --strip --libdir=lib --prefix=$(realpath install)
+          meson compile -C builddir
+          meson install -C builddir
 
       - name: Build CryptoMiniSat
         working-directory: kotlin-satlib-jni
@@ -172,14 +168,11 @@ jobs:
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 https://github.com/arminbiere/cadical solvers/cadical-src
+          git clone --depth=1 https://github.com/Lipen/cadical solvers/cadical-src
           cd solvers/cadical-src
-          git apply -v ../../patches/cadical-shared.patch
-          patch -p0 < ../../patches/cadical-stats.patch
-          ./configure -fPIC
-          make -j8 dll  2>&1
-          install src/cadical.hpp -Dt install/include/cadical
-          install build/cadical.dll -Dt install/lib
+          meson setup builddir --buildtype release --strip --prefix=$(realpath install)
+          meson compile -C builddir
+          meson install -C builddir
 
       - name: Build CryptoMiniSat
         working-directory: kotlin-satlib-jni
