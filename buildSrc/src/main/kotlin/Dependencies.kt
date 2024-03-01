@@ -4,18 +4,18 @@ object Versions {
     const val jgitver = "0.9.1"
     const val jmh = "1.23"
     const val jmh_gradle_plugin = "0.5.3"
-    const val jna = "5.13.0"
-    const val junit = "5.10.0"
+    const val jna = "5.14.0"
+    const val junit = "5.10.2"
     const val klock = "4.0.10"
     const val kluent = "1.73"
-    const val kotlin = "1.9.10"
-    const val kotlin_logging = "5.1.0"
-    const val kotlinx_coroutines = "1.7.3"
-    const val log4j = "2.21.0"
+    const val kotlin = "1.9.22"
+    const val kotlin_logging = "6.0.3"
+    const val kotlinx_coroutines = "1.8.0"
+    const val log4j = "2.23.0"
     const val multiarray = "0.13.1"
-    const val okio = "3.6.0"
+    const val okio = "3.8.0"
     const val shadow = "8.1.1"
-    const val slf4j = "2.0.9"
+    const val slf4j = "2.0.12"
 }
 
 object Libs {
@@ -51,7 +51,7 @@ object Libs {
         const val multiarray = "com.github.Lipen:MultiArray:$version"
     }
 
-    // https://github.com/MicroUtils/kotlin-logging
+    // https://github.com/oshai/kotlin-logging/
     object KotlinLogging {
         const val version = Versions.kotlin_logging
         const val kotlin_logging = "io.github.oshai:kotlin-logging:$version"
