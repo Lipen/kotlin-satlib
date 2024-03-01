@@ -192,8 +192,8 @@ jobs:
         working-directory: kotlin-satlib-jni
         run: |
           cp solvers/minisat-src/install/bin/libminisat.dll C:/Windows/
-          cp solvers/glucose-src/install/lib/libglucose.dll C:/Windows/
-          cp solvers/cadical-src/install/lib/libcadical.dll C:/Windows/
+          cp solvers/glucose-src/install/bin/libglucose.dll C:/Windows/
+          cp solvers/cadical-src/install/bin/libcadical.dll C:/Windows/
           cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
 
       - name: Build JNI libs
@@ -234,6 +234,6 @@ jobs:
             kotlin-satlib-jni/build/lib/jcadical.dll
             kotlin-satlib-jni/build/lib/jcms.dll
             kotlin-satlib-jni/solvers/minisat-src/install/bin/libminisat.dll
-            kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.dll
-            kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.dll
+            kotlin-satlib-jni/solvers/glucose-src/install/bin/libglucose.dll
+            kotlin-satlib-jni/solvers/cadical-src/install/bin/libcadical.dll
             kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
