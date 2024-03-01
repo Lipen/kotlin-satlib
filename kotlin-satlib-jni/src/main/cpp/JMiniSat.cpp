@@ -37,8 +37,14 @@ static inline Minisat::SimpSolver* decode(jlong h) {
     return (Minisat::SimpSolver*) (intptr_t) h;
 }
 
-static inline int lit2var(int lit) {
+// External lit to internal var
+static inline Minisat::Var lit2var(int lit) {
     return lit > 0 ? lit - 1 : -lit - 1;
+}
+
+// External lit to internal lit
+static inline Minisat::Lit convert(int lit) {
+    return Minisat::toLit(lit > 0 ? (lit - 1) << 1 : ((-lit - 1) << 1) + 1);
 }
 
 #ifdef __cplusplus
@@ -192,10 +198,6 @@ JNI_METHOD(void, minisat_1to_1dimacs)
     decode(handle)->toDimacs(file);
     env->ReleaseStringUTFChars(arg, file);
   }
-
-static inline Minisat::Lit convert(int lit) {
-    return Minisat::toLit(lit > 0 ? (lit << 1) - 2 : ((-lit) << 1) - 1);
-}
 
 JNI_METHOD(jboolean, minisat_1add_1clause__J)
   (JNIEnv*, jobject, jlong handle) {

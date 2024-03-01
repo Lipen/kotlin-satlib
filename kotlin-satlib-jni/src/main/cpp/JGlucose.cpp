@@ -18,8 +18,14 @@ static inline Glucose::SimpSolver* decode(jlong h) {
     return (Glucose::SimpSolver*) (intptr_t) h;
 }
 
-static inline int lit2var(int lit) {
+// External lit to internal var
+static inline Glucose::Var lit2var(int lit) {
     return lit > 0 ? lit - 1 : -lit - 1;
+}
+
+// External lit to internal lit
+static inline Glucose::Lit convert(int lit) {
+    return Glucose::toLit(lit > 0 ? (lit - 1) << 1 : ((-lit - 1) << 1) + 1);
 }
 
 #ifdef __cplusplus
@@ -168,10 +174,6 @@ JNI_METHOD(void, glucose_1to_1dimacs)
     decode(handle)->toDimacs(file);
     env->ReleaseStringUTFChars(arg, file);
   }
-
-static inline Glucose::Lit convert(int lit) {
-    return Glucose::toLit(lit > 0 ? (lit << 1) - 2 : ((-lit) << 1) - 1);
-}
 
 JNI_METHOD(jboolean, glucose_1add_1clause__J)
   (JNIEnv*, jobject, jlong handle) {
