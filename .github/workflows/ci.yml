@@ -133,11 +133,6 @@ jobs:
           distribution: zulu
           java-version: 11
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
       - name: Install meson
         run: pip install meson ninja
 
