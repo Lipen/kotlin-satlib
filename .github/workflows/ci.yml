@@ -43,6 +43,7 @@ jobs:
           meson setup builddir --buildtype release --strip --prefix=$(realpath install)
           meson compile -C builddir
           meson install -C builddir
+          mv install/lib/x86_64-linux-gnu/* install/lib/
 
       - name: Build Glucose
         working-directory: kotlin-satlib-jni
@@ -120,7 +121,7 @@ jobs:
             kotlin-satlib-jni/build/lib/libjglucose.so
             kotlin-satlib-jni/build/lib/libjcadical.so
             kotlin-satlib-jni/build/lib/libjcms.so
-            kotlin-satlib-jni/solvers/minisat-src/install/lib/x86_64-linux-gnu/libminisat.so
+            kotlin-satlib-jni/solvers/minisat-src/install/lib/libminisat.so
             kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so
             kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so
             kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so
