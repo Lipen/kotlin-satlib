@@ -84,7 +84,7 @@ JNI_METHOD(jlong, glucose_1conflicts)
 JNI_METHOD(jint, glucose_1new_1var)
   (JNIEnv*, jobject, jlong handle, jboolean polarity, jboolean decision) {
     int v = decode(handle)->newVar(polarity, decision);
-    return (jint)(1 + v);
+    return (jint)(v + 1);
 }
 
 JNI_METHOD(void, glucose_1set_1polarity)

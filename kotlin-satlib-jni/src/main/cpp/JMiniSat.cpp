@@ -93,7 +93,7 @@ JNI_METHOD(jlong, minisat_1conflicts)
 JNI_METHOD(jint, minisat_1new_1var)
   (JNIEnv*, jobject, jlong handle, jbyte polarity, jboolean decision) {
     int v = decode(handle)->newVar(Minisat::lbool((uint8_t) polarity), decision);
-    return (jint)(1 + v);
+    return (jint)(v + 1);
 }
 
 JNI_METHOD(void, minisat_1set_1polarity)
