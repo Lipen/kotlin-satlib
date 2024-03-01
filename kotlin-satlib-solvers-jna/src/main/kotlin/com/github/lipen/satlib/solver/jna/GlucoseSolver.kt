@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "LocalVariableName")
+
 package com.github.lipen.satlib.solver.jna
 
 import com.github.lipen.satlib.core.Context
@@ -6,8 +8,10 @@ import com.github.lipen.satlib.core.Model
 import com.github.lipen.satlib.core.newContext
 import com.github.lipen.satlib.jna.LibGlucose
 import com.github.lipen.satlib.jna.glucose_Lit
+import com.github.lipen.satlib.jna.glucose_Var
 import com.github.lipen.satlib.jna.glucose_addClause
 import com.github.lipen.satlib.jna.glucose_lbool
+import com.github.lipen.satlib.jna.glucose_limited_solve
 import com.github.lipen.satlib.jna.glucose_solve
 import com.github.lipen.satlib.solver.Solver
 import com.github.lipen.satlib.solver.solve
@@ -19,7 +23,6 @@ import kotlin.math.absoluteValue
 
 private val logger = KotlinLogging.logger {}
 
-@Suppress("MemberVisibilityCanBePrivate")
 class GlucoseSolver(
     val initialSeed: Double? = null, // internal default is 0
 ) : Solver {
@@ -47,7 +50,7 @@ class GlucoseSolver(
 
         if (ptr.pointer != Pointer.NULL) native.glucose_release(ptr)
         ptr.pointer = native.glucose_init().pointer
-        // if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("glucose_init returned NULL")
+        if (ptr.pointer == Pointer.NULL) throw OutOfMemoryError("glucose_init returned NULL")
         if (initialSeed != null) native.glucose_set_random_seed(ptr, initialSeed)
     }
 
@@ -77,9 +80,33 @@ class GlucoseSolver(
 
     override fun newLiteral(): Lit {
         val lit = ++numberOfVariables
-        val ms = native.glucose_newLit(ptr)
-        check(lit == fromGlucose(ms))
+        val glucoseLit = native.glucose_newLit(ptr)
+        check(lit == fromGlucose(glucoseLit))
         return lit
+    }
+
+    fun setPolarity(v: Int, b: Boolean) {
+        require(v > 0)
+        native.glucose_setPolarity(ptr, glucose_Var(v - 1), if (b) 1 else 0)
+    }
+
+    fun setDecision(v: Int, b: Boolean) {
+        require(v > 0)
+        native.glucose_setDecisionVar(ptr, glucose_Var(v - 1), if (b) 1 else 0)
+    }
+
+    fun setFrozen(v: Int, b: Boolean) {
+        require(v > 0)
+        native.glucose_setFrozen(ptr, glucose_Var(v - 1), b)
+    }
+
+    fun isEliminated(v: Int): Boolean {
+        require(v > 0)
+        return native.glucose_isEliminated(ptr, glucose_Var(v - 1))
+    }
+
+    fun eliminate(turn_off_elim: Boolean = false): Boolean {
+        return native.glucose_eliminate(ptr, turn_off_elim)
     }
 
     override fun addClause(literals: List<Lit>) {
@@ -93,8 +120,26 @@ class GlucoseSolver(
         return res
     }
 
-    override fun getValue(lit: Lit): Boolean {
+    fun solve_limited(): Boolean? {
+        val res = native.glucose_limited_solve(ptr, assumptions.map { toGlucose(it) })
+        assumptions.clear()
+        return when (res) {
+            glucose_lbool.True -> true
+            glucose_lbool.False -> false
+            glucose_lbool.Undef -> null
+        }
+    }
+
+    fun getAssignedValue(lit: Lit): Boolean? {
         return when (native.glucose_value_Lit(ptr, toGlucose(lit))) {
+            glucose_lbool.True -> true
+            glucose_lbool.False -> false
+            glucose_lbool.Undef -> null
+        }
+    }
+
+    override fun getValue(lit: Lit): Boolean {
+        return when (native.glucose_modelValue_Lit(ptr, toGlucose(lit))) {
             glucose_lbool.True -> true
             glucose_lbool.False -> false
             glucose_lbool.Undef -> false // FIXME?
@@ -102,19 +147,22 @@ class GlucoseSolver(
     }
 
     override fun getModel(): Model {
-        // TODO: more efficient model extraction.
         val data = List(numberOfVariables) { getValue(it + 1) }
         return Model.from(data, zerobased = true)
     }
 }
 
+// External Lit to internal glucose_Lit
 fun toGlucose(lit: Lit): glucose_Lit {
+    require(lit != 0)
     val v = lit.absoluteValue - 1
-    val sign = if (lit > 0) 1 else 0
-    return glucose_Lit(2 * v + sign)
+    val sign = if (lit < 0) 1 else 0
+    return glucose_Lit((v shl 1) + sign)
 }
 
+// Internal glucose_Lit to external Lit
 fun fromGlucose(lit: glucose_Lit): Lit {
+    require(lit.value >= 0)
     val v = (lit.value shr 1) + 1 // 1-based variable index
     return if (lit.value and 1 == 1) -v else v
 }

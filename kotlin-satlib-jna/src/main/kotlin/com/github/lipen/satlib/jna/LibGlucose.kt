@@ -7,11 +7,21 @@ import com.sun.jna.Library
 import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 
+// Note: `glucose_Var` and `glucose_Lit` could be "inline classes",
+//   but JNA does not support mapping them.
 data class glucose_Var(val value: Int) {
+    init {
+        require(value >= 0)
+    }
+
     override fun toString(): String = "Var($value)"
 }
 
 data class glucose_Lit(val value: Int) {
+    init {
+        require(value >= 0)
+    }
+
     override fun toString(): String = "Lit($value)"
 }
 
