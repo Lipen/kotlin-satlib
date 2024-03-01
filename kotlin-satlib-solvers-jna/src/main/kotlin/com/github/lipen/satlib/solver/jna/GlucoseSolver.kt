@@ -59,8 +59,11 @@ class GlucoseSolver(
     }
 
     override fun interrupt() {
-        // TODO: native.glucose_terminate(ptr)
-        TODO()
+        native.glucose_interrupt(ptr)
+    }
+
+    fun clearInterrupt() {
+        native.glucose_clearInterrupt(ptr)
     }
 
     override fun dumpDimacs(file: File) {

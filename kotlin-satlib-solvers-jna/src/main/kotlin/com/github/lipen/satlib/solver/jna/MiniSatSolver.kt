@@ -20,7 +20,7 @@ import kotlin.math.absoluteValue
 private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
-class MinisatSolver(
+class MiniSatSolver(
     val initialSeed: Double? = null, // internal default is 0
 ) : Solver {
     val native: LibMiniSat = LibMiniSat.INSTANCE
@@ -59,8 +59,11 @@ class MinisatSolver(
     }
 
     override fun interrupt() {
-        // TODO: native.minisat_terminate(ptr)
-        TODO()
+        native.minisat_interrupt(ptr)
+    }
+
+    fun clearInterrupt() {
+        native.minisat_clearInterrupt(ptr)
     }
 
     override fun dumpDimacs(file: File) {
@@ -118,7 +121,7 @@ fun fromMinisat(lit: minisat_Lit): Lit {
 
 @Suppress("DuplicatedCode")
 fun main() {
-    MinisatSolver().useWith {
+    MiniSatSolver().useWith {
         val tie = newLiteral()
         val shirt = newLiteral()
         println("tie = $tie")

@@ -4,13 +4,13 @@ package com.github.lipen.satlib.solver
 
 import com.github.lipen.satlib.solver.jna.CadicalSolver
 import com.github.lipen.satlib.solver.jna.GlucoseSolver
-import com.github.lipen.satlib.solver.jna.MinisatSolver
+import com.github.lipen.satlib.solver.jna.MiniSatSolver
 import com.github.lipen.satlib.utils.useWith
 
 private object test_MinisatSolver {
     @JvmStatic
     fun main(args: Array<String>) {
-        MinisatSolver().useWith {
+        MiniSatSolver().useWith {
             testSolverWithAssumptions()
         }
     }
