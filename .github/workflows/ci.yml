@@ -49,7 +49,7 @@ jobs:
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 --branch lipen/1.9.4 https://github.com/Lipen/cadical solvers/cadical-src
+          git clone --depth=1 --branch lipen/1.9.5 https://github.com/Lipen/cadical solvers/cadical-src
           cd solvers/cadical-src
           ./configure -fPIC
           make -j8 shared
@@ -176,7 +176,7 @@ jobs:
       - name: Build Cadical
         working-directory: kotlin-satlib-jni
         run: |
-          git clone --depth=1 --branch lipen/1.9.4 https://github.com/Lipen/cadical solvers/cadical-src
+          git clone --depth=1 --branch lipen/1.9.5 https://github.com/Lipen/cadical solvers/cadical-src
           cd solvers/cadical-src
           ./configure -fPIC
           make -j8 dll
