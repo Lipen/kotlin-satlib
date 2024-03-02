@@ -79,9 +79,9 @@ fun Solver.`assumptions are supported`() {
 
     addClause(x)
 
-    solve().`should be true`()
     solve(x).`should be true`()
     solve(-x).`should be false`()
+    solve().`should be true`()
 }
 
 fun <S : Solver> S.`solving with timeout`(clearInterrupt: S.() -> Unit) {
