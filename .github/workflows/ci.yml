@@ -65,15 +65,26 @@ jobs:
           cmake --install build --prefix install
           strip -s install/lib/libcryptominisat5.so
 
-      - name: Fixup libs
+      - name: Build Kissat
+        working-directory: kotlin-satlib-jna
+        run: |
+          git clone --depth=1 https://github.com/Lipen/kissat solvers/kissat-src
+          cd solvers/kissat-src
+          ./configure --compact --quiet --no-options --no-proofs -shared
+          make -j8
+          install -m 644 build/libkissat.so -Dt install/lib
+
+      - name: Show libs
+        run: |
+          ls -al --group-directories-first kotlin-satlib-(jni|jna)/solvers/*-src/install/lib
+
+      - name: Fixup libcryptominisat5.so
         working-directory: kotlin-satlib-jni
         run: |
-          ls -al --group-directories-first solvers/*-src/install/lib
           cp --remove-destination $(readlink -f solvers/cms-src/install/lib/libcryptominisat5.so) solvers/cms-src/install/lib/libcryptominisat5.so
 
       - name: Set up ld cache
-        working-directory: kotlin-satlib-jni
-        run: sudo ldconfig $(realpath solvers/*-src/install/lib)
+        run: sudo ldconfig $(realpath kotlin-satlib-(jni|jna)/solvers/*-src/install/lib)
 
       - name: Build JNI libs
         working-directory: kotlin-satlib-jni
@@ -110,6 +121,7 @@ jobs:
             kotlin-satlib-jni/solvers/glucose-src/install/lib/libglucose.so
             kotlin-satlib-jni/solvers/cadical-src/install/lib/libcadical.so
             kotlin-satlib-jni/solvers/cms-src/install/lib/libcryptominisat5.so
+            kotlin-satlib-jna/solvers/kissat-src/install/lib/libkissat.so
 
   build-windows:
     name: Build on Windows
@@ -176,18 +188,26 @@ jobs:
           cmake --build build -- -j8
           cmake --install build --prefix install
 
-      - name: Show libs
-        working-directory: kotlin-satlib-jni
+      - name: Build Kissat
+        working-directory: kotlin-satlib-jna
         run: |
-          ls -al --group-directories-first solvers/*-src/install/lib
+          git clone --depth=1 --branch windows https://github.com/Lipen/kissat solvers/kissat-src
+          cd solvers/kissat-src
+          ./configure --compact --quiet --no-options --no-proofs -shared
+          make -j8
+          install -m 644 build/libkissat.so -DT install/lib/kissat.dll
+
+      - name: Show libs
+        run: |
+          ls -al --group-directories-first kotlin-satlib-(jni|jna)/solvers/*-src/install/lib
 
       - name: Copy solver libs to C:/Windows
-        working-directory: kotlin-satlib-jni
         run: |
-          cp solvers/minisat-src/install/bin/libminisat.dll C:/Windows/
-          cp solvers/glucose-src/install/bin/libglucose.dll C:/Windows/
-          cp solvers/cadical-src/install/bin/libcadical.dll C:/Windows/
-          cp solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
+          cp kotlin-satlib-jni/solvers/minisat-src/install/bin/libminisat.dll C:/Windows/
+          cp kotlin-satlib-jni/solvers/glucose-src/install/bin/libglucose.dll C:/Windows/
+          cp kotlin-satlib-jni/solvers/cadical-src/install/bin/libcadical.dll C:/Windows/
+          cp kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5win.dll C:/Windows/
+          cp kotlin-satlib-jna/solvers/kissat-src/install/lib/kissat.dll C:/Windows/
 
       - name: Build JNI libs
         working-directory: kotlin-satlib-jni
@@ -230,3 +250,4 @@ jobs:
             kotlin-satlib-jni/solvers/glucose-src/install/bin/libglucose.dll
             kotlin-satlib-jni/solvers/cadical-src/install/bin/libcadical.dll
             kotlin-satlib-jni/solvers/cms-src/install/bin/libcryptominisat5win.dll
+            kotlin-satlib-jna/solvers/kissat-src/install/lib/kissat.dll
