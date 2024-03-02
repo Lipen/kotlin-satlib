@@ -11,7 +11,7 @@ gradleEnterprise {
     }
 }
 
-fun myInclude(name:String) {
+fun myInclude(name: String) {
     include(name)
     project(":$name").projectDir = file("${rootProject.name}-$name")
 }
