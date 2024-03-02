@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package com.github.lipen.satlib.solver.jna
 
 import com.github.lipen.satlib.core.Context
@@ -16,7 +18,6 @@ import java.io.File
 
 private val logger = KotlinLogging.logger {}
 
-@Suppress("MemberVisibilityCanBePrivate")
 class CadicalSolver(
     val initialSeed: Int? = null, // internal default is 0
 ) : Solver {
@@ -100,7 +101,7 @@ class CadicalSolver(
 }
 
 @Suppress("DuplicatedCode")
-fun main() {
+private fun main() {
     CadicalSolver().useWith {
         val tie = newLiteral()
         val shirt = newLiteral()

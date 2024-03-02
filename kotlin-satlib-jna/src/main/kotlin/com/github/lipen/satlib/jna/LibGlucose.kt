@@ -184,7 +184,7 @@ fun LibGlucose.glucose_limited_solve(
     return glucose_limited_solve_commit(ptr)
 }
 
-fun main() {
+private fun main() {
     val lib = LibGlucose.load("glucose")
     println("library = $lib")
     println("signature = ${lib.glucose_signature()}")

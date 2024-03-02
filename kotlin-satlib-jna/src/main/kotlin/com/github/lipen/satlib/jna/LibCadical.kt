@@ -84,7 +84,7 @@ fun LibCadical.ccadical_solve(ptr: LibCadical.CCadical, assumptions: Iterable<In
     return ccadical_solve(ptr)
 }
 
-fun main() {
+private fun main() {
     val lib = LibCadical.load("cadical")
     println("library = $lib")
     println("signature = ${lib.ccadical_signature()}")

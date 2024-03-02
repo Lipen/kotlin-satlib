@@ -185,7 +185,7 @@ class JCadical(
     }
 }
 
-fun main() {
+private fun main() {
     val solver = JCadical()
     println("solver = $solver")
 }

@@ -161,7 +161,7 @@ class JCryptoMiniSat(
     }
 }
 
-fun main() {
+private fun main() {
     val solver = JCryptoMiniSat()
     println("solver = $solver")
 }

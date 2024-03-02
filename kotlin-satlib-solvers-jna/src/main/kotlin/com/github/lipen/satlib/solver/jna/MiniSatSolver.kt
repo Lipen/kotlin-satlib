@@ -168,7 +168,7 @@ fun fromMinisat(lit: minisat_Lit): Lit {
 }
 
 @Suppress("DuplicatedCode")
-fun main() {
+private fun main() {
     MiniSatSolver().useWith {
         val tie = newLiteral()
         val shirt = newLiteral()

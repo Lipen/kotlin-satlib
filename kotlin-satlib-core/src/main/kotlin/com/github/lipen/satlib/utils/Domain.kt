@@ -78,7 +78,7 @@ private value class Vertex(override val value: Int) : Value<Int>
 @JvmInline
 private value class Name(override val value: String) : Value<String>
 
-fun main() {
+private fun main() {
     val intDomain: Domain<Int> = IntRangeDomain(1..10)
     println("intDomain = $intDomain")
 

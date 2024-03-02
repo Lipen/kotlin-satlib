@@ -50,7 +50,7 @@ fun LibKissat.kissat_add_clause(ptr: LibKissat.Kissat, clause: Iterable<Int>) {
     kissat_add(ptr, 0)
 }
 
-fun main() {
+private fun main() {
     val lib = LibKissat.load("kissat")
     println("library = $lib")
     println("signature = ${lib.kissat_signature()}")

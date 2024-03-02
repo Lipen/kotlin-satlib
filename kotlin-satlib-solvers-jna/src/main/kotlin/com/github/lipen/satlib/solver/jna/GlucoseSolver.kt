@@ -168,7 +168,7 @@ fun fromGlucose(lit: glucose_Lit): Lit {
 }
 
 @Suppress("DuplicatedCode")
-fun main() {
+private fun main() {
     GlucoseSolver().useWith {
         val tie = newLiteral()
         val shirt = newLiteral()

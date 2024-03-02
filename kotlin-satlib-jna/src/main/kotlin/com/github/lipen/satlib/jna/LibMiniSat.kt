@@ -183,7 +183,7 @@ fun LibMiniSat.minisat_limited_solve(
     return minisat_limited_solve_commit(ptr)
 }
 
-fun main() {
+private fun main() {
     val lib = LibMiniSat.load("minisat")
     println("library = $lib")
     println("signature = ${lib.minisat_signature()}")

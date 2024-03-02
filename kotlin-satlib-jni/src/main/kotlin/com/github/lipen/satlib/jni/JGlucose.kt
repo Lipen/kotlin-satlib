@@ -281,7 +281,7 @@ class JGlucose(
     }
 }
 
-fun main() {
+private fun main() {
     val solver = JGlucose()
     println("solver = $solver")
 }

@@ -307,7 +307,7 @@ class JMiniSat(
     }
 }
 
-fun main() {
+private fun main() {
     val solver = JMiniSat()
     println("solver = $solver")
 }
