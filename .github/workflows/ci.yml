@@ -76,7 +76,8 @@ jobs:
 
       - name: Show libs
         run: |
-          ls -al --group-directories-first kotlin-satlib-(jni|jna)/solvers/*-src/install/lib
+          ls -al --group-directories-first kotlin-satlib-jni/solvers/*-src/install/lib
+          ls -al --group-directories-first kotlin-satlib-jna/solvers/*-src/install/lib
 
       - name: Fixup libcryptominisat5.so
         working-directory: kotlin-satlib-jni
@@ -84,7 +85,9 @@ jobs:
           cp --remove-destination $(readlink -f solvers/cms-src/install/lib/libcryptominisat5.so) solvers/cms-src/install/lib/libcryptominisat5.so
 
       - name: Set up ld cache
-        run: sudo ldconfig $(realpath kotlin-satlib-(jni|jna)/solvers/*-src/install/lib)
+        run: sudo ldconfig \
+          $(realpath kotlin-satlib-jni/solvers/*-src/install/lib) \
+          $(realpath kotlin-satlib-jna/solvers/*-src/install/lib)
 
       - name: Build JNI libs
         working-directory: kotlin-satlib-jni
@@ -199,7 +202,8 @@ jobs:
 
       - name: Show libs
         run: |
-          ls -al --group-directories-first kotlin-satlib-(jni|jna)/solvers/*-src/install/lib
+          ls -al --group-directories-first kotlin-satlib-jni/solvers/*-src/install/lib
+          ls -al --group-directories-first kotlin-satlib-jna/solvers/*-src/install/lib
 
       - name: Copy solver libs to C:/Windows
         run: |
