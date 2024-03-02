@@ -84,11 +84,16 @@ fun Solver.`assumptions are supported`() {
     solve().`should be true`()
 }
 
-fun <S : Solver> S.`solving with timeout`(clearInterrupt: S.() -> Unit) {
+fun <S : Solver> S.`solving with timeout`(
+    continueSolving: Boolean = true,
+    clearInterrupt: S.() -> Unit = {},
+) {
     declare_sgen_n120_sat()
     // The problem is satisfiable, but 1 millisecond is definitely not enough to solve it
     runWithTimeout(1) { solve() }.`should be false`()
-    clearInterrupt()
     // Continue solving without a timeout (this may take a while, ~10-60 seconds)
-    solve().`should be true`()
+    if (continueSolving) {
+        clearInterrupt()
+        solve().`should be true`()
+    }
 }

@@ -1,6 +1,5 @@
 package com.github.lipen.satlib.solver.jna
 
-import com.github.lipen.satlib.test.`assumptions are supported`
 import com.github.lipen.satlib.test.`empty clause leads to UNSAT`
 import com.github.lipen.satlib.test.`simple SAT`
 import com.github.lipen.satlib.test.`simple UNSAT`
@@ -10,8 +9,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-class CadicalSolverTest {
-    private val solver = CadicalSolver()
+class KissatSolverTest {
+    private val solver = KissatSolver()
 
     @Test
     fun `simple SAT`() {
@@ -34,14 +33,20 @@ class CadicalSolverTest {
     }
 
     @Test
-    fun `assumptions are supported`() {
-        solver.`assumptions are supported`()
+    fun `solving with timeout`() {
+        solver.`solving with timeout`(continueSolving = false)
     }
 
     @Test
-    fun `solving with timeout`() {
-        solver.`solving with timeout` {
-            // no need to clear interrupt
-        }
+    fun `incremental solving is not supported`() {
+        // The following is forbidden in Kissat:
+        // solver.solve()
+        // solver.solve()
+        // Note: we cannot `assertThrows` it, since kissat_solve just halts.
+    }
+
+    @Test
+    fun `assumptions are not supported`() {
+        //
     }
 }
