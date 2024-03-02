@@ -75,6 +75,9 @@ class KissatSolver(
     }
 
     override fun solve(): Boolean {
+        if (assumptions.isNotEmpty()) {
+            throw UnsupportedOperationException(ASSUMPTIONS_NOT_SUPPORTED)
+        }
         return when (val res = native.kissat_solve(ptr)) {
             0 -> false // UNSOLVED
             10 -> true // SATISFIABLE
@@ -94,6 +97,12 @@ class KissatSolver(
     override fun getModel(): Model {
         val data = List(numberOfVariables) { i -> getValue(i + 1) }
         return Model.from(data, zerobased = true)
+    }
+
+    companion object {
+        private const val NAME = "KissatSolver"
+        private const val ASSUMPTIONS_NOT_SUPPORTED =
+            "$NAME does not support solving with assumptions"
     }
 }
 
